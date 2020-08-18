@@ -10,18 +10,14 @@ metadata:
     chart: {{ $.Chart.Name }}-{{ $.Chart.Version }}
     heritage: {{ $.Release.Service }}
     release: {{ $.Release.Name }}
-  name: {{ template "nifikop.name" $ }}-{{$namespace}}
+  name: {{ template "nifikop.name" $ }}
   namespace: {{$namespace}}
 subjects:
 - kind: ServiceAccount
   name: {{ template "nifikop.name" $ }}
   namespace: {{$.Release.Namespace}}
 roleRef:
-  {{- if $.Values.clusterRole }}
-  kind: ClusterRole
-  {{else}}
   kind: Role
-  {{end}}
   name: {{ template "nifikop.name" $ }}
   apiGroup: rbac.authorization.k8s.io
 {{- end }}
