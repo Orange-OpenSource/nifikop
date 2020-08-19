@@ -28,3 +28,10 @@ func LookupNifiCluster(client runtimeClient.Client, clusterName, clusterNamespac
 	err = client.Get(context.TODO(), types.NamespacedName{Name: clusterName, Namespace: clusterNamespace}, cluster)
 	return
 }
+
+// LookupNifiRegistryClient returns the running registry client instance based on its name and namespace
+func LookupNifiRegistryClient(client runtimeClient.Client, registryClientName, registryClientNamespace string) (cluster *v1alpha1.NifiRegistryClient, err error) {
+	cluster = &v1alpha1.NifiRegistryClient{}
+	err = client.Get(context.TODO(), types.NamespacedName{Name: registryClientName, Namespace: registryClientNamespace}, cluster)
+	return
+}
