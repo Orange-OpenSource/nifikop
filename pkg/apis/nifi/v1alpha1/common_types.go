@@ -14,6 +14,9 @@
 
 package v1alpha1
 
+// DataflowState defines the state of a NifiDataflow
+type DataflowState string
+
 // RackAwarenessState stores info about rack awareness status
 type RackAwarenessState string
 
@@ -68,9 +71,16 @@ type NifiAccessType string
 // UserState defines the state of a NifiUser
 type UserState string
 
-// ClusterReference states a reference to a cluster for topic/user
+// ClusterReference states a reference to a cluster for dataflow/registryclient/user
 // provisioning
 type ClusterReference struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace,omitempty"`
+}
+
+// RegistryClientReference states a reference to a registry client for dataflow
+// provisioning
+type RegistryClientReference struct {
 	Name      string `json:"name"`
 	Namespace string `json:"namespace,omitempty"`
 }
@@ -84,6 +94,13 @@ const (
 )
 
 const (
+	// DataflowStateCreated describes the status of a NifiDataflow as created
+	DataflowStateCreated DataflowState  = "Created"
+	// DataflowStateStarting describes the status of a NifiDataflow as starting
+	DataflowStateStarting DataflowState = "Starting"
+	// DataflowStateRunning describes the status of a NifiDataflow as running
+	DataflowStateRunning DataflowState  = "Running"
+
 	// UserStateCreated describes the status of a NifiUser as created
 	UserStateCreated UserState = "created"
 	// TLSCert is where a cert is stored in a user secret when requested

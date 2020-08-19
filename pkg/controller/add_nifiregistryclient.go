@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.package apis
 
-package nificlient
+package controller
 
-import "emperror.dev/errors"
+import (
+	"github.com/Orange-OpenSource/nifikop/pkg/controller/nifiregistryclient"
+)
 
-var ErrNodeNotConnected          = errors.New("The targeted node id disconnected")
-var ErrNifiClusterNotReturned200 = errors.New("non 200 response from NiFi cluster")
-var ErrNifiClusterNotReturned201 = errors.New("non 201 response from NiFi cluster")
-var ErrNifiClusterReturned404    = errors.New("404 response from NiFi cluster")
-var ErrNifiClusterNodeNotFound   = errors.New("The target node id doesn't exist in the cluster")
-
-var ErrNoNodeClientsAvailable    = errors.New("Cannot create a node client to perform actions")
+func init() {
+	// AddToManagerFuncs is a list of functions to create controllers and add them to a manager.
+	AddToManagerFuncs = append(AddToManagerFuncs, nifiregistryclient.Add)
+}

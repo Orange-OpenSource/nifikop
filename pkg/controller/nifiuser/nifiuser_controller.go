@@ -68,13 +68,13 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Watch for changes to primary resource NifiCluster
+	// Watch for changes to primary resource NifiUser
 	err = c.Watch(&source.Kind{Type: &v1alpha1.NifiUser{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
 
-	// Watch for changes to secondary resource Pods and requeue the owner NifiCluster
+	// Watch for changes to secondary resource Pods and requeue the owner NifiUser
 	err = c.Watch(&source.Kind{Type: &certv1.Certificate{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
 		OwnerType:    &v1alpha1.NifiUser{},

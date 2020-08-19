@@ -43,6 +43,12 @@ type NifiClient interface {
 	GetClusterNode(nId int32)(*nigoapi.NodeEntity, error)
 	RemoveClusterNodeFromClusterNodeId(nId string) error
 
+	// Registry client func
+	GetRegistryClient(id string)(*nigoapi.RegistryClientEntity, error)
+	CreateRegistryClient(registryClient nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error)
+	UpdateRegistryClient(registryClient nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error)
+	RemoveRegistryClient(registryClient nigoapi.RegistryClientEntity) error
+
 	Build() error
 }
 

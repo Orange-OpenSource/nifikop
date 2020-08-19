@@ -1,0 +1,9 @@
+apiVersion: nifi.orange.com/v1alpha1
+kind: NifiRegistryClient
+metadata:
+  name: squidflow
+spec:
+  clusterRef:
+    name: nc
+  description: "Squidflow demo"
+  uri: "http://nifi-registry:18080"
