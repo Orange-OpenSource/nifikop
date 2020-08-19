@@ -17,6 +17,12 @@ package v1alpha1
 // DataflowState defines the state of a NifiDataflow
 type DataflowState string
 
+// DataflowUpdateRequestType defines the type of versioned flow update request
+type DataflowUpdateRequestType string
+
+// DataflowUpdateStrategy defines the type of strategy to update a flow
+type DataflowUpdateStrategy string
+
 // RackAwarenessState stores info about rack awareness status
 type RackAwarenessState string
 
@@ -95,11 +101,26 @@ const (
 
 const (
 	// DataflowStateCreated describes the status of a NifiDataflow as created
-	DataflowStateCreated DataflowState  = "Created"
+	DataflowStateCreated   DataflowState = "Created"
 	// DataflowStateStarting describes the status of a NifiDataflow as starting
-	DataflowStateStarting DataflowState = "Starting"
+	DataflowStateStarting  DataflowState = "Starting"
 	// DataflowStateRunning describes the status of a NifiDataflow as running
-	DataflowStateRunning DataflowState  = "Running"
+	DataflowStateRan       DataflowState = "Ran"
+	// DataflowStateOutOfSync describes the status of a NifiDataflow as out of sync
+	DataflowStateOutOfSync DataflowState = "OutOfSync"
+	// DataflowStateInSync describes the status of a NifiDataflow as in sync
+	DataflowStateInSync    DataflowState = "InSync"
+
+	//
+	RevertRequestType DataflowUpdateRequestType = "Revert"
+	//
+	UpdateRequestType DataflowUpdateRequestType = "Update"
+
+	//
+	DrainStrategy DataflowUpdateStrategy = "Drain"
+	//
+	DropStrategy  DataflowUpdateStrategy = "Drop"
+
 
 	// UserStateCreated describes the status of a NifiUser as created
 	UserStateCreated UserState = "created"

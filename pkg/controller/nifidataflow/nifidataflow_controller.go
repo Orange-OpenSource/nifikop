@@ -198,20 +198,48 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 		existing = true
 	}
 
+	// Schedule the flow
 	if instance.Status.State == v1alpha1.DataflowStateCreated ||
 		instance.Status.State == v1alpha1.DataflowStateStarting ||
-		(!*instance.Spec.RunOnce && instance.Status.State == v1alpha1.DataflowStateRunning) {
+		instance.Status.State == v1alpha1.DataflowStateInSync ||
+		(!*instance.Spec.RunOnce && instance.Status.State == v1alpha1.DataflowStateRan) {
 
 		instance.Status.State = v1alpha1.DataflowStateStarting
 		if err := r.client.Status().Update(ctx, instance); err != nil {
 			return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
 		}
 
-		if err := dataflow.RunDataflow(r.client, instance, cluster); err != nil {
+		if err := dataflow.ScheduleDataflow(r.client, instance, cluster); err != nil {
 			return common.RequeueWithError(reqLogger, "failed to run NifiDataflow", err)
 		}
 
-		instance.Status.State = v1alpha1.DataflowStateRunning
+		instance.Status.State = v1alpha1.DataflowStateRan
+		if err := r.client.Status().Update(ctx, instance); err != nil {
+			return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
+		}
+	}
+
+	// Check if the flow is out of sync
+	isOutOfSink, err := dataflow.IsOutOfSyncDataflow(r.client, instance, cluster);
+	if err != nil {
+		return common.RequeueWithError(reqLogger, "failed to check NifiDataflow sync", err)
+	}
+
+	if isOutOfSink {
+		instance.Status.State = v1alpha1.DataflowStateOutOfSync
+		if err := r.client.Status().Update(ctx, instance); err != nil {
+			return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
+		}
+	}
+
+	// In case where the flow is not sync
+	if instance.Status.State == v1alpha1.DataflowStateOutOfSync {
+		err := dataflow.SyncDataflow(r.client, instance, cluster)
+		if err != nil {
+			return common.RequeueWithError(reqLogger, "failed to sync NiFiDataflow", err)
+		}
+
+		instance.Status.State = v1alpha1.DataflowStateInSync
 		if err := r.client.Status().Update(ctx, instance); err != nil {
 			return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
 		}

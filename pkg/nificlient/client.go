@@ -49,6 +49,11 @@ type NifiClient interface {
 	UpdateRegistryClient(registryClient nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error)
 	RemoveRegistryClient(registryClient nigoapi.RegistryClientEntity) error
 
+	// Flow client func
+	GetFlow(id string)(*nigoapi.ProcessGroupFlowEntity, error)
+	UpdateFlowControllerServices(entity nigoapi.ActivateControllerServicesEntity)(*nigoapi.ActivateControllerServicesEntity, error)
+	UpdateFlowProcessGroup(entity nigoapi.ScheduleComponentsEntity)(*nigoapi.ScheduleComponentsEntity, error)
+
 	Build() error
 }
 
