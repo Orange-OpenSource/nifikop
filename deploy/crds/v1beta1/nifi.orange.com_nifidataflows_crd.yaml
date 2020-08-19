@@ -1,0 +1,113 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: nifidataflows.nifi.orange.com
+spec:
+  group: nifi.orange.com
+  names:
+    kind: NifiDataflow
+    listKind: NifiDataflowList
+    plural: nifidataflows
+    singular: nifidataflow
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: Nifi Dataflow is the Schema for the nifi dataflow API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: NifiDataflowSpec defines the desired state of NifiDataflow
+          properties:
+            bucketId:
+              description: The UUID of the Bucket containing the flow.
+              type: string
+            clusterRef:
+              description: ClusterReference states a reference to a cluster for dataflow/registryclient/user
+                provisioning
+              properties:
+                name:
+                  type: string
+                namespace:
+                  type: string
+              required:
+              - name
+              type: object
+            flowId:
+              description: The UUID of the flow to run.
+              type: string
+            flowVersion:
+              description: The version of the flow to run, if not present or equals
+                to -1, then the latest version of flow will be used.
+              type: integer
+            parameters:
+              description: Object that will be passed to the NiFi Flow as parameteres.
+              items:
+                properties:
+                  description:
+                    type: string
+                  name:
+                    type: string
+                  secretName:
+                    type: string
+                  sensitive:
+                    type: boolean
+                  value:
+                    type: string
+                required:
+                - name
+                type: object
+              type: array
+            parentProcessGroupID:
+              description: The id of the parent process group where you want to deploy
+                your dataflow, if not set deploy at root level
+              type: string
+            registryClientRef:
+              description: RegistryClientReference states a reference to a registry
+                client for dataflow provisioning
+              properties:
+                name:
+                  type: string
+                namespace:
+                  type: string
+              required:
+              - name
+              type: object
+            runOnce:
+              description: If the flow will be ran once or continuously checked
+              type: boolean
+          required:
+          - bucketId
+          - flowId
+          type: object
+        status:
+          description: NifiDataflowStatus defines the observed state of NifiDataflow
+          properties:
+            processGroupID:
+              description: Queued flow files Process Group ID
+              type: string
+            state:
+              description: DataflowState defines the state of a NifiDataflow
+              type: string
+          required:
+          - processGroupID
+          - state
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
