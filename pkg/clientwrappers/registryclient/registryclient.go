@@ -11,6 +11,37 @@ import (
 
 var log = logf.Log.WithName("registryclient-method")
 
+func ExistRegistryClient(client client.Client, registryClient *v1alpha1.NifiRegistryClient,
+	cluster *v1alpha1.NifiCluster) (bool, error) {
+
+	if registryClient.Status.Id == "" {
+		return false, nil
+	}
+
+	nClient, err := common.NewNodeConnection(log, client, cluster)
+	if err != nil {
+		return false, err
+	}
+
+	entity, err := nClient.GetRegistryClient(registryClient.Status.Id)
+
+	if err == nificlient.ErrNifiClusterReturned404 {
+		return false, nil
+	}
+
+	if err == nificlient.ErrNifiClusterNotReturned200 {
+		log.Error(err, "Find client registry failed since Nifi node returned non 200")
+		return false, err
+	}
+
+	if err != nil {
+		log.Error(err, "could not communicate with nifi node")
+		return false, err
+	}
+
+	return entity != nil, nil
+}
+
 func CreateRegistryClient(client client.Client, registryClient *v1alpha1.NifiRegistryClient,
 		cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiRegistryClientStatus, error) {
 	nClient, err := common.NewNodeConnection(log, client, cluster)
@@ -48,10 +79,6 @@ func SyncRegistryClient(client client.Client, registryClient *v1alpha1.NifiRegis
 	}
 
 	entity, err := nClient.GetRegistryClient(registryClient.Status.Id)
-
-	if err == nificlient.ErrNifiClusterReturned404 {
-		return CreateRegistryClient(client, registryClient, cluster)
-	}
 
 	if err == nificlient.ErrNifiClusterNotReturned200 {
 		log.Error(err, "Find client registry failed since Nifi node returned non 200")

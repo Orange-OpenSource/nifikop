@@ -137,8 +137,14 @@ func (r *ReconcileNifiRegistryClient) Reconcile(request reconcile.Request) (reco
 		return r.checkFinalizers(ctx, reqLogger, instance, cluster)
 	}
 
-	// Create NiFi registry client
-	if instance.Status.Id == "" {
+	// Check if the NiFi registry client already exist
+	exist, err := registryclient.ExistRegistryClient(r.client, instance, cluster)
+	if err != nil {
+		return common.RequeueWithError(reqLogger, "failure checking for existing registry client", err)
+	}
+
+	if !exist {
+		// Create NiFi registry client
 		status, err := registryclient.CreateRegistryClient(r.client, instance, cluster)
 		if err != nil {
 			return common.RequeueWithError(reqLogger, "failure creating registry client", err)
