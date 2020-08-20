@@ -234,7 +234,13 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 
 	// In case where the flow is not sync
 	if instance.Status.State == v1alpha1.DataflowStateOutOfSync {
-		err := dataflow.SyncDataflow(r.client, instance, cluster)
+		status, err := dataflow.SyncDataflow(r.client, instance, cluster)
+		if status != nil {
+			instance.Status = *status
+			if err := r.client.Status().Update(ctx, instance); err != nil {
+				return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
+			}
+		}
 		if err != nil {
 			return common.RequeueWithError(reqLogger, "failed to sync NiFiDataflow", err)
 		}

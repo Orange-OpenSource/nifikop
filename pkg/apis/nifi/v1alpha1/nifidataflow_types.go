@@ -63,6 +63,7 @@ type UpdateRequest struct {
 }
 
 type DropRequest struct {
+	ConnectionId     string `json:"connectionId"`
 	// The id for this drop request.
 	Id               string `json:"id"`
 	// The uri for this request.
@@ -103,13 +104,13 @@ type DropRequest struct {
 type NifiDataflowStatus struct {
 	// Queued flow files
 	// Process Group ID
-	ProcessGroupID string `json:"processGroupID"`
+	ProcessGroupID    string         `json:"processGroupID"`
 	//
-	State DataflowState `json:"state"`
+	State             DataflowState  `json:"state"`
 	//
-	LatestRequest UpdateRequest `json:"latestRequest"`
+	LatestRequest     *UpdateRequest `json:"latestRequest"`
 	//
-	LatestDropRequest DropRequest `json:"latestDropRequest"`
+	LatestDropRequest *DropRequest   `json:"latestDropRequest"`
 }
 
 // Nifi Dataflow is the Schema for the nifi dataflow API

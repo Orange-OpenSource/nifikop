@@ -17,7 +17,6 @@ package nificlient
 import (
 	"strconv"
 
-	"emperror.dev/errors"
 	"github.com/antihax/optional"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 )
@@ -33,17 +32,7 @@ func (n *nifiClient) GetRegistryClient(id string)(*nigoapi.RegistryClientEntity,
 	// Request on Nifi Rest API to get the registy client informations
 	nodeEntity, rsp, err := client.ControllerApi.GetRegistryClient(nil, id)
 
-	if rsp != nil && rsp.StatusCode == 404 {
-		return nil, ErrNifiClusterReturned404
-	}
-
-	if rsp != nil && rsp.StatusCode != 200 {
-		log.Error(errors.New("Non 200 response from nifi node: "+rsp.Status), "Error during talking to nifi node")
-		return nil, ErrNifiClusterNotReturned200
-	}
-
-	if err != nil || rsp == nil {
-		log.Error(err, "Error during talking to nifi node")
+	if err := errorGetOperation(rsp, err); err != nil {
 		return nil, err
 	}
 
@@ -60,14 +49,7 @@ func (n *nifiClient) CreateRegistryClient(registryClient nigoapi.RegistryClientE
 
 	// Request on Nifi Rest API to create the registry client
 	regCliEntity, rsp, err := client.ControllerApi.CreateRegistryClient(nil, registryClient)
-
-	if rsp != nil && rsp.StatusCode != 201 {
-		log.Error(errors.New("Non 201 response from nifi node: "+rsp.Status), "Error during talking to nifi node")
-		return nil, ErrNifiClusterNotReturned201
-	}
-
-	if err != nil || rsp == nil {
-		log.Error(err, "Error during talking to nifi node")
+	if err := errorCreateOperation(rsp, err); err != nil {
 		return nil, err
 	}
 
@@ -84,14 +66,7 @@ func (n *nifiClient) UpdateRegistryClient(registryClient nigoapi.RegistryClientE
 
 	// Request on Nifi Rest API to update the registry client
 	regCliEntity, rsp, err := client.ControllerApi.UpdateRegistryClient(nil, registryClient.Id, registryClient)
-
-	if rsp != nil && rsp.StatusCode != 200 {
-		log.Error(errors.New("Non 200 response from nifi node: "+rsp.Status), "Error during talking to nifi node")
-		return nil, ErrNifiClusterNotReturned200
-	}
-
-	if err != nil || rsp == nil {
-		log.Error(err, "Error during talking to nifi node")
+	if err := errorUpdateOperation(rsp, err); err != nil {
 		return nil, err
 	}
 
@@ -112,20 +87,5 @@ func (n *nifiClient) RemoveRegistryClient(registryClient nigoapi.RegistryClientE
 			Version: optional.NewString(strconv.FormatInt(*registryClient.Revision.Version, 10)),
 	})
 
-	if rsp != nil && rsp.StatusCode == 404 {
-		log.Error(errors.New("404 response from nifi node: "+rsp.Status), "No registry client to remove found")
-		return nil
-	}
-
-	if rsp != nil && rsp.StatusCode != 200 {
-		log.Error(errors.New("Non 200 response from nifi node: "+rsp.Status), "Error during talking to nifi node")
-		return ErrNifiClusterNotReturned200
-	}
-
-	if err != nil || rsp == nil {
-		log.Error(err, "Error during talking to nifi node")
-		return err
-	}
-
-	return nil
+	return errorDeleteOperation(rsp, err)
 }

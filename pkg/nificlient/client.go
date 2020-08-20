@@ -54,6 +54,10 @@ type NifiClient interface {
 	UpdateFlowControllerServices(entity nigoapi.ActivateControllerServicesEntity)(*nigoapi.ActivateControllerServicesEntity, error)
 	UpdateFlowProcessGroup(entity nigoapi.ScheduleComponentsEntity)(*nigoapi.ScheduleComponentsEntity, error)
 
+	// Drop request func
+	GetDropRequest(connectionId, id string)(*nigoapi.DropRequestEntity, error)
+	CreateDropRequest(registryClient nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error)
+
 	Build() error
 }
 
