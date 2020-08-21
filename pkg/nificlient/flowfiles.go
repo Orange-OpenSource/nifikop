@@ -21,7 +21,7 @@ func (n *nifiClient) GetDropRequest(connectionId, id string)(*nigoapi.DropReques
 	return &dropRequest, nil
 }
 
-func (n *nifiClient) CreateDropRequest(registryClient nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error) {
+func (n *nifiClient) CreateDropRequest(connectionId string)(*nigoapi.DropRequestEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -29,11 +29,28 @@ func (n *nifiClient) CreateDropRequest(registryClient nigoapi.RegistryClientEnti
 		return nil, ErrNoNodeClientsAvailable
 	}
 
-	// Request on Nifi Rest API to create the registry client
-	regCliEntity, rsp, err := client.ControllerApi.CreateRegistryClient(nil, registryClient)
+	// Request on Nifi Rest API to create the drop Request
+	entity, rsp, err := client.FlowfileQueuesApi.CreateDropRequest(nil, connectionId)
 	if err := errorCreateOperation(rsp, err); err != nil {
 		return nil, err
 	}
 
-	return &regCliEntity, nil
+	return &entity, nil
 }
+
+//func (n *nifiClient) CreateDropRequest(pgId string)(*nigoapi.ProcessGroupEntity, error) {
+//	// Get nigoapi client, favoring the one associated to the coordinator node.
+//	client := n.privilegeCoordinatorClient()
+//	if client == nil {
+//		log.Error(ErrNoNodeClientsAvailable, "Error during creating node client")
+//		return nil, ErrNoNodeClientsAvailable
+//	}
+//
+//	// Request on Nifi Rest API to create the registry client
+//	entity, rsp, err := client.ProcessGroupsApi.CreateEmptyAllConnectionsRequest(nil, pgId)
+//	if err := errorCreateOperation(rsp, err); err != nil {
+//		return nil, err
+//	}
+//
+//	return &entity, nil
+//}

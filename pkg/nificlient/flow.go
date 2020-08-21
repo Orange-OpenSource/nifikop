@@ -67,7 +67,6 @@ func (n *nifiClient) FlowDropRequest(connectionId, id string)(*nigoapi.DropReque
 	}
 
 	// Request on Nifi Rest API to get the drop request information
-
 	dropRequest, rsp, err := client.FlowfileQueuesApi.GetDropRequest(nil, connectionId, id)
 	if err := errorGetOperation(rsp, err); err != nil {
 		return nil, err

@@ -56,7 +56,7 @@ type NifiClient interface {
 
 	// Drop request func
 	GetDropRequest(connectionId, id string)(*nigoapi.DropRequestEntity, error)
-	CreateDropRequest(registryClient nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error)
+	CreateDropRequest(connectionId string)(*nigoapi.DropRequestEntity, error)
 
 	Build() error
 }

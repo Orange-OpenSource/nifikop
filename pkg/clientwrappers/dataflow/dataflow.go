@@ -33,6 +33,11 @@ func IsOutOfSyncDataflow(client client.Client, flow *v1alpha1.NifiDataflow, clus
 	return false, nil
 }
 
+func isVersionSync(flow *v1alpha1.NifiDataflow, pgFlowEntity *nigoapi.ProcessGroupEntity) bool {
+	//return flow.Spec.FlowVersion == pgFlowEntity.
+	return true
+}
+
 func SyncDataflow(client client.Client, flow *v1alpha1.NifiDataflow, cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiDataflowStatus, error) {
 
 	nClient, err := common.NewNodeConnection(log, client, cluster)
@@ -96,11 +101,27 @@ func SyncDataflow(client client.Client, flow *v1alpha1.NifiDataflow, cluster *v1
 		// Drop all events in connections
 		for _, connection := range flowEntity.ProcessGroupFlow.Flow.Connections {
 			if connection.Status.AggregateSnapshot.FlowFilesQueued != 0 {
+				dropRequest, err := nClient.CreateDropRequest(connection.Id)
+				if err != nil && err != nificlient.ErrNifiClusterNotReturned201 {
+					log.Error(err, "could not communicate with nifi node")
+					return nil, err
+				}
 
-				break
+				if err == nificlient.ErrNifiClusterNotReturned201 {
+					log.Error(err, "Create drop request failed since Nifi node returned non 201")
+					return nil, err
+				}
+				flow.Status.LatestDropRequest =
+					dropRequest2Status(flow.Status.LatestDropRequest.ConnectionId, dropRequest)
+				return &flow.Status, errorfactory.NifiConnectionDropping{}
 			}
 		}
+	} else {
+		//
 	}
+
+
+
 
 	return nil, nil
 }
