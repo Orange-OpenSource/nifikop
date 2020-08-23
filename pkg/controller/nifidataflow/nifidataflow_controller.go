@@ -17,9 +17,11 @@ package nifidataflow
 import (
 	"context"
 	"reflect"
+	"time"
 
 	"emperror.dev/errors"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/dataflow"
+	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
@@ -172,6 +174,10 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 		return r.checkFinalizers(ctx, reqLogger, instance, cluster)
 	}
 
+	if *instance.Spec.RunOnce && instance.Status.State == v1alpha1.DataflowStateRan {
+		return common.Reconciled()
+	}
+
 	// Check if the dataflow already exist
 	existing, err := dataflow.DataflowExist(r.client, instance, cluster)
 	if err != nil {
@@ -181,21 +187,61 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 	// Create dataflow if it doesn't already exist
 	if !existing {
 
-		processGroupID, err := dataflow.CreateDataflow(r.client, instance, cluster)
+		processGroupStatus, err := dataflow.CreateDataflow(r.client, instance, cluster, registryClient)
 		if err != nil {
 			return common.RequeueWithError(reqLogger, "failure creating dataflow", err)
 		}
 
 		// Set dataflow status
-		instance.Status = v1alpha1.NifiDataflowStatus{
-			ProcessGroupID: processGroupID,
-			State:          v1alpha1.DataflowStateCreated,
-		}
+		instance.Status       = *processGroupStatus
+		instance.Status.State = v1alpha1.DataflowStateCreated
+
 		if err := r.client.Status().Update(ctx, instance); err != nil {
 			return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
 		}
 
 		existing = true
+	}
+
+	// In case where the flow is not sync
+	if instance.Status.State == v1alpha1.DataflowStateOutOfSync {
+		status, err := dataflow.SyncDataflow(r.client, instance, cluster, registryClient)
+		if status != nil {
+			instance.Status = *status
+			if err := r.client.Status().Update(ctx, instance); err != nil {
+				return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
+			}
+		}
+		if err != nil {
+			switch errors.Cause(err).(type) {
+			case errorfactory.NifiConnectionDropping,
+				errorfactory.NifiFlowUpdateRequestRunning,
+				errorfactory.NifiFlowDraining:
+				return reconcile.Result{
+					RequeueAfter: time.Duration(5) * time.Second,
+				}, nil
+			default:
+				return common.RequeueWithError(reqLogger, "failed to sync NiFiDataflow", err)
+			}
+		}
+
+		instance.Status.State = v1alpha1.DataflowStateInSync
+		if err := r.client.Status().Update(ctx, instance); err != nil {
+			return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
+		}
+	}
+
+	// Check if the flow is out of sync
+	isOutOfSink, err := dataflow.IsOutOfSyncDataflow(r.client, instance, cluster, registryClient)
+	if err != nil {
+		return common.RequeueWithError(reqLogger, "failed to check NifiDataflow sync", err)
+	}
+
+	if isOutOfSink {
+		instance.Status.State = v1alpha1.DataflowStateOutOfSync
+		if err := r.client.Status().Update(ctx, instance); err != nil {
+			return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
+		}
 	}
 
 	// Schedule the flow
@@ -210,44 +256,24 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 		}
 
 		if err := dataflow.ScheduleDataflow(r.client, instance, cluster); err != nil {
-			return common.RequeueWithError(reqLogger, "failed to run NifiDataflow", err)
+			switch errors.Cause(err).(type) {
+			case errorfactory.NifiFlowControllerServiceScheduling, errorfactory.NifiFlowScheduling:
+				return reconcile.Result{
+					RequeueAfter: time.Duration(5) * time.Second,
+				}, nil
+			default:
+				return common.RequeueWithError(reqLogger, "failed to run NifiDataflow", err)
+			}
 		}
+
 
 		instance.Status.State = v1alpha1.DataflowStateRan
 		if err := r.client.Status().Update(ctx, instance); err != nil {
 			return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
 		}
-	}
 
-	// Check if the flow is out of sync
-	isOutOfSink, err := dataflow.IsOutOfSyncDataflow(r.client, instance, cluster);
-	if err != nil {
-		return common.RequeueWithError(reqLogger, "failed to check NifiDataflow sync", err)
-	}
-
-	if isOutOfSink {
-		instance.Status.State = v1alpha1.DataflowStateOutOfSync
-		if err := r.client.Status().Update(ctx, instance); err != nil {
-			return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
-		}
-	}
-
-	// In case where the flow is not sync
-	if instance.Status.State == v1alpha1.DataflowStateOutOfSync {
-		status, err := dataflow.SyncDataflow(r.client, instance, cluster)
-		if status != nil {
-			instance.Status = *status
-			if err := r.client.Status().Update(ctx, instance); err != nil {
-				return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
-			}
-		}
-		if err != nil {
-			return common.RequeueWithError(reqLogger, "failed to sync NiFiDataflow", err)
-		}
-
-		instance.Status.State = v1alpha1.DataflowStateInSync
-		if err := r.client.Status().Update(ctx, instance); err != nil {
-			return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
+		if *instance.Spec.RunOnce {
+			return common.Reconciled()
 		}
 	}
 
@@ -269,7 +295,7 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 
 	reqLogger.Info("Ensured Dataflow")
 
-	return common.Reconciled()
+	return reconcile.Result{}, nil
 }
 
 func (r *ReconcileNifiDataflow) ensureClusterLabel(ctx context.Context, cluster *v1alpha1.NifiCluster,
@@ -325,12 +351,12 @@ func (r *ReconcileNifiDataflow) finalizeNifiDataflow(reqLogger logr.Logger, flow
 		return err
 	}
 
-	if !exists {
-		if err = dataflow.DeleteDataflow(r.client, flow, cluster); err != nil {
+	if exists {
+		if _, err = dataflow.RemoveDataflow(r.client, flow, cluster); err != nil {
 			return err
 		}
 		reqLogger.Info("Delete dataflow")
 	}
-	return nil
 
+	return nil
 }

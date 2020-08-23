@@ -112,15 +112,14 @@ const (
 	DataflowStateInSync    DataflowState = "InSync"
 
 	//
-	RevertRequestType DataflowUpdateRequestType = "Revert"
+	ReverseRequestType DataflowUpdateRequestType = "Reverse"
 	//
 	UpdateRequestType DataflowUpdateRequestType = "Update"
 
 	//
-	DrainStrategy DataflowUpdateStrategy = "Drain"
+	DrainStrategy DataflowUpdateStrategy = "drain"
 	//
-	DropStrategy  DataflowUpdateStrategy = "Drop"
-
+	DropStrategy  DataflowUpdateStrategy = "drop"
 
 	// UserStateCreated describes the status of a NifiUser as created
 	UserStateCreated UserState = "created"

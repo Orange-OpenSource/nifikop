@@ -67,8 +67,17 @@ type  NifiClusterTaskFailure struct{ error }
 // NifiConnectionDropping states that flowfile drop is still running
 type NifiConnectionDropping struct{ error }
 
+// NifiFlowDraining states that flowfile drop is still draining
+type NifiFlowDraining struct{ error }
+
 // NifiFlowUpdateRequestRunning states that the flow update request is still running
 type NifiFlowUpdateRequestRunning struct{ error }
+
+// NifiFlowControllerServiceScheduling states that the flow's controller service are still scheduling
+type NifiFlowControllerServiceScheduling struct{ error }
+
+// NifiFlowScheduling states that the flow is still scheduling
+type NifiFlowScheduling struct{ error }
 
 // New creates a new error factory error
 func New(t interface{}, err error, msg string, wrapArgs ...interface{}) error {

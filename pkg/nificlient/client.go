@@ -45,18 +45,42 @@ type NifiClient interface {
 
 	// Registry client func
 	GetRegistryClient(id string)(*nigoapi.RegistryClientEntity, error)
-	CreateRegistryClient(registryClient nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error)
-	UpdateRegistryClient(registryClient nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error)
-	RemoveRegistryClient(registryClient nigoapi.RegistryClientEntity) error
+	CreateRegistryClient(entity nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error)
+	UpdateRegistryClient(entity nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error)
+	RemoveRegistryClient(entity nigoapi.RegistryClientEntity) error
 
 	// Flow client func
 	GetFlow(id string)(*nigoapi.ProcessGroupFlowEntity, error)
 	UpdateFlowControllerServices(entity nigoapi.ActivateControllerServicesEntity)(*nigoapi.ActivateControllerServicesEntity, error)
 	UpdateFlowProcessGroup(entity nigoapi.ScheduleComponentsEntity)(*nigoapi.ScheduleComponentsEntity, error)
+	GetFlowControllerServices(id string)(*nigoapi.ControllerServicesEntity, error)
 
 	// Drop request func
 	GetDropRequest(connectionId, id string)(*nigoapi.DropRequestEntity, error)
 	CreateDropRequest(connectionId string)(*nigoapi.DropRequestEntity, error)
+
+	// Process Group func
+	GetProcessGroup(id string) (*nigoapi.ProcessGroupEntity, error)
+	CreateProcessGroup(entity nigoapi.ProcessGroupEntity, pgParentId string) (*nigoapi.ProcessGroupEntity, error)
+	UpdateProcessGroup(entity nigoapi.ProcessGroupEntity) (*nigoapi.ProcessGroupEntity, error)
+	RemoveProcessGroup(entity nigoapi.ProcessGroupEntity) error
+
+	// Version func
+	CreateVersionUpdateRequest(pgId string, entity nigoapi.VersionControlInformationEntity)(*nigoapi.VersionedFlowUpdateRequestEntity, error)
+	GetVersionUpdateRequest(id string)(*nigoapi.VersionedFlowUpdateRequestEntity, error)
+	CreateVersionReverseRequest(pgId string, entity nigoapi.VersionControlInformationEntity)(*nigoapi.VersionedFlowUpdateRequestEntity, error)
+	GetVersionReverseRequest(id string)(*nigoapi.VersionedFlowUpdateRequestEntity, error)
+
+	// Snippet func
+	CreateSnippet(entity nigoapi.SnippetEntity)(*nigoapi.SnippetEntity, error)
+	UpdateSnippet(entity nigoapi.SnippetEntity)(*nigoapi.SnippetEntity, error)
+
+	// Processor func
+	UpdateProcessor(entity nigoapi.ProcessorEntity) (*nigoapi.ProcessorEntity, error)
+	UpdateProcessorRunStatus(id string, entity nigoapi.ProcessorRunStatusEntity) (*nigoapi.ProcessorEntity, error)
+
+	// Input port func
+	UpdateInputPortRunStatus(id string, entity nigoapi.PortRunStatusEntity) (*nigoapi.ProcessorEntity, error)
 
 	Build() error
 }

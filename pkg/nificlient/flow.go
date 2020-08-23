@@ -1,6 +1,7 @@
 package nificlient
 
 import (
+	"github.com/antihax/optional"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 )
 
@@ -21,6 +22,27 @@ func (n *nifiClient) GetFlow(id string)(*nigoapi.ProcessGroupFlowEntity, error) 
 	return &flowPGEntity, nil
 }
 
+func (n *nifiClient) GetFlowControllerServices(id string)(*nigoapi.ControllerServicesEntity, error) {
+	// Get nigoapi client, favoring the one associated to the coordinator node.
+	client := n.privilegeCoordinatorClient()
+	if client == nil {
+		log.Error(ErrNoNodeClientsAvailable, "Error during creating node client")
+		return nil, ErrNoNodeClientsAvailable
+	}
+
+	// Request on Nifi Rest API to get the process group flow's controller services informations
+	csEntity, rsp, err := client.FlowApi.GetControllerServicesFromGroup(nil, id,
+		&nigoapi.FlowApiGetControllerServicesFromGroupOpts{
+		IncludeAncestorGroups:   optional.NewBool(false),
+		IncludeDescendantGroups: optional.NewBool(true),
+	})
+
+	if err := errorGetOperation(rsp, err); err != nil {
+		return nil, err
+	}
+
+	return &csEntity, nil
+}
 
 func (n *nifiClient) UpdateFlowControllerServices(entity nigoapi.ActivateControllerServicesEntity)(*nigoapi.ActivateControllerServicesEntity, error) {
 

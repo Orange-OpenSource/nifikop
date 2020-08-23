@@ -103,6 +103,7 @@ spec:
             required:
             - bucketId
             - flowId
+            - updateStrategy
             type: object
           status:
             description: NifiDataflowStatus defines the observed state of NifiDataflow
@@ -238,8 +239,6 @@ spec:
                 description: DataflowState defines the state of a NifiDataflow
                 type: string
             required:
-            - latestDropRequest
-            - latestUpdateRequest
             - processGroupID
             - state
             type: object

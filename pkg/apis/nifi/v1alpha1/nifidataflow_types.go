@@ -8,26 +8,28 @@ import (
 // +k8s:openapi-gen=true
 type NifiDataflowSpec struct {
 	// The id of the parent process group where you want to deploy your dataflow, if not set deploy at root level
-	ParentProcessGroupID string                   `json:"parentProcessGroupID,omitempty"`
+	ParentProcessGroupID         string                   `json:"parentProcessGroupID,omitempty"`
 	// The UUID of the Bucket containing the flow.
-	BucketId             string                   `json:"bucketId"`
+	BucketId                     string                   `json:"bucketId"`
 	// The UUID of the flow to run.
-	FlowId               string                   `json:"flowId"`
+	FlowId                       string                   `json:"flowId"`
 	// The version of the flow to run, if not present or equals to -1, then the latest version of flow will be used.
-	FlowVersion          *int                     `json:"flowVersion,omitempty"`
+	FlowVersion                  *int32                   `json:"flowVersion,omitempty"`
 	// Object that will be passed to the NiFi Flow as parameteres.
-	Parameters           []Parameter              `json:"parameters,omitempty"`
+	Parameters                   []Parameter              `json:"parameters,omitempty"`
 	// If the flow will be ran once or continuously checked
-	RunOnce              *bool                    `json:"runOnce,omitempty"`
+	RunOnce                      *bool                    `json:"runOnce,omitempty"`
 	//
-	ClusterRef           ClusterReference         `json:"clusterRef,omitempty"`
+	SkipInvalidControllerService bool                     `json:"skipInvalidControllerService,omitempty"`
 	//
-	RegistryClientRef    *RegistryClientReference `json:"registryClientRef,omitempty"`
+	SkipInvalidComponent         bool                     `json:"skipInvalidComponent,omitempty"`
+	//
+	ClusterRef                   ClusterReference         `json:"clusterRef,omitempty"`
+	//
+	RegistryClientRef            *RegistryClientReference `json:"registryClientRef,omitempty"`
 	//
 	// +kubebuilder:validation:Enum={"drop","drain"}
-	UpdateStrategy		 DataflowUpdateStrategy   `json:"updateStrategy,omitempty"`
-	//
-
+	UpdateStrategy		         DataflowUpdateStrategy   `json:"updateStrategy"`
 }
 
 type Parameter struct {
@@ -104,13 +106,13 @@ type DropRequest struct {
 type NifiDataflowStatus struct {
 	// Queued flow files
 	// Process Group ID
-	ProcessGroupID    string         `json:"processGroupID"`
+	ProcessGroupID      string         `json:"processGroupID"`
 	//
-	State             DataflowState  `json:"state"`
+	State               DataflowState  `json:"state"`
 	//
-	LatestRequest     *UpdateRequest `json:"latestRequest"`
+	LatestUpdateRequest *UpdateRequest `json:"latestUpdateRequest,omitempty"`
 	//
-	LatestDropRequest *DropRequest   `json:"latestDropRequest"`
+	LatestDropRequest   *DropRequest   `json:"latestDropRequest,omitempty"`
 }
 
 // Nifi Dataflow is the Schema for the nifi dataflow API

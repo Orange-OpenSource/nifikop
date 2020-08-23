@@ -39,7 +39,7 @@ func (n *nifiClient) GetRegistryClient(id string)(*nigoapi.RegistryClientEntity,
 	return &nodeEntity, nil
 }
 
-func (n *nifiClient) CreateRegistryClient(registryClient nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error) {
+func (n *nifiClient) CreateRegistryClient(entity nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -48,7 +48,7 @@ func (n *nifiClient) CreateRegistryClient(registryClient nigoapi.RegistryClientE
 	}
 
 	// Request on Nifi Rest API to create the registry client
-	regCliEntity, rsp, err := client.ControllerApi.CreateRegistryClient(nil, registryClient)
+	regCliEntity, rsp, err := client.ControllerApi.CreateRegistryClient(nil, entity)
 	if err := errorCreateOperation(rsp, err); err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (n *nifiClient) CreateRegistryClient(registryClient nigoapi.RegistryClientE
 	return &regCliEntity, nil
 }
 
-func (n *nifiClient) UpdateRegistryClient(registryClient nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error) {
+func (n *nifiClient) UpdateRegistryClient(entity nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -65,7 +65,7 @@ func (n *nifiClient) UpdateRegistryClient(registryClient nigoapi.RegistryClientE
 	}
 
 	// Request on Nifi Rest API to update the registry client
-	regCliEntity, rsp, err := client.ControllerApi.UpdateRegistryClient(nil, registryClient.Id, registryClient)
+	regCliEntity, rsp, err := client.ControllerApi.UpdateRegistryClient(nil, entity.Id, entity)
 	if err := errorUpdateOperation(rsp, err); err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (n *nifiClient) UpdateRegistryClient(registryClient nigoapi.RegistryClientE
 	return &regCliEntity, nil
 }
 
-func (n *nifiClient) RemoveRegistryClient(registryClient nigoapi.RegistryClientEntity) error {
+func (n *nifiClient) RemoveRegistryClient(entity nigoapi.RegistryClientEntity) error {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -82,9 +82,9 @@ func (n *nifiClient) RemoveRegistryClient(registryClient nigoapi.RegistryClientE
 	}
 
 	// Request on Nifi Rest API to remove the registry client
-	_, rsp, err := client.ControllerApi.DeleteRegistryClient(nil, registryClient.Id,
+	_, rsp, err := client.ControllerApi.DeleteRegistryClient(nil, entity.Id,
 		&nigoapi.ControllerApiDeleteRegistryClientOpts{
-			Version: optional.NewString(strconv.FormatInt(*registryClient.Revision.Version, 10)),
+			Version: optional.NewString(strconv.FormatInt(*entity.Revision.Version, 10)),
 	})
 
 	return errorDeleteOperation(rsp, err)

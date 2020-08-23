@@ -185,7 +185,7 @@ func (r *ReconcileNifiRegistryClient) Reconcile(request reconcile.Request) (reco
 
 	reqLogger.Info("Ensured Registry Client")
 
-	return common.Reconciled()
+	return reconcile.Result{}, nil
 }
 
 func (r *ReconcileNifiRegistryClient) ensureClusterLabel(ctx context.Context, cluster *v1alpha1.NifiCluster,
