@@ -118,6 +118,17 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 		return common.RequeueWithError(reqLogger, err.Error(), err)
 	}
 
+	// Ensure finalizer for cleanup on deletion
+	if !util.StringSliceContains(instance.GetFinalizers(), dataflowFinalizer) {
+		reqLogger.Info("Adding Finalizer for NifiDataflow")
+		instance.SetFinalizers(append(instance.GetFinalizers(), dataflowFinalizer))
+	}
+
+	// Push any changes
+	if instance, err = r.updateAndFetchLatest(ctx, instance); err != nil {
+		return common.RequeueWithError(reqLogger, "failed to update NifiDataflow", err)
+	}
+
 	// Get the referenced NifiRegistryClient
 	var registryClient *v1alpha1.NifiRegistryClient
 	var registryClientNamespace string
@@ -142,11 +153,37 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 		}
 	}
 
+	var parameterContext *v1alpha1.NifiParameterContext
+	var parameterContextNamespace string
+	if instance.Spec.ParameterContextRef != nil {
+		parameterContextNamespace =
+			common.GetParameterContextRefNamespace(instance.Namespace, *instance.Spec.ParameterContextRef)
+
+		if parameterContext, err = k8sutil.LookupNifiParameterContext(r.client,
+			instance.Spec.ParameterContextRef.Name, parameterContextNamespace); err != nil {
+
+			// This shouldn't trigger anymore, but leaving it here as a safetybelt
+			if k8sutil.IsMarkedForDeletion(instance.ObjectMeta) {
+				reqLogger.Info("Parameter context is already gone, there is nothing we can do")
+				if err = r.removeFinalizer(ctx, instance); err != nil {
+					return common.RequeueWithError(reqLogger, "failed to remove finalizer", err)
+				}
+				return common.Reconciled()
+			}
+
+			// the cluster does not exist - should have been caught pre-flight
+			return common.RequeueWithError(reqLogger, "failed to lookup referenced parameter-contest", err)
+		}
+	}
+
 	// Check if cluster references are the same
 	clusterNamespace := common.GetClusterRefNamespace(instance.Namespace, instance.Spec.ClusterRef)
 	if registryClient != nil &&
-		(common.GetClusterRefNamespace(registryClientNamespace, registryClient.Spec.ClusterRef) != clusterNamespace ||
-		registryClient.Spec.ClusterRef.Name != instance.Spec.ClusterRef.Name) {
+		( registryClientNamespace != clusterNamespace ||
+			registryClient.Spec.ClusterRef.Name != instance.Spec.ClusterRef.Name ||
+			(parameterContext != nil &&
+				(parameterContextNamespace != clusterNamespace ||
+					parameterContext.Spec.ClusterRef.Name != instance.Spec.ClusterRef.Name))) {
 
 		return common.RequeueWithError(
 			reqLogger,
@@ -205,7 +242,7 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 
 	// In case where the flow is not sync
 	if instance.Status.State == v1alpha1.DataflowStateOutOfSync {
-		status, err := dataflow.SyncDataflow(r.client, instance, cluster, registryClient)
+		status, err := dataflow.SyncDataflow(r.client, instance, cluster, registryClient, parameterContext)
 		if status != nil {
 			instance.Status = *status
 			if err := r.client.Status().Update(ctx, instance); err != nil {
@@ -216,7 +253,9 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 			switch errors.Cause(err).(type) {
 			case errorfactory.NifiConnectionDropping,
 				errorfactory.NifiFlowUpdateRequestRunning,
-				errorfactory.NifiFlowDraining:
+				errorfactory.NifiFlowDraining,
+				errorfactory.NifiFlowControllerServiceScheduling,
+				errorfactory.NifiFlowScheduling, errorfactory.NifiFlowSyncing:
 				return reconcile.Result{
 					RequeueAfter: time.Duration(5) * time.Second,
 				}, nil
@@ -232,16 +271,20 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 	}
 
 	// Check if the flow is out of sync
-	isOutOfSink, err := dataflow.IsOutOfSyncDataflow(r.client, instance, cluster, registryClient)
+	isOutOfSink, err := dataflow.IsOutOfSyncDataflow(r.client, instance, cluster, registryClient, parameterContext)
 	if err != nil {
 		return common.RequeueWithError(reqLogger, "failed to check NifiDataflow sync", err)
 	}
+	//if instance.Status.State == v1alpha1.DataflowStateRan {
+	//
+	//}
 
 	if isOutOfSink {
 		instance.Status.State = v1alpha1.DataflowStateOutOfSync
 		if err := r.client.Status().Update(ctx, instance); err != nil {
 			return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
 		}
+		return common.Requeue()
 	}
 
 	// Schedule the flow
@@ -258,34 +301,21 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 		if err := dataflow.ScheduleDataflow(r.client, instance, cluster); err != nil {
 			switch errors.Cause(err).(type) {
 			case errorfactory.NifiFlowControllerServiceScheduling, errorfactory.NifiFlowScheduling:
-				return reconcile.Result{
-					RequeueAfter: time.Duration(5) * time.Second,
-				}, nil
+				return common.RequeueAfter(time.Duration(5) * time.Second)
 			default:
 				return common.RequeueWithError(reqLogger, "failed to run NifiDataflow", err)
 			}
 		}
 
-
 		instance.Status.State = v1alpha1.DataflowStateRan
 		if err := r.client.Status().Update(ctx, instance); err != nil {
 			return common.RequeueWithError(reqLogger, "failed to update NifiDataflow status", err)
-		}
-
-		if *instance.Spec.RunOnce {
-			return common.Reconciled()
 		}
 	}
 
 	// Ensure NifiCluster label
 	if instance, err = r.ensureClusterLabel(ctx, cluster, instance); err != nil {
 		return common.RequeueWithError(reqLogger, "failed to ensure NifiCluster label on dataflow", err)
-	}
-
-	// Ensure finalizer for cleanup on deletion
-	if !util.StringSliceContains(instance.GetFinalizers(), dataflowFinalizer) {
-		reqLogger.Info("Adding Finalizer for NifiDataflow")
-		instance.SetFinalizers(append(instance.GetFinalizers(), dataflowFinalizer))
 	}
 
 	// Push any changes
@@ -295,7 +325,11 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 
 	reqLogger.Info("Ensured Dataflow")
 
-	return reconcile.Result{}, nil
+	if *instance.Spec.RunOnce {
+		return common.Reconciled()
+	}
+
+	return common.RequeueAfter(time.Duration(5) * time.Second)
 }
 
 func (r *ReconcileNifiDataflow) ensureClusterLabel(ctx context.Context, cluster *v1alpha1.NifiCluster,
@@ -328,7 +362,12 @@ func (r *ReconcileNifiDataflow) checkFinalizers(ctx context.Context, reqLogger l
 	var err error
 	if util.StringSliceContains(flow.GetFinalizers(), dataflowFinalizer) {
 		if err = r.finalizeNifiDataflow(reqLogger, flow, cluster); err != nil {
-			return common.RequeueWithError(reqLogger, "failed to finalize dataflow", err)
+			switch errors.Cause(err).(type) {
+			case errorfactory.NifiConnectionDropping, errorfactory.NifiFlowDraining:
+				return common.RequeueAfter(time.Duration(5) * time.Second)
+			default:
+				return common.RequeueWithError(reqLogger, "failed to finalize NiFiDataflow", err)
+			}
 		}
 		if err = r.removeFinalizer(ctx, flow); err != nil {
 			return common.RequeueWithError(reqLogger, "failed to remove finalizer from dataflow", err)

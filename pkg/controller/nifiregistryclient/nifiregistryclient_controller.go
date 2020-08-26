@@ -17,6 +17,7 @@ package nifiregistryclient
 import (
 	"context"
 	"reflect"
+	"time"
 
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/registryclient"
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
@@ -185,7 +186,7 @@ func (r *ReconcileNifiRegistryClient) Reconcile(request reconcile.Request) (reco
 
 	reqLogger.Info("Ensured Registry Client")
 
-	return reconcile.Result{}, nil
+	return common.RequeueAfter(time.Duration(15) * time.Second)
 }
 
 func (r *ReconcileNifiRegistryClient) ensureClusterLabel(ctx context.Context, cluster *v1alpha1.NifiCluster,

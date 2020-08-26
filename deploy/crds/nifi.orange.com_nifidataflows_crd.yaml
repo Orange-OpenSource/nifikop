@@ -53,24 +53,16 @@ spec:
                   to -1, then the latest version of flow will be used.
                 format: int32
                 type: integer
-              parameters:
+              parameterContextRef:
                 description: Object that will be passed to the NiFi Flow as parameteres.
-                items:
-                  properties:
-                    description:
-                      type: string
-                    name:
-                      type: string
-                    secretName:
-                      type: string
-                    sensitive:
-                      type: boolean
-                    value:
-                      type: string
-                  required:
-                  - name
-                  type: object
-                type: array
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                required:
+                - name
+                type: object
               parentProcessGroupID:
                 description: The id of the parent process group where you want to
                   deploy your dataflow, if not set deploy at root level

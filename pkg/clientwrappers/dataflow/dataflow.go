@@ -97,24 +97,17 @@ func ScheduleDataflow(client client.Client, flow *v1alpha1.NifiDataflow, cluster
 	}
 
 	// Check all components are ok
-	flowEntity, err := nClient.GetFlow(flow.Spec.ParentProcessGroupID)
-	if err := clientwrappers.ErrorGetOperation(log, err, "Get flow"); err != nil {
+	processGroups, _, _, _, err := listComponents(client, cluster, flow.Status.ProcessGroupID)
+	pGEntity, err := nClient.GetProcessGroup(flow.Status.ProcessGroupID)
+	if err := clientwrappers.ErrorGetOperation(log, err, "Get process group"); err != nil {
 		return err
 	}
+	processGroups = append(processGroups, *pGEntity)
 
-	var pgEntity *nigoapi.ProcessGroupEntity
-	for _, entity:= range flowEntity.ProcessGroupFlow.Flow.ProcessGroups {
-		if entity.Id == flow.Status.ProcessGroupID {
-			pgEntity = &entity
-			break
+	for _, pgEntity := range processGroups {
+		if pgEntity.StoppedCount > 0 || (!flow.Spec.SkipInvalidComponent && pgEntity.InvalidCount > 0) {
+			return errorfactory.NifiFlowScheduling{}
 		}
-	}
-	if pgEntity == nil {
-		return errorfactory.NifiFlowScheduling{}
-	}
-
-	if pgEntity.StoppedCount > 0 && !(flow.Spec.SkipInvalidComponent && pgEntity.InvalidCount > 0) {
-		return errorfactory.NifiFlowScheduling{}
 	}
 
 	return nil
@@ -124,7 +117,8 @@ func IsOutOfSyncDataflow(
 		client client.Client,
 		flow *v1alpha1.NifiDataflow,
 		cluster *v1alpha1.NifiCluster,
-		registry *v1alpha1.NifiRegistryClient) (bool, error) {
+		registry *v1alpha1.NifiRegistryClient,
+		parameterContext *v1alpha1.NifiParameterContext) (bool, error) {
 
 	nClient, err := common.NewNodeConnection(log, client, cluster)
 	if err != nil {
@@ -136,8 +130,34 @@ func IsOutOfSyncDataflow(
 		return false, err
 	}
 
-	return isVersioningChanged(flow, registry, pGEntity) || !isVersionSync(flow, pGEntity) || localChanged(pGEntity) ||
+	processGroups, _, _, _, err := listComponents(client, cluster, flow.Status.ProcessGroupID)
+	if err != nil {
+		return false, err
+	}
+	processGroups = append(processGroups, *pGEntity)
+
+	return isParameterContextChanged(parameterContext, processGroups) || isVersioningChanged(flow, registry, pGEntity) || !isVersionSync(flow, pGEntity) || localChanged(pGEntity) ||
 		isParentProcessGroupChanged(flow, pGEntity) || isNameChanged(flow, pGEntity), nil
+}
+
+func isParameterContextChanged(
+		parameterContext *v1alpha1.NifiParameterContext,
+		processGroups []nigoapi.ProcessGroupEntity) bool {
+
+	for _, processGroup := range processGroups {
+		pgParameterContext := processGroup.ParameterContext
+
+		if pgParameterContext == nil && parameterContext == nil {
+			continue
+		}
+
+		if (pgParameterContext == nil && parameterContext != nil) ||
+			(pgParameterContext != nil && parameterContext == nil) ||
+			processGroup.ParameterContext.Id != parameterContext.Status.Id {
+			return true
+		}
+	}
+	return false
 }
 
 func isParentProcessGroupChanged(flow *v1alpha1.NifiDataflow, pgFlowEntity *nigoapi.ProcessGroupEntity) bool {
@@ -171,7 +191,8 @@ func SyncDataflow(
 		client client.Client,
 		flow *v1alpha1.NifiDataflow,
 		cluster *v1alpha1.NifiCluster,
-		registry *v1alpha1.NifiRegistryClient) (*v1alpha1.NifiDataflowStatus, error) {
+		registry *v1alpha1.NifiRegistryClient,
+		parameterContext *v1alpha1.NifiParameterContext) (*v1alpha1.NifiDataflowStatus, error) {
 
 	nClient, err := common.NewNodeConnection(log, client, cluster)
 	if err != nil {
@@ -183,6 +204,39 @@ func SyncDataflow(
 		return nil, err
 	}
 
+	processGroups, _, _, _, err := listComponents(client, cluster, flow.Status.ProcessGroupID)
+	if err != nil {
+		return nil, err
+	}
+
+	processGroups = append(processGroups, *pGEntity)
+	if isParameterContextChanged(parameterContext, processGroups) {
+		// unschedule processors
+		_, err := nClient.UpdateFlowProcessGroup(nigoapi.ScheduleComponentsEntity{
+			Id:    flow.Status.ProcessGroupID,
+			State: "STOPPED",
+		})
+		if err := clientwrappers.ErrorUpdateOperation(log, err, "Stop flow"); err != nil {
+			return nil, err
+		}
+
+		for _, pg := range processGroups {
+			if parameterContext == nil {
+				pg.Component.ParameterContext = &nigoapi.ParameterContextReferenceEntity{
+				}
+			}  else {
+				pg.Component.ParameterContext = &nigoapi.ParameterContextReferenceEntity{
+					Id: parameterContext.Status.Id,
+				}
+			}
+			_, err := nClient.UpdateProcessGroup(pg)
+			if err := clientwrappers.ErrorUpdateOperation(log, err, "Set parameter-context"); err != nil {
+				return nil, err
+			}
+		}
+		return &flow.Status, errorfactory.NifiFlowSyncing{}
+	}
+
 	if isVersioningChanged(flow, registry, pGEntity) {
 		return RemoveDataflow(client, flow, cluster)
 	}
@@ -190,11 +244,11 @@ func SyncDataflow(
 	if isNameChanged(flow, pGEntity)  {
 		pGEntity.Component.ParentGroupId = flow.Spec.ParentProcessGroupID
 		pGEntity.Component.Name = flow.Name
-		 _, err :=nClient.UpdateProcessGroup(*pGEntity)
+		 _, err := nClient.UpdateProcessGroup(*pGEntity)
 		if err := clientwrappers.ErrorUpdateOperation(log, err, "Stop flow"); err != nil {
 			return nil, err
 		}
-		return &flow.Status, nil
+		return &flow.Status, errorfactory.NifiFlowSyncing{}
 	}
 
 	if isParentProcessGroupChanged(flow, pGEntity) {
@@ -218,7 +272,7 @@ func SyncDataflow(
 		if err := clientwrappers.ErrorUpdateOperation(log, err, "Update snippet"); err != nil {
 			return nil, err
 		}
-		return &flow.Status, nil
+		return &flow.Status, errorfactory.NifiFlowSyncing{}
 	}
 
 	latestUpdateRequest := flow.Status.LatestUpdateRequest
@@ -233,18 +287,17 @@ func SyncDataflow(
 			t = v1alpha1.ReverseRequestType
 			updateRequest, err = nClient.GetVersionReverseRequest(latestUpdateRequest.Id)
 		}
-
-		if err := clientwrappers.ErrorGetOperation(log, err, "Get version-request");
-			err != nificlient.ErrNifiClusterReturned404 {
-			if err != nil {
-				return nil, err
-			}
-
+		if updateRequest != nil {
 			flow.Status.LatestUpdateRequest =
 				updateRequest2Status(updateRequest, t)
-			if !flow.Status.LatestUpdateRequest.Complete {
-				return &flow.Status, errorfactory.NifiFlowUpdateRequestRunning{}
+		}
+
+		if err := clientwrappers.ErrorGetOperation(log, err, "Get version-request");
+			err != nificlient.ErrNifiClusterReturned404 || !updateRequest.Request.Complete {
+			if err != nil {
+				return &flow.Status, err
 			}
+			return &flow.Status, errorfactory.NifiFlowUpdateRequestRunning{}
 		}
 	}
 
@@ -349,11 +402,11 @@ func prepareUpdatePG(
 		}
 
 		// Drop all events in connections
-		_, childC, _, err := listComponents(client, cluster, flow.Status.ProcessGroupID)
+		_, _, connections, _, err := listComponents(client, cluster, flow.Status.ProcessGroupID)
 		if err := clientwrappers.ErrorGetOperation(log, err, "Get recursively flow components"); err != nil {
 			return nil, err
 		}
-		for _, connection := range childC {
+		for _, connection := range connections {
 			if connection.Status.AggregateSnapshot.FlowFilesQueued != 0 {
 				dropRequest, err := nClient.CreateDropRequest(connection.Id)
 				if err := clientwrappers.ErrorCreateOperation(log, err, "Create drop-request"); err != nil {
@@ -381,7 +434,7 @@ func prepareUpdatePG(
 
 		// If flow is not fully drained
 		if pgEntity.Status.AggregateSnapshot.FlowFilesQueued != 0 {
-			processors, connections, inputPorts, err := listComponents(client, cluster, flow.Status.ProcessGroupID)
+			_, processors, connections, inputPorts, err := listComponents(client, cluster, flow.Status.ProcessGroupID)
 			if err := clientwrappers.ErrorGetOperation(log, err, "Get recursively flow components"); err != nil {
 				return nil, err
 			}
@@ -463,12 +516,21 @@ func UnscheduleDataflow(client client.Client, flow *v1alpha1.NifiDataflow, clust
 		return err
 	}
 
+	// UnSchedule flow
+	_, err = nClient.UpdateFlowProcessGroup(nigoapi.ScheduleComponentsEntity{
+		Id:    flow.Status.ProcessGroupID,
+		State: "STOPPED",
+	})
+	if err := clientwrappers.ErrorUpdateOperation(log, err, "Unschedule flow"); err != nil {
+		return err
+	}
+
 	// Schedule controller services
 	_, err = nClient.UpdateFlowControllerServices(nigoapi.ActivateControllerServicesEntity{
 		Id:    flow.Status.ProcessGroupID,
 		State: "DISABLED",
 	})
-	if err := clientwrappers.ErrorUpdateOperation(log, err, "Schedule flow's controller services"); err != nil {
+	if err := clientwrappers.ErrorUpdateOperation(log, err, "Unschedule flow's controller services"); err != nil {
 		return err
 	}
 
@@ -482,15 +544,6 @@ func UnscheduleDataflow(client client.Client, flow *v1alpha1.NifiDataflow, clust
 			!(flow.Spec.SkipInvalidControllerService && csEntity.Status.ValidationStatus == "INVALID") {
 			return errorfactory.NifiFlowControllerServiceScheduling{}
 		}
-	}
-
-	// Schedule flow
-	_, err = nClient.UpdateFlowProcessGroup(nigoapi.ScheduleComponentsEntity{
-		Id:    flow.Status.ProcessGroupID,
-		State: "STOPPED",
-	})
-	if err := clientwrappers.ErrorUpdateOperation(log, err, "Schedule flow"); err != nil {
-		return err
 	}
 
 	// Check all components are ok
@@ -523,35 +576,38 @@ func processGroupFromFlow(flowEntity *nigoapi.ProcessGroupFlowEntity, flow *v1al
 	return nil
 }
 
-func listComponents(client client.Client, cluster *v1alpha1.NifiCluster, processGroupID string) ([]nigoapi.ProcessorEntity, []nigoapi.ConnectionEntity, []nigoapi.PortEntity, error) {
+func listComponents(client client.Client, cluster *v1alpha1.NifiCluster, processGroupID string) ([]nigoapi.ProcessGroupEntity, []nigoapi.ProcessorEntity, []nigoapi.ConnectionEntity, []nigoapi.PortEntity, error) {
 
-	var processors  []nigoapi.ProcessorEntity
-	var connections []nigoapi.ConnectionEntity
-	var inputPorts  []nigoapi.PortEntity
+	var processGroups []nigoapi.ProcessGroupEntity
+	var processors    []nigoapi.ProcessorEntity
+	var connections   []nigoapi.ConnectionEntity
+	var inputPorts     []nigoapi.PortEntity
 
 	nClient, err := common.NewNodeConnection(log, client, cluster)
 	if err != nil {
-		return processors, connections, inputPorts, err
+		return processGroups, processors, connections, inputPorts, err
 	}
 
 	flowEntity, err := nClient.GetFlow(processGroupID)
 	flow := flowEntity.ProcessGroupFlow.Flow
 
-	processors  = flow.Processors
-	connections = flow.Connections
-	inputPorts  = flow.InputPorts
+	processGroups = flow.ProcessGroups
+	processors    = flow.Processors
+	connections   = flow.Connections
+	inputPorts    = flow.InputPorts
 
 	for _, pg:= range flow.ProcessGroups {
-		childP, childC, childI, err := listComponents(client, cluster, pg.Id)
+		childPG, childP, childC, childI, err := listComponents(client, cluster, pg.Id)
 		if err != nil {
-			return processors, connections, inputPorts, err
+			return processGroups, processors, connections, inputPorts, err
 		}
-		processors  = append(processors, childP...)
-		connections = append(connections, childC...)
-		inputPorts  = append(inputPorts, childI...)
+		processGroups = append(processGroups, childPG...)
+		processors    = append(processors, childP...)
+		connections   = append(connections, childC...)
+		inputPorts    = append(inputPorts, childI...)
 	}
 
-	return processors, connections, inputPorts, nil
+	return processGroups, processors, connections, inputPorts, nil
 }
 
 func dropRequest2Status(connectionId string, dropRequest *nigoapi.DropRequestEntity) *v1alpha1.DropRequest {

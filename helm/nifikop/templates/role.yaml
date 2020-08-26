@@ -81,6 +81,7 @@ rules:
   - "nificlusters"
   - "nifidataflows"
   - "nifiregistryclients"
+  - "nifiparametercontexts"
   verbs:
   - create
   - delete
@@ -113,6 +114,7 @@ rules:
   - nificlusters/status
   - nifidataflows/status
   - nifiregistryclients/status
+  - nifiparametercontexts/status
   verbs:
   - get
   - update

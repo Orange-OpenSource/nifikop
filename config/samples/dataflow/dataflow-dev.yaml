@@ -1,14 +1,13 @@
 apiVersion: nifi.orange.com/v1alpha1
 kind: NifiDataflow
 metadata:
-  name: dataflow-lifecycle
+  name: dataflow-lifecycle-dev
 spec:
   parentProcessGroupID: "16cfd2ec-0174-1000-0000-00004b9b35cc"
   bucketId: "01ced6cc-0378-4893-9403-f6c70d080d4f"
-  flowId: "9b2fb465-fb45-49e7-94fe-45b16b642ac9"
-#  flowId: "90914758-456a-47f9-93f4-ef8749d98178"
-  flowVersion: 2
-  runOnce: false
+  flowId: "8fefc874-0c93-4ce5-ba53-1672f0b59aaa"
+  flowVersion: 4
+  runOnce: true
   skipInvalidControllerService: true
   skipInvalidComponent: true
   clusterRef:
@@ -18,6 +17,6 @@ spec:
     name: squidflow
     namespace: nifikop
   parameterContextRef:
-    name: dataflow-lifecycle
+    name: dataflow-lifecycle-dev
     namespace: nifikop
-  updateStrategy: drain
+  updateStrategy: drop

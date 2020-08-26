@@ -82,9 +82,15 @@ type NifiClient interface {
 	// Input port func
 	UpdateInputPortRunStatus(id string, entity nigoapi.PortRunStatusEntity) (*nigoapi.ProcessorEntity, error)
 
+	// Parameter context func
+	GetParameterContext(id string)(*nigoapi.ParameterContextEntity, error)
+	CreateParameterContext(entity nigoapi.ParameterContextEntity)(*nigoapi.ParameterContextEntity, error)
+	RemoveParameterContext(entity nigoapi.ParameterContextEntity) error
+	CreateParameterContextUpdateRequest(contextId string, entity nigoapi.ParameterContextEntity)(*nigoapi.ParameterContextUpdateRequestEntity, error)
+	GetParameterContextUpdateRequest(contextId, id string)(*nigoapi.ParameterContextUpdateRequestEntity, error)
+
 	Build() error
 }
-
 
 type nifiClient struct {
 	NifiClient

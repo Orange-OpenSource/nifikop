@@ -30,13 +30,13 @@ func (n *nifiClient) GetRegistryClient(id string)(*nigoapi.RegistryClientEntity,
 	}
 
 	// Request on Nifi Rest API to get the registy client informations
-	nodeEntity, rsp, err := client.ControllerApi.GetRegistryClient(nil, id)
+	regCliEntity, rsp, err := client.ControllerApi.GetRegistryClient(nil, id)
 
 	if err := errorGetOperation(rsp, err); err != nil {
 		return nil, err
 	}
 
-	return &nodeEntity, nil
+	return &regCliEntity, nil
 }
 
 func (n *nifiClient) CreateRegistryClient(entity nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error) {

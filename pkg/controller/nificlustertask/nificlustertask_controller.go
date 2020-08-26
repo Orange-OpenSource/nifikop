@@ -76,9 +76,9 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 							return true
 						}
 					}
-					if reflect.DeepEqual(old.Status.NodesState, new.Status.NodesState) {
-						return true
-					}
+					//if reflect.DeepEqual(old.Status.NodesState, new.Status.NodesState) {
+					//	return true
+					//}
 					if !reflect.DeepEqual(old.Status.NodesState, new.Status.NodesState) ||
 						old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
 						old.GetGeneration() != new.GetGeneration() {

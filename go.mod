@@ -6,7 +6,7 @@ require (
 	emperror.dev/errors v0.4.2
 	github.com/antihax/optional v1.0.0
 	github.com/banzaicloud/k8s-objectmatcher v1.3.3
-	github.com/erdrix/nigoapi v0.0.0-20200820133648-228091b82b5a
+	github.com/erdrix/nigoapi v0.0.0-20200824133217-ce90b74151a2
 	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/spec v0.19.4
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect

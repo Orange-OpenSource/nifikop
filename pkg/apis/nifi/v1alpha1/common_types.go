@@ -91,6 +91,23 @@ type RegistryClientReference struct {
 	Namespace string `json:"namespace,omitempty"`
 }
 
+// ParameterContextReference states a reference to a parameter context for dataflow
+// provisioning
+type ParameterContextReference struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace,omitempty"`
+}
+
+
+// SecretReference states a reference to a secret for parameter context
+// provisioning
+type SecretReference struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace,omitempty"`
+}
+
+
+
 const (
 	// PKIBackendCertManager invokes cert-manager for user certificate management
 	PKIBackendCertManager PKIBackend = "cert-manager"

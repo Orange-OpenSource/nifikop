@@ -8,41 +8,28 @@ import (
 // +k8s:openapi-gen=true
 type NifiDataflowSpec struct {
 	// The id of the parent process group where you want to deploy your dataflow, if not set deploy at root level
-	ParentProcessGroupID         string                   `json:"parentProcessGroupID,omitempty"`
+	ParentProcessGroupID         string                     `json:"parentProcessGroupID,omitempty"`
 	// The UUID of the Bucket containing the flow.
-	BucketId                     string                   `json:"bucketId"`
+	BucketId                     string                     `json:"bucketId"`
 	// The UUID of the flow to run.
-	FlowId                       string                   `json:"flowId"`
+	FlowId                       string                     `json:"flowId"`
 	// The version of the flow to run, if not present or equals to -1, then the latest version of flow will be used.
-	FlowVersion                  *int32                   `json:"flowVersion,omitempty"`
+	FlowVersion                  *int32                     `json:"flowVersion,omitempty"`
 	// Object that will be passed to the NiFi Flow as parameteres.
-	Parameters                   []Parameter              `json:"parameters,omitempty"`
+	ParameterContextRef          *ParameterContextReference `json:"parameterContextRef,omitempty"`
 	// If the flow will be ran once or continuously checked
-	RunOnce                      *bool                    `json:"runOnce,omitempty"`
+	RunOnce                      *bool                      `json:"runOnce,omitempty"`
 	//
-	SkipInvalidControllerService bool                     `json:"skipInvalidControllerService,omitempty"`
+	SkipInvalidControllerService bool                       `json:"skipInvalidControllerService,omitempty"`
 	//
-	SkipInvalidComponent         bool                     `json:"skipInvalidComponent,omitempty"`
+	SkipInvalidComponent         bool                       `json:"skipInvalidComponent,omitempty"`
 	//
-	ClusterRef                   ClusterReference         `json:"clusterRef,omitempty"`
+	ClusterRef                   ClusterReference           `json:"clusterRef,omitempty"`
 	//
-	RegistryClientRef            *RegistryClientReference `json:"registryClientRef,omitempty"`
+	RegistryClientRef            *RegistryClientReference   `json:"registryClientRef,omitempty"`
 	//
 	// +kubebuilder:validation:Enum={"drop","drain"}
-	UpdateStrategy		         DataflowUpdateStrategy   `json:"updateStrategy"`
-}
-
-type Parameter struct {
-	//
-	Name        string `json:"name"`
-	//
-	Value       string `json:"value,omitempty"`
-	//
-	Sensitive   bool   `json:"sensitive,omitempty"`
-	//
-	Description string `json:"description,omitempty"`
-	//
-	SecretName  string `json:"secretName,omitempty"`
+	UpdateStrategy		         DataflowUpdateStrategy     `json:"updateStrategy"`
 }
 
 type UpdateRequest struct {

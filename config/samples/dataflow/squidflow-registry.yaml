@@ -6,5 +6,5 @@ spec:
   clusterRef:
     name: nc
     namespace: nifikop
-  description: "Squidflow demo"
-  uri: "http://nifi-registry:18080"
+  description: "Squidflow demo test"
+  uri: "http://nifi-registry-service:18080"

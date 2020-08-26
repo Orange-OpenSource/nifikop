@@ -71,6 +71,7 @@ func SyncRegistryClient(client client.Client, registryClient *v1alpha1.NifiRegis
 
 	if !registryClientIsSync(registryClient, entity) {
 		updateRegistryClientEntity(registryClient, entity)
+		entity, err = nClient.UpdateRegistryClient(*entity)
 		if err := clientwrappers.ErrorUpdateOperation(log, err, "Update registry-client"); err != nil {
 			return nil, err
 		}
