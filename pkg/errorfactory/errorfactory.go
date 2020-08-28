@@ -59,10 +59,10 @@ type NifiClusterNotReady struct{ error }
 type NifiClusterTaskRunning struct{ error }
 
 // NifiClusterTaskTimeout states that NC task timed out
-type  NifiClusterTaskTimeout struct{ error }
+type NifiClusterTaskTimeout struct{ error }
 
 // NifiClusterTaskFailure states that NC task was not found (CC restart?) or failed
-type  NifiClusterTaskFailure struct{ error }
+type NifiClusterTaskFailure struct{ error }
 
 // NifiConnectionDropping states that flowfile drop is still running
 type NifiConnectionDropping struct{ error }

@@ -21,7 +21,7 @@ import (
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 )
 
-func (n *nifiClient) GetRegistryClient(id string)(*nigoapi.RegistryClientEntity, error) {
+func (n *nifiClient) GetRegistryClient(id string) (*nigoapi.RegistryClientEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -39,7 +39,7 @@ func (n *nifiClient) GetRegistryClient(id string)(*nigoapi.RegistryClientEntity,
 	return &regCliEntity, nil
 }
 
-func (n *nifiClient) CreateRegistryClient(entity nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error) {
+func (n *nifiClient) CreateRegistryClient(entity nigoapi.RegistryClientEntity) (*nigoapi.RegistryClientEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -56,7 +56,7 @@ func (n *nifiClient) CreateRegistryClient(entity nigoapi.RegistryClientEntity)(*
 	return &regCliEntity, nil
 }
 
-func (n *nifiClient) UpdateRegistryClient(entity nigoapi.RegistryClientEntity)(*nigoapi.RegistryClientEntity, error) {
+func (n *nifiClient) UpdateRegistryClient(entity nigoapi.RegistryClientEntity) (*nigoapi.RegistryClientEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -85,7 +85,7 @@ func (n *nifiClient) RemoveRegistryClient(entity nigoapi.RegistryClientEntity) e
 	_, rsp, err := client.ControllerApi.DeleteRegistryClient(nil, entity.Id,
 		&nigoapi.ControllerApiDeleteRegistryClientOpts{
 			Version: optional.NewString(strconv.FormatInt(*entity.Revision.Version, 10)),
-	})
+		})
 
 	return errorDeleteOperation(rsp, err)
 }

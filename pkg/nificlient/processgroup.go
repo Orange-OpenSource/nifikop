@@ -25,8 +25,8 @@ func (n *nifiClient) GetProcessGroup(id string) (*nigoapi.ProcessGroupEntity, er
 }
 
 func (n *nifiClient) CreateProcessGroup(
-		entity nigoapi.ProcessGroupEntity,
-		pgParentId string) (*nigoapi.ProcessGroupEntity, error) {
+	entity nigoapi.ProcessGroupEntity,
+	pgParentId string) (*nigoapi.ProcessGroupEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {

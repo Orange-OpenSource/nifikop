@@ -27,11 +27,11 @@ import (
 )
 
 func TestDescribeCluster(t *testing.T) {
- 	assert := assert.New(t)
+	assert := assert.New(t)
 
- 	clusterEntity, err := testDescribeCluster(t, 200)
- 	assert.Nil(err)
- 	assert.NotNil(clusterEntity)
+	clusterEntity, err := testDescribeCluster(t, 200)
+	assert.Nil(err)
+	assert.NotNil(clusterEntity)
 
 	clusterEntity, err = testDescribeCluster(t, 404)
 	assert.IsType(ErrNifiClusterReturned404, err)
@@ -42,7 +42,7 @@ func TestDescribeCluster(t *testing.T) {
 	assert.Nil(clusterEntity)
 }
 
-func testDescribeCluster(t *testing.T, status int)  (*nigoapi.ClusterEntity, error){
+func testDescribeCluster(t *testing.T, status int) (*nigoapi.ClusterEntity, error) {
 
 	cluster := testClusterMock(t)
 
@@ -77,16 +77,16 @@ func TestGetClusterNode(t *testing.T) {
 		assert.NotNil(nodeEntity)
 	}
 
-	nodeEntity, err := testGetClusterNode(t, cluster,10, 200)
+	nodeEntity, err := testGetClusterNode(t, cluster, 10, 200)
 	assert.IsType(ErrNifiClusterNodeNotFound, err)
 	assert.Nil(nodeEntity)
 
-	nodeEntity, err = testGetClusterNode(t, cluster,0, 500)
+	nodeEntity, err = testGetClusterNode(t, cluster, 0, 500)
 	assert.IsType(ErrNifiClusterNotReturned200, err)
 	assert.Nil(nodeEntity)
 }
 
-func testGetClusterNode(t *testing.T, cluster *v1alpha1.NifiCluster, nodeId int32, status int) (*nigoapi.NodeEntity, error){
+func testGetClusterNode(t *testing.T, cluster *v1alpha1.NifiCluster, nodeId int32, status int) (*nigoapi.NodeEntity, error) {
 
 	client, err := testClientFromCluster(cluster)
 	if err != nil {
@@ -118,20 +118,20 @@ func TestDisconnectClusterNode(t *testing.T) {
 		assert.NotNil(nodeEntity)
 	}
 
-	nodeEntity, err := testDisconnectClusterNode(t, cluster,10, 200)
+	nodeEntity, err := testDisconnectClusterNode(t, cluster, 10, 200)
 	assert.IsType(ErrNifiClusterNodeNotFound, err)
 	assert.Nil(nodeEntity)
 
-	nodeEntity, err = testDisconnectClusterNode(t, cluster,1, 500)
+	nodeEntity, err = testDisconnectClusterNode(t, cluster, 1, 500)
 	assert.Nil(err)
 	assert.NotNil(nodeEntity)
 
-	nodeEntity, err = testDisconnectClusterNode(t, cluster,0, 500)
+	nodeEntity, err = testDisconnectClusterNode(t, cluster, 0, 500)
 	assert.IsType(ErrNifiClusterNotReturned200, err)
 	assert.Nil(nodeEntity)
 }
 
-func testDisconnectClusterNode(t *testing.T, cluster *v1alpha1.NifiCluster, nodeId int32, status int) (*nigoapi.NodeEntity, error){
+func testDisconnectClusterNode(t *testing.T, cluster *v1alpha1.NifiCluster, nodeId int32, status int) (*nigoapi.NodeEntity, error) {
 	client, err := testClientFromCluster(cluster)
 	if err != nil {
 		return nil, err
@@ -162,20 +162,20 @@ func TestConnectClusterNode(t *testing.T) {
 		assert.NotNil(nodeEntity)
 	}
 
-	nodeEntity, err := testConnectClusterNode(t, cluster,10, 200)
+	nodeEntity, err := testConnectClusterNode(t, cluster, 10, 200)
 	assert.IsType(ErrNifiClusterNodeNotFound, err)
 	assert.Nil(nodeEntity)
 
-	nodeEntity, err = testConnectClusterNode(t, cluster,0, 500)
+	nodeEntity, err = testConnectClusterNode(t, cluster, 0, 500)
 	assert.Nil(err)
 	assert.NotNil(nodeEntity)
 
-	nodeEntity, err = testConnectClusterNode(t, cluster,1, 500)
+	nodeEntity, err = testConnectClusterNode(t, cluster, 1, 500)
 	assert.IsType(ErrNifiClusterNotReturned200, err)
 	assert.Nil(nodeEntity)
 }
 
-func testConnectClusterNode(t *testing.T, cluster *v1alpha1.NifiCluster, nodeId int32, status int) (*nigoapi.NodeEntity, error){
+func testConnectClusterNode(t *testing.T, cluster *v1alpha1.NifiCluster, nodeId int32, status int) (*nigoapi.NodeEntity, error) {
 	client, err := testClientFromCluster(cluster)
 	if err != nil {
 		return nil, err
@@ -206,20 +206,20 @@ func TestOffloadClusterNode(t *testing.T) {
 		assert.NotNil(nodeEntity)
 	}
 
-	nodeEntity, err := testOffloadClusterNode(t, cluster,10, 200)
+	nodeEntity, err := testOffloadClusterNode(t, cluster, 10, 200)
 	assert.IsType(ErrNifiClusterNodeNotFound, err)
 	assert.Nil(nodeEntity)
 
-	nodeEntity, err = testOffloadClusterNode(t, cluster,2, 500)
+	nodeEntity, err = testOffloadClusterNode(t, cluster, 2, 500)
 	assert.Nil(err)
 	assert.NotNil(nodeEntity)
 
-	nodeEntity, err = testOffloadClusterNode(t, cluster,1, 500)
+	nodeEntity, err = testOffloadClusterNode(t, cluster, 1, 500)
 	assert.IsType(ErrNifiClusterNotReturned200, err)
 	assert.Nil(nodeEntity)
 }
 
-func testOffloadClusterNode(t *testing.T, cluster *v1alpha1.NifiCluster, nodeId int32, status int) (*nigoapi.NodeEntity, error){
+func testOffloadClusterNode(t *testing.T, cluster *v1alpha1.NifiCluster, nodeId int32, status int) (*nigoapi.NodeEntity, error) {
 	client, err := testClientFromCluster(cluster)
 	if err != nil {
 		return nil, err
@@ -249,17 +249,17 @@ func TestRemoveClusterNode(t *testing.T) {
 		assert.Nil(err)
 	}
 
-	err := testRemoveClusterNode(t, cluster,10, 404)
+	err := testRemoveClusterNode(t, cluster, 10, 404)
 	assert.IsType(ErrNifiClusterNodeNotFound, err)
 
-	err = testRemoveClusterNode(t, cluster,1, 404)
+	err = testRemoveClusterNode(t, cluster, 1, 404)
 	assert.Nil(err)
 
-	err = testRemoveClusterNode(t, cluster,1, 500)
+	err = testRemoveClusterNode(t, cluster, 1, 500)
 	assert.IsType(ErrNifiClusterNotReturned200, err)
 }
 
-func testRemoveClusterNode(t *testing.T, cluster *v1alpha1.NifiCluster, nodeId int32, status int) error{
+func testRemoveClusterNode(t *testing.T, cluster *v1alpha1.NifiCluster, nodeId int32, status int) error {
 	client, err := testClientFromCluster(cluster)
 	if err != nil {
 		return err
@@ -289,17 +289,17 @@ func TestRemoveClusterNodeFromClusterNodeId(t *testing.T) {
 		assert.Nil(err)
 	}
 
-	err := testRemoveClusterNodeFromClusterNodeId(t, cluster,10, 404)
+	err := testRemoveClusterNodeFromClusterNodeId(t, cluster, 10, 404)
 	assert.Nil(err)
 
-	err = testRemoveClusterNodeFromClusterNodeId(t, cluster,1, 404)
+	err = testRemoveClusterNodeFromClusterNodeId(t, cluster, 1, 404)
 	assert.Nil(err)
 
-	err = testRemoveClusterNodeFromClusterNodeId(t, cluster,1, 500)
+	err = testRemoveClusterNodeFromClusterNodeId(t, cluster, 1, 500)
 	assert.IsType(ErrNifiClusterNotReturned200, err)
 }
 
-func testRemoveClusterNodeFromClusterNodeId(t *testing.T, cluster *v1alpha1.NifiCluster, nodeId int32, status int) error{
+func testRemoveClusterNodeFromClusterNodeId(t *testing.T, cluster *v1alpha1.NifiCluster, nodeId int32, status int) error {
 	client, err := testClientFromCluster(cluster)
 	if err != nil {
 		return err

@@ -36,7 +36,7 @@ func ExistRegistryClient(client client.Client, registryClient *v1alpha1.NifiRegi
 }
 
 func CreateRegistryClient(client client.Client, registryClient *v1alpha1.NifiRegistryClient,
-		cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiRegistryClientStatus, error) {
+	cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiRegistryClientStatus, error) {
 	nClient, err := common.NewNodeConnection(log, client, cluster)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func CreateRegistryClient(client client.Client, registryClient *v1alpha1.NifiReg
 }
 
 func SyncRegistryClient(client client.Client, registryClient *v1alpha1.NifiRegistryClient,
-		cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiRegistryClientStatus, error) {
+	cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiRegistryClientStatus, error) {
 
 	nClient, err := common.NewNodeConnection(log, client, cluster)
 	if err != nil {
@@ -111,7 +111,7 @@ func registryClientIsSync(registryClient *v1alpha1.NifiRegistryClient, entity *n
 		registryClient.Spec.Uri == entity.Component.Uri
 }
 
-func updateRegistryClientEntity(registryClient *v1alpha1.NifiRegistryClient, entity *nigoapi.RegistryClientEntity){
+func updateRegistryClientEntity(registryClient *v1alpha1.NifiRegistryClient, entity *nigoapi.RegistryClientEntity) {
 
 	var defaultVersion int64 = 0
 
@@ -130,7 +130,7 @@ func updateRegistryClientEntity(registryClient *v1alpha1.NifiRegistryClient, ent
 		}
 	}
 
-	entity.Component.Name        = registryClient.Name
+	entity.Component.Name = registryClient.Name
 	entity.Component.Description = registryClient.Spec.Description
-	entity.Component.Uri         = registryClient.Spec.Uri
+	entity.Component.Uri = registryClient.Spec.Uri
 }

@@ -8,20 +8,20 @@ import (
 // +k8s:openapi-gen=true
 type NifiParameterContextSpec struct {
 	// The Description of the Parameter Context.
-	Description string            `json:"description,omitempty"`
+	Description string `json:"description,omitempty"`
 	// The Parameters for the Parameter Context
-	Parameters  []Parameter       `json:"parameters"`
+	Parameters []Parameter `json:"parameters"`
 	// contains the reference to the NifiCluster with the one the user is linked
-	ClusterRef  ClusterReference  `json:"clusterRef"`
+	ClusterRef ClusterReference `json:"clusterRef"`
 	// A list of secret containing sensitive parameters (the key will name of the parameter)
-	SecretRefs []SecretReference  `json:"secretRefs,omitempty"`
+	SecretRefs []SecretReference `json:"secretRefs,omitempty"`
 }
 
 type Parameter struct {
 	// The name of the Parameter.
-	Name        string `json:"name"`
+	Name string `json:"name"`
 	// The value of the Parameter.
-	Value       string `json:"value,omitempty"`
+	Value string `json:"value,omitempty"`
 	// The description of the Parameter.
 	Description string `json:"description,omitempty"`
 }
@@ -40,21 +40,21 @@ type NifiParameterContextStatus struct {
 
 type ParameterContextUpdateRequest struct {
 	// The id of the update request.
-	Id               string `json:"id"`
+	Id string `json:"id"`
 	// The uri for this request.
-	Uri              string `json:"uri"`
+	Uri string `json:"uri"`
 	// The timestamp of when the request was submitted This property is read only.
-	SubmissionTime   string `json:"submissionTime"`
+	SubmissionTime string `json:"submissionTime"`
 	// The last time this request was updated.
-	LastUpdated      string `json:"lastUpdated"`
+	LastUpdated string `json:"lastUpdated"`
 	// Whether or not this request has completed.
-	Complete         bool	`json:"complete"`
+	Complete bool `json:"complete"`
 	// An explication of why the request failed, or null if this request has not failed.
-	FailureReason    string `json:"failureReason"`
+	FailureReason string `json:"failureReason"`
 	// The percentage complete of the request, between 0 and 100.
-	PercentCompleted int32  `json:"percentCompleted"`
+	PercentCompleted int32 `json:"percentCompleted"`
 	// The state of the request
-	State            string `json:"state"`
+	State string `json:"state"`
 }
 
 // NifiParameterContext is the Schema for the nifi parameter context API

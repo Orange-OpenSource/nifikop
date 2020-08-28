@@ -98,15 +98,12 @@ type ParameterContextReference struct {
 	Namespace string `json:"namespace,omitempty"`
 }
 
-
 // SecretReference states a reference to a secret for parameter context
 // provisioning
 type SecretReference struct {
 	Name      string `json:"name"`
 	Namespace string `json:"namespace,omitempty"`
 }
-
-
 
 const (
 	// PKIBackendCertManager invokes cert-manager for user certificate management
@@ -118,15 +115,15 @@ const (
 
 const (
 	// DataflowStateCreated describes the status of a NifiDataflow as created
-	DataflowStateCreated   DataflowState = "Created"
+	DataflowStateCreated DataflowState = "Created"
 	// DataflowStateStarting describes the status of a NifiDataflow as starting
-	DataflowStateStarting  DataflowState = "Starting"
+	DataflowStateStarting DataflowState = "Starting"
 	// DataflowStateRunning describes the status of a NifiDataflow as running
-	DataflowStateRan       DataflowState = "Ran"
+	DataflowStateRan DataflowState = "Ran"
 	// DataflowStateOutOfSync describes the status of a NifiDataflow as out of sync
 	DataflowStateOutOfSync DataflowState = "OutOfSync"
 	// DataflowStateInSync describes the status of a NifiDataflow as in sync
-	DataflowStateInSync    DataflowState = "InSync"
+	DataflowStateInSync DataflowState = "InSync"
 
 	//
 	ReverseRequestType DataflowUpdateRequestType = "Reverse"
@@ -136,7 +133,7 @@ const (
 	//
 	DrainStrategy DataflowUpdateStrategy = "drain"
 	//
-	DropStrategy  DataflowUpdateStrategy = "drop"
+	DropStrategy DataflowUpdateStrategy = "drop"
 
 	// UserStateCreated describes the status of a NifiUser as created
 	UserStateCreated UserState = "created"
@@ -225,7 +222,7 @@ const (
 	ConfigOutOfSync ConfigurationState = "ConfigOutOfSync"
 
 	// DisconnectNodeAction states that the NiFi node is disconnecting from NiFi Cluster
-	DisconnectNodeAction ActionStep	= "DISCONNECTING"
+	DisconnectNodeAction ActionStep = "DISCONNECTING"
 	// DisconnectStatus states that the NiFi node is disconnected from NiFi Cluster
 	DisconnectStatus ActionStep = "DISCONNECTED"
 	// OffloadNodeAction states that the NiFi node is offloading data to NiFi Cluster

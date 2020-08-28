@@ -41,8 +41,7 @@ import (
 
 var log = logf.Log.WithName("controller_nifiregistryclient")
 
-var registryClientFinalizer =  "finalizer.nifiregistryclients.nifi.orange.com"
-
+var registryClientFinalizer = "finalizer.nifiregistryclients.nifi.orange.com"
 
 // Add creates a new NifiRegistryClient Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -158,7 +157,7 @@ func (r *ReconcileNifiRegistryClient) Reconcile(request reconcile.Request) (reco
 	}
 
 	// Sync RegistryClient resource with NiFi side component
-	status, err := registryclient.SyncRegistryClient(r.client, instance, cluster);
+	status, err := registryclient.SyncRegistryClient(r.client, instance, cluster)
 	if err != nil {
 		return common.RequeueWithError(reqLogger, "failed to sync NifiRegistryClient", err)
 	}
@@ -190,7 +189,7 @@ func (r *ReconcileNifiRegistryClient) Reconcile(request reconcile.Request) (reco
 }
 
 func (r *ReconcileNifiRegistryClient) ensureClusterLabel(ctx context.Context, cluster *v1alpha1.NifiCluster,
-		registryClient *v1alpha1.NifiRegistryClient) (*v1alpha1.NifiRegistryClient, error) {
+	registryClient *v1alpha1.NifiRegistryClient) (*v1alpha1.NifiRegistryClient, error) {
 
 	labels := common.ApplyClusterRefLabel(cluster, registryClient.GetLabels())
 	if !reflect.DeepEqual(labels, registryClient.GetLabels()) {
@@ -201,7 +200,7 @@ func (r *ReconcileNifiRegistryClient) ensureClusterLabel(ctx context.Context, cl
 }
 
 func (r *ReconcileNifiRegistryClient) updateAndFetchLatest(ctx context.Context,
-		registryClient *v1alpha1.NifiRegistryClient) (*v1alpha1.NifiRegistryClient, error) {
+	registryClient *v1alpha1.NifiRegistryClient) (*v1alpha1.NifiRegistryClient, error) {
 
 	typeMeta := registryClient.TypeMeta
 	err := r.client.Update(ctx, registryClient)
@@ -213,7 +212,7 @@ func (r *ReconcileNifiRegistryClient) updateAndFetchLatest(ctx context.Context,
 }
 
 func (r *ReconcileNifiRegistryClient) checkFinalizers(ctx context.Context, reqLogger logr.Logger,
-		registryClient *v1alpha1.NifiRegistryClient, cluster *v1alpha1.NifiCluster) (reconcile.Result, error) {
+	registryClient *v1alpha1.NifiRegistryClient, cluster *v1alpha1.NifiCluster) (reconcile.Result, error) {
 
 	reqLogger.Info("NiFi registry client is marked for deletion")
 	var err error
@@ -235,7 +234,7 @@ func (r *ReconcileNifiRegistryClient) removeFinalizer(ctx context.Context, flow 
 }
 
 func (r *ReconcileNifiRegistryClient) finalizeNifiRegistryClient(reqLogger logr.Logger, registryClient *v1alpha1.NifiRegistryClient,
-		cluster *v1alpha1.NifiCluster) error {
+	cluster *v1alpha1.NifiCluster) error {
 
 	if err := registryclient.RemoveRegistryClient(r.client, registryClient, cluster); err != nil {
 		return err

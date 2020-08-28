@@ -20,18 +20,17 @@ import (
 	"emperror.dev/errors"
 )
 
-var ErrNodeNotConnected          = errors.New("The targeted node id disconnected")
+var ErrNodeNotConnected = errors.New("The targeted node id disconnected")
 var ErrNifiClusterNotReturned200 = errors.New("non 200 response from NiFi cluster")
 var ErrNifiClusterNotReturned201 = errors.New("non 201 response from NiFi cluster")
-var ErrNifiClusterReturned404    = errors.New("404 response from NiFi cluster")
-var ErrNifiClusterNodeNotFound   = errors.New("The target node id doesn't exist in the cluster")
+var ErrNifiClusterReturned404 = errors.New("404 response from NiFi cluster")
+var ErrNifiClusterNodeNotFound = errors.New("The target node id doesn't exist in the cluster")
 
-var ErrNoNodeClientsAvailable    = errors.New("Cannot create a node client to perform actions")
-
+var ErrNoNodeClientsAvailable = errors.New("Cannot create a node client to perform actions")
 
 func errorGetOperation(rsp *http.Response, err error) error {
 	if rsp != nil && rsp.StatusCode == 404 {
-		log.Info("404 response from nifi node: "+rsp.Status)
+		log.Info("404 response from nifi node: " + rsp.Status)
 		return ErrNifiClusterReturned404
 	}
 

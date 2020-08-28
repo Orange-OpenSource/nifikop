@@ -4,7 +4,7 @@ import (
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 )
 
-func (n *nifiClient) GetDropRequest(connectionId, id string)(*nigoapi.DropRequestEntity, error) {
+func (n *nifiClient) GetDropRequest(connectionId, id string) (*nigoapi.DropRequestEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -21,7 +21,7 @@ func (n *nifiClient) GetDropRequest(connectionId, id string)(*nigoapi.DropReques
 	return &dropRequest, nil
 }
 
-func (n *nifiClient) CreateDropRequest(connectionId string)(*nigoapi.DropRequestEntity, error) {
+func (n *nifiClient) CreateDropRequest(connectionId string) (*nigoapi.DropRequestEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {

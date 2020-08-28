@@ -35,7 +35,7 @@ func (n *nifiClient) DescribeCluster() (*nigoapi.ClusterEntity, error) {
 	return &clusterEntry, nil
 }
 
-func (n *nifiClient) GetClusterNode(nId int32)(*nigoapi.NodeEntity, error) {
+func (n *nifiClient) GetClusterNode(nId int32) (*nigoapi.NodeEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorExceptNodeIdClient(nId)
 	if client == nil {
@@ -81,7 +81,6 @@ func (n *nifiClient) OffloadClusterNode(nId int32) (*nigoapi.NodeEntity, error) 
 	return setClusterNodeStatusReturn(nodeEntity, err, "Offload node gracefully failed since Nifi node returned non 200")
 }
 
-
 func (n *nifiClient) RemoveClusterNode(nId int32) error {
 	// Find the Cluster node associated to the NifiCluster nodeId
 	targetedNode := n.nodeDtoByNodeId(nId)
@@ -116,7 +115,6 @@ func (n *nifiClient) RemoveClusterNodeFromClusterNodeId(nId string) error {
 
 	return errorDeleteOperation(rsp, err)
 }
-
 
 func (n *nifiClient) setClusterNodeStatus(nId int32, status, expectedActionStatus v1alpha1.ActionStep) (*nigoapi.NodeEntity, error) {
 	// Find the Cluster node associated to the NifiCluster nodeId
@@ -157,8 +155,8 @@ func (n *nifiClient) setClusterNodeStatus(nId int32, status, expectedActionStatu
 
 func setClusterNodeStatusReturn(nodeEntity *nigoapi.NodeEntity, err error, messageError string) (*nigoapi.NodeEntity, error) {
 	if err != nil && err != ErrNifiClusterNotReturned200 {
-		log.Error(err, messageError + "error since Nifi node returned non 200")
-		return nil , err
+		log.Error(err, messageError+"error since Nifi node returned non 200")
+		return nil, err
 	}
 
 	if err == ErrNifiClusterNotReturned200 {

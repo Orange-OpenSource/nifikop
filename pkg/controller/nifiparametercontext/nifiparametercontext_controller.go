@@ -44,8 +44,7 @@ import (
 
 var log = logf.Log.WithName("controller_nifiparametercontext")
 
-var parameterContextFinalizer =  "finalizer.nifiparametercontexts.nifi.orange.com"
-
+var parameterContextFinalizer = "finalizer.nifiparametercontexts.nifi.orange.com"
 
 // Add creates a new NifiParameterContext Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -220,7 +219,7 @@ func (r *ReconcileNifiParameterContext) Reconcile(request reconcile.Request) (re
 }
 
 func (r *ReconcileNifiParameterContext) ensureClusterLabel(ctx context.Context, cluster *v1alpha1.NifiCluster,
-		parameterContext *v1alpha1.NifiParameterContext) (*v1alpha1.NifiParameterContext, error) {
+	parameterContext *v1alpha1.NifiParameterContext) (*v1alpha1.NifiParameterContext, error) {
 
 	labels := common.ApplyClusterRefLabel(cluster, parameterContext.GetLabels())
 	if !reflect.DeepEqual(labels, parameterContext.GetLabels()) {
@@ -231,7 +230,7 @@ func (r *ReconcileNifiParameterContext) ensureClusterLabel(ctx context.Context, 
 }
 
 func (r *ReconcileNifiParameterContext) updateAndFetchLatest(ctx context.Context,
-		parameterContext *v1alpha1.NifiParameterContext) (*v1alpha1.NifiParameterContext, error) {
+	parameterContext *v1alpha1.NifiParameterContext) (*v1alpha1.NifiParameterContext, error) {
 
 	typeMeta := parameterContext.TypeMeta
 	err := r.client.Update(ctx, parameterContext)
@@ -243,11 +242,11 @@ func (r *ReconcileNifiParameterContext) updateAndFetchLatest(ctx context.Context
 }
 
 func (r *ReconcileNifiParameterContext) checkFinalizers(
-		ctx context.Context,
-		reqLogger logr.Logger,
-		parameterContext *v1alpha1.NifiParameterContext,
-		parameterSecrets []*corev1.Secret,
-		cluster *v1alpha1.NifiCluster) (reconcile.Result, error) {
+	ctx context.Context,
+	reqLogger logr.Logger,
+	parameterContext *v1alpha1.NifiParameterContext,
+	parameterSecrets []*corev1.Secret,
+	cluster *v1alpha1.NifiCluster) (reconcile.Result, error) {
 
 	reqLogger.Info("NiFi parameter context is marked for deletion")
 	var err error
@@ -269,10 +268,10 @@ func (r *ReconcileNifiParameterContext) removeFinalizer(ctx context.Context, flo
 }
 
 func (r *ReconcileNifiParameterContext) finalizeNifiParameterContext(
-		reqLogger logr.Logger,
-		parameterContext *v1alpha1.NifiParameterContext,
-		parameterSecrets []*corev1.Secret,
-		cluster *v1alpha1.NifiCluster) error {
+	reqLogger logr.Logger,
+	parameterContext *v1alpha1.NifiParameterContext,
+	parameterSecrets []*corev1.Secret,
+	cluster *v1alpha1.NifiCluster) error {
 
 	if err := parametercontext.RemoveParameterContext(r.client, parameterContext, parameterSecrets, cluster); err != nil {
 		return err

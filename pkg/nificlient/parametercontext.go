@@ -21,7 +21,7 @@ import (
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 )
 
-func (n *nifiClient) GetParameterContext(id string)(*nigoapi.ParameterContextEntity, error) {
+func (n *nifiClient) GetParameterContext(id string) (*nigoapi.ParameterContextEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -38,7 +38,7 @@ func (n *nifiClient) GetParameterContext(id string)(*nigoapi.ParameterContextEnt
 	return &pcEntity, nil
 }
 
-func (n *nifiClient) CreateParameterContext(entity nigoapi.ParameterContextEntity)(*nigoapi.ParameterContextEntity, error) {
+func (n *nifiClient) CreateParameterContext(entity nigoapi.ParameterContextEntity) (*nigoapi.ParameterContextEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -67,12 +67,12 @@ func (n *nifiClient) RemoveParameterContext(entity nigoapi.ParameterContextEntit
 	_, rsp, err := client.ParameterContextsApi.DeleteParameterContext(nil, entity.Id,
 		&nigoapi.ParameterContextsApiDeleteParameterContextOpts{
 			Version: optional.NewString(strconv.FormatInt(*entity.Revision.Version, 10)),
-	})
+		})
 
 	return errorDeleteOperation(rsp, err)
 }
 
-func (n *nifiClient) CreateParameterContextUpdateRequest(contextId string, entity nigoapi.ParameterContextEntity)(*nigoapi.ParameterContextUpdateRequestEntity, error) {
+func (n *nifiClient) CreateParameterContextUpdateRequest(contextId string, entity nigoapi.ParameterContextEntity) (*nigoapi.ParameterContextUpdateRequestEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -89,7 +89,7 @@ func (n *nifiClient) CreateParameterContextUpdateRequest(contextId string, entit
 	return &request, nil
 }
 
-func (n *nifiClient) GetParameterContextUpdateRequest(contextId, id string)(*nigoapi.ParameterContextUpdateRequestEntity, error) {
+func (n *nifiClient) GetParameterContextUpdateRequest(contextId, id string) (*nigoapi.ParameterContextUpdateRequestEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {

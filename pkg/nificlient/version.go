@@ -2,7 +2,7 @@ package nificlient
 
 import nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 
-func (n *nifiClient) CreateVersionUpdateRequest(pgId string, entity nigoapi.VersionControlInformationEntity)(*nigoapi.VersionedFlowUpdateRequestEntity, error) {
+func (n *nifiClient) CreateVersionUpdateRequest(pgId string, entity nigoapi.VersionControlInformationEntity) (*nigoapi.VersionedFlowUpdateRequestEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -19,7 +19,7 @@ func (n *nifiClient) CreateVersionUpdateRequest(pgId string, entity nigoapi.Vers
 	return &request, nil
 }
 
-func (n *nifiClient) GetVersionUpdateRequest(id string)(*nigoapi.VersionedFlowUpdateRequestEntity, error) {
+func (n *nifiClient) GetVersionUpdateRequest(id string) (*nigoapi.VersionedFlowUpdateRequestEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -36,7 +36,7 @@ func (n *nifiClient) GetVersionUpdateRequest(id string)(*nigoapi.VersionedFlowUp
 	return &request, nil
 }
 
-func (n *nifiClient) CreateVersionReverseRequest(pgId string, entity nigoapi.VersionControlInformationEntity)(*nigoapi.VersionedFlowUpdateRequestEntity, error) {
+func (n *nifiClient) CreateVersionReverseRequest(pgId string, entity nigoapi.VersionControlInformationEntity) (*nigoapi.VersionedFlowUpdateRequestEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -53,7 +53,7 @@ func (n *nifiClient) CreateVersionReverseRequest(pgId string, entity nigoapi.Ver
 	return &request, nil
 }
 
-func (n *nifiClient) GetVersionReverseRequest(id string)(*nigoapi.VersionedFlowUpdateRequestEntity, error) {
+func (n *nifiClient) GetVersionReverseRequest(id string) (*nigoapi.VersionedFlowUpdateRequestEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {

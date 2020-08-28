@@ -2,7 +2,7 @@ package nificlient
 
 import nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 
-func (n *nifiClient) CreateSnippet(entity nigoapi.SnippetEntity)(*nigoapi.SnippetEntity, error) {
+func (n *nifiClient) CreateSnippet(entity nigoapi.SnippetEntity) (*nigoapi.SnippetEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -19,7 +19,7 @@ func (n *nifiClient) CreateSnippet(entity nigoapi.SnippetEntity)(*nigoapi.Snippe
 	return &snippetEntity, nil
 }
 
-func (n *nifiClient) UpdateSnippet(entity nigoapi.SnippetEntity)(*nigoapi.SnippetEntity, error) {
+func (n *nifiClient) UpdateSnippet(entity nigoapi.SnippetEntity) (*nigoapi.SnippetEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {

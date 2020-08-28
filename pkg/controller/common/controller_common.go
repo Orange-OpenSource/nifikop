@@ -37,7 +37,6 @@ var ClusterRefLabel = "nifiCluster"
 // use as var so it can be overwritten from unit tests
 var newNifiFromCluster = nificlient.NewFromCluster
 
-
 // requeueWithError is a convenience wrapper around logging an error message
 // separate from the stacktrace and then passing the error through to the controller
 // manager
@@ -60,7 +59,6 @@ func RequeueAfter(time time.Duration) (reconcile.Result, error) {
 func Reconciled() (reconcile.Result, error) {
 	return reconcile.Result{}, nil
 }
-
 
 // clusterLabelString returns the label value for a cluster reference
 func ClusterLabelString(cluster *v1alpha1.NifiCluster) string {

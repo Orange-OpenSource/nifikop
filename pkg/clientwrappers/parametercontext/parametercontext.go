@@ -38,10 +38,10 @@ func ExistParameterContext(client client.Client, parameterContext *v1alpha1.Nifi
 }
 
 func CreateParameterContext(
-		client client.Client,
-		parameterContext *v1alpha1.NifiParameterContext,
-		parameterSecrets []*corev1.Secret,
-		cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiParameterContextStatus, error) {
+	client client.Client,
+	parameterContext *v1alpha1.NifiParameterContext,
+	parameterSecrets []*corev1.Secret,
+	cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiParameterContextStatus, error) {
 	nClient, err := common.NewNodeConnection(log, client, cluster)
 	if err != nil {
 		return nil, err
@@ -55,17 +55,17 @@ func CreateParameterContext(
 		return nil, err
 	}
 
-	parameterContext.Status.Id      = entity.Id
+	parameterContext.Status.Id = entity.Id
 	parameterContext.Status.Version = *entity.Revision.Version
 
 	return &parameterContext.Status, nil
 }
 
 func SyncParameterContext(
-		client client.Client,
-		parameterContext *v1alpha1.NifiParameterContext,
-		parameterSecrets []*corev1.Secret,
-		cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiParameterContextStatus, error) {
+	client client.Client,
+	parameterContext *v1alpha1.NifiParameterContext,
+	parameterSecrets []*corev1.Secret,
+	cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiParameterContextStatus, error) {
 
 	nClient, err := common.NewNodeConnection(log, client, cluster)
 	if err != nil {
@@ -85,7 +85,7 @@ func SyncParameterContext(
 		}
 
 		if err := clientwrappers.ErrorGetOperation(log, err, "Get update-request");
-			err != nificlient.ErrNifiClusterReturned404  {
+			err != nificlient.ErrNifiClusterReturned404 {
 			if err != nil {
 				return &parameterContext.Status, err
 			}
@@ -107,7 +107,7 @@ func SyncParameterContext(
 		return &parameterContext.Status, errorfactory.NifiParameterContextUpdateRequestRunning{}
 	}
 
-	status :=  parameterContext.Status
+	status := parameterContext.Status
 	status.Version = *entity.Revision.Version
 	status.Id = entity.Id
 
@@ -115,9 +115,9 @@ func SyncParameterContext(
 }
 
 func RemoveParameterContext(client client.Client,
-		parameterContext *v1alpha1.NifiParameterContext,
-		parameterSecrets []*corev1.Secret,
-		cluster *v1alpha1.NifiCluster) error {
+	parameterContext *v1alpha1.NifiParameterContext,
+	parameterSecrets []*corev1.Secret,
+	cluster *v1alpha1.NifiCluster) error {
 
 	nClient, err := common.NewNodeConnection(log, client, cluster)
 	if err != nil {
@@ -139,9 +139,9 @@ func RemoveParameterContext(client client.Client,
 }
 
 func parameterContextIsSync(
-		parameterContext *v1alpha1.NifiParameterContext,
-		parameterSecrets []*corev1.Secret,
-		 entity *nigoapi.ParameterContextEntity) bool {
+	parameterContext *v1alpha1.NifiParameterContext,
+	parameterSecrets []*corev1.Secret,
+	entity *nigoapi.ParameterContextEntity) bool {
 
 	e := nigoapi.ParameterContextEntity{}
 	updateParameterContextEntity(parameterContext, parameterSecrets, &e)
@@ -153,7 +153,7 @@ func parameterContextIsSync(
 	for _, expected := range e.Component.Parameters {
 		notFound := true
 		for _, param := range entity.Component.Parameters {
-			if  expected.Parameter.Name == param.Parameter.Name {
+			if expected.Parameter.Name == param.Parameter.Name {
 				notFound = false
 
 				if (!param.Parameter.Sensitive && expected.Parameter.Value != param.Parameter.Value) ||
@@ -172,9 +172,9 @@ func parameterContextIsSync(
 }
 
 func updateRequestPrepare(
-		parameterContext *v1alpha1.NifiParameterContext,
-		parameterSecrets []*corev1.Secret,
-		entity *nigoapi.ParameterContextEntity) []nigoapi.ParameterEntity {
+	parameterContext *v1alpha1.NifiParameterContext,
+	parameterSecrets []*corev1.Secret,
+	entity *nigoapi.ParameterContextEntity) []nigoapi.ParameterEntity {
 
 	tmp := entity.Component.Parameters
 	updateParameterContextEntity(parameterContext, parameterSecrets, entity)
@@ -200,7 +200,7 @@ func updateRequestPrepare(
 	for _, expected := range entity.Component.Parameters {
 		notFound := true
 		for _, param := range tmp {
-			if  expected.Parameter.Name == param.Parameter.Name {
+			if expected.Parameter.Name == param.Parameter.Name {
 				notFound = false
 
 				if (!param.Parameter.Sensitive && expected.Parameter.Value != param.Parameter.Value) ||
@@ -247,14 +247,14 @@ func updateParameterContextEntity(parameterContext *v1alpha1.NifiParameterContex
 
 	var parameters []nigoapi.ParameterEntity
 
-	for _, secret:= range parameterSecrets {
+	for _, secret := range parameterSecrets {
 		for k, v := range secret.Data {
 			parameters = append(parameters, nigoapi.ParameterEntity{
 				Parameter: &nigoapi.ParameterDto{
-					Name:                  k,
-					Description:           "",
-					Sensitive:             true,
-					Value:                 string(v),
+					Name:        k,
+					Description: "",
+					Sensitive:   true,
+					Value:       string(v),
 				},
 			})
 		}
@@ -263,16 +263,16 @@ func updateParameterContextEntity(parameterContext *v1alpha1.NifiParameterContex
 	for _, parameter := range parameterContext.Spec.Parameters {
 		parameters = append(parameters, nigoapi.ParameterEntity{
 			Parameter: &nigoapi.ParameterDto{
-				Name:                  parameter.Name,
-				Description:           parameter.Description,
-				Sensitive:             false,
-				Value:                 parameter.Value,
+				Name:        parameter.Name,
+				Description: parameter.Description,
+				Sensitive:   false,
+				Value:       parameter.Value,
 			},
 		})
 	}
-	entity.Component.Name        = parameterContext.Name
+	entity.Component.Name = parameterContext.Name
 	entity.Component.Description = parameterContext.Spec.Description
-	entity.Component.Parameters  = parameters
+	entity.Component.Parameters = parameters
 }
 
 func updateRequest2Status(updateRequest *nigoapi.ParameterContextUpdateRequestEntity) *v1alpha1.ParameterContextUpdateRequest {

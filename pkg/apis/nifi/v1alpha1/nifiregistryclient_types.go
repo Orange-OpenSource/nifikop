@@ -8,11 +8,11 @@ import (
 // +k8s:openapi-gen=true
 type NifiRegistryClientSpec struct {
 	// The URI of the NiFi registry that should be used for pulling the flow.
-	Uri           string           `json:"uri"`
+	Uri string `json:"uri"`
 	// 
-	Description   string           `json:"description,omitempty"`
+	Description string `json:"description,omitempty"`
 	// contains the reference to the NifiCluster with the one the user is linked
-	ClusterRef    ClusterReference `json:"clusterRef"`
+	ClusterRef ClusterReference `json:"clusterRef"`
 }
 
 // NifiRegistryClientStatus defines the observed state of NifiRegistryClient

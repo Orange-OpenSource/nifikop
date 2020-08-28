@@ -43,8 +43,7 @@ import (
 
 var log = logf.Log.WithName("controller_nifidataflow")
 
-var dataflowFinalizer =  "finalizer.nifidataflows.nifi.orange.com"
-
+var dataflowFinalizer = "finalizer.nifidataflows.nifi.orange.com"
 
 // Add creates a new NifiCluster Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -179,7 +178,7 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 	// Check if cluster references are the same
 	clusterNamespace := common.GetClusterRefNamespace(instance.Namespace, instance.Spec.ClusterRef)
 	if registryClient != nil &&
-		( registryClientNamespace != clusterNamespace ||
+		(registryClientNamespace != clusterNamespace ||
 			registryClient.Spec.ClusterRef.Name != instance.Spec.ClusterRef.Name ||
 			(parameterContext != nil &&
 				(parameterContextNamespace != clusterNamespace ||
@@ -230,7 +229,7 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 		}
 
 		// Set dataflow status
-		instance.Status       = *processGroupStatus
+		instance.Status = *processGroupStatus
 		instance.Status.State = v1alpha1.DataflowStateCreated
 
 		if err := r.client.Status().Update(ctx, instance); err != nil {
@@ -275,9 +274,6 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 	if err != nil {
 		return common.RequeueWithError(reqLogger, "failed to check NifiDataflow sync", err)
 	}
-	//if instance.Status.State == v1alpha1.DataflowStateRan {
-	//
-	//}
 
 	if isOutOfSink {
 		instance.Status.State = v1alpha1.DataflowStateOutOfSync
@@ -333,7 +329,7 @@ func (r *ReconcileNifiDataflow) Reconcile(request reconcile.Request) (reconcile.
 }
 
 func (r *ReconcileNifiDataflow) ensureClusterLabel(ctx context.Context, cluster *v1alpha1.NifiCluster,
-		flow *v1alpha1.NifiDataflow) (*v1alpha1.NifiDataflow, error) {
+	flow *v1alpha1.NifiDataflow) (*v1alpha1.NifiDataflow, error) {
 
 	labels := common.ApplyClusterRefLabel(cluster, flow.GetLabels())
 	if !reflect.DeepEqual(labels, flow.GetLabels()) {
@@ -344,7 +340,7 @@ func (r *ReconcileNifiDataflow) ensureClusterLabel(ctx context.Context, cluster 
 }
 
 func (r *ReconcileNifiDataflow) updateAndFetchLatest(ctx context.Context,
-		flow *v1alpha1.NifiDataflow) (*v1alpha1.NifiDataflow, error) {
+	flow *v1alpha1.NifiDataflow) (*v1alpha1.NifiDataflow, error) {
 
 	typeMeta := flow.TypeMeta
 	err := r.client.Update(ctx, flow)
@@ -356,7 +352,7 @@ func (r *ReconcileNifiDataflow) updateAndFetchLatest(ctx context.Context,
 }
 
 func (r *ReconcileNifiDataflow) checkFinalizers(ctx context.Context, reqLogger logr.Logger,
-		flow *v1alpha1.NifiDataflow, cluster *v1alpha1.NifiCluster) (reconcile.Result, error) {
+	flow *v1alpha1.NifiDataflow, cluster *v1alpha1.NifiCluster) (reconcile.Result, error) {
 
 	reqLogger.Info("NiFi dataflow is marked for deletion")
 	var err error
@@ -383,7 +379,7 @@ func (r *ReconcileNifiDataflow) removeFinalizer(ctx context.Context, flow *v1alp
 }
 
 func (r *ReconcileNifiDataflow) finalizeNifiDataflow(reqLogger logr.Logger, flow *v1alpha1.NifiDataflow,
-		cluster *v1alpha1.NifiCluster) error {
+	cluster *v1alpha1.NifiCluster) error {
 
 	exists, err := dataflow.DataflowExist(r.client, flow, cluster)
 	if err != nil {

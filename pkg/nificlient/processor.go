@@ -19,10 +19,9 @@ func (n *nifiClient) UpdateProcessor(entity nigoapi.ProcessorEntity) (*nigoapi.P
 	return &processor, nil
 }
 
-
 func (n *nifiClient) UpdateProcessorRunStatus(
-		id string,
-		entity nigoapi.ProcessorRunStatusEntity) (*nigoapi.ProcessorEntity, error) {
+	id string,
+	entity nigoapi.ProcessorRunStatusEntity) (*nigoapi.ProcessorEntity, error) {
 
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
