@@ -301,11 +301,17 @@ func SyncDataflow(
 		}
 	}
 
-	status, err := prepareUpdatePG(client, flow, cluster)
+	isOutOfSink, err := IsOutOfSyncDataflow(client, flow, cluster, registry, parameterContext)
 	if err != nil {
-		return status, err
+		return  &flow.Status, err
 	}
-	flow.Status = *status
+	if isOutOfSink {
+		status, err := prepareUpdatePG(client, flow, cluster)
+		if err != nil {
+			return status, err
+		}
+		flow.Status = *status
+	}
 
 	pGEntity, err = nClient.GetProcessGroup(flow.Status.ProcessGroupID)
 	if err := clientwrappers.ErrorGetOperation(log, err, "Get process group"); err != nil {

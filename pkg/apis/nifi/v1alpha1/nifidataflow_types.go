@@ -7,7 +7,7 @@ import (
 // NifiDataflowSpec defines the desired state of NifiDataflow
 // +k8s:openapi-gen=true
 type NifiDataflowSpec struct {
-	// The id of the parent process group where you want to deploy your dataflow, if not set deploy at root level
+	// T
 	ParentProcessGroupID string `json:"parentProcessGroupID,omitempty"`
 	// The UUID of the Bucket containing the flow.
 	BucketId string `json:"bucketId"`
@@ -25,7 +25,7 @@ type NifiDataflowSpec struct {
 	SkipInvalidComponent bool `json:"skipInvalidComponent,omitempty"`
 	//
 	ClusterRef ClusterReference `json:"clusterRef,omitempty"`
-	//
+	// The id of the parent process group where you want to deploy your dataflow, if not set deploy at root level
 	RegistryClientRef *RegistryClientReference `json:"registryClientRef,omitempty"`
 	//
 	// +kubebuilder:validation:Enum={"drop","drain"}

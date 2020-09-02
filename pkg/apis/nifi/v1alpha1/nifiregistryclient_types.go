@@ -11,7 +11,7 @@ type NifiRegistryClientSpec struct {
 	Uri string `json:"uri"`
 	// 
 	Description string `json:"description,omitempty"`
-	// contains the reference to the NifiCluster with the one the user is linked
+	// contains the reference to the NifiCluster with the one the registry client is linked
 	ClusterRef ClusterReference `json:"clusterRef"`
 }
 
