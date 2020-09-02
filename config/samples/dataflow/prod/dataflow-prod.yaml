@@ -3,10 +3,10 @@ kind: NifiDataflow
 metadata:
   name: dataflow-lifecycle-prod
 spec:
-  parentProcessGroupID: "16cfd2ec-0174-1000-0000-00004b9b35cc"
+  parentProcessGroupID: "4dbcb875-0174-1000-217b-30a14fdd33ef"
   bucketId: "01ced6cc-0378-4893-9403-f6c70d080d4f"
   flowId: "8fefc874-0c93-4ce5-ba53-1672f0b59aaa"
-  flowVersion: 5
+  flowVersion: 7
   runOnce: false
   skipInvalidControllerService: true
   skipInvalidComponent: true
