@@ -63,11 +63,20 @@ spec:
                   - name
                   type: object
                 type: array
-              secretName:
+              secretRefs:
                 description: A list of secret containing sensitive parameters (the
                   key will name of the parameter)
                 items:
-                  type: string
+                  description: SecretReference states a reference to a secret for
+                    parameter context provisioning
+                  properties:
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                  required:
+                  - name
+                  type: object
                 type: array
             required:
             - clusterRef
@@ -101,9 +110,6 @@ spec:
                       and 100.
                     format: int32
                     type: integer
-                  processGroupID:
-                    description: The id of the targeted process group
-                    type: string
                   state:
                     description: The state of the request
                     type: string
@@ -120,7 +126,6 @@ spec:
                 - id
                 - lastUpdated
                 - percentCompleted
-                - processGroupID
                 - state
                 - submissionTime
                 - uri
