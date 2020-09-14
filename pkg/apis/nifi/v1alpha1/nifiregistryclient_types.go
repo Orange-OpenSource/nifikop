@@ -9,16 +9,15 @@ import (
 type NifiRegistryClientSpec struct {
 	// The URI of the NiFi registry that should be used for pulling the flow.
 	Uri string `json:"uri"`
-	// 
+	// The Description of the Registry client.
 	Description string `json:"description,omitempty"`
-	// contains the reference to the NifiCluster with the one the registry client is linked
+	// Contains the reference to the NifiCluster with the one the registry client is linked.
 	ClusterRef ClusterReference `json:"clusterRef"`
 }
 
 // NifiRegistryClientStatus defines the observed state of NifiRegistryClient
 // +k8s:openapi-gen=true
 type NifiRegistryClientStatus struct {
-	// Queued flow files
 	// The nifi registry client's id
 	Id string `json:"id"`
 	// The last nifi registry client revision version catched

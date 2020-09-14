@@ -125,14 +125,15 @@ const (
 	// DataflowStateInSync describes the status of a NifiDataflow as in sync
 	DataflowStateInSync DataflowState = "InSync"
 
-	//
-	ReverseRequestType DataflowUpdateRequestType = "Reverse"
-	//
+	// RevertRequestType defines a revert changes request.
+	RevertRequestType DataflowUpdateRequestType = "Revert"
+	// UpdateRequestType defines an update version request.
 	UpdateRequestType DataflowUpdateRequestType = "Update"
 
-	//
+	// DrainStrategy leads to shutting down only input components (Input processors, remote input process group)
+	// and dropping all flowfiles from the flow.
 	DrainStrategy DataflowUpdateStrategy = "drain"
-	//
+	// DropStrategy leads to shutting down all components and dropping all flowfiles from the flow.
 	DropStrategy DataflowUpdateStrategy = "drop"
 
 	// UserStateCreated describes the status of a NifiUser as created

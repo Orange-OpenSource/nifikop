@@ -292,8 +292,8 @@ func SyncDataflow(
 			t = v1alpha1.UpdateRequestType
 			updateRequest, err = nClient.GetVersionUpdateRequest(latestUpdateRequest.Id)
 		} else {
-			t = v1alpha1.ReverseRequestType
-			updateRequest, err = nClient.GetVersionReverseRequest(latestUpdateRequest.Id)
+			t = v1alpha1.RevertRequestType
+			updateRequest, err = nClient.GetVersionRevertRequest(latestUpdateRequest.Id)
 		}
 		if updateRequest != nil {
 			flow.Status.LatestUpdateRequest =
@@ -328,7 +328,7 @@ func SyncDataflow(
 
 	if localChanged(pGEntity) {
 		vInfo := pGEntity.Component.VersionControlInformation
-		updateRequest, err := nClient.CreateVersionReverseRequest(
+		updateRequest, err := nClient.CreateVersionRevertRequest(
 			flow.Status.ProcessGroupID,
 			nigoapi.VersionControlInformationEntity{
 				ProcessGroupRevision: pGEntity.Revision,
@@ -341,12 +341,12 @@ func SyncDataflow(
 				},
 			},
 		)
-		if err := clientwrappers.ErrorCreateOperation(log, err, "Create version reverse-request"); err != nil {
+		if err := clientwrappers.ErrorCreateOperation(log, err, "Create version revert-request"); err != nil {
 			return nil, err
 		}
 
 		flow.Status.LatestUpdateRequest =
-			updateRequest2Status(updateRequest, v1alpha1.ReverseRequestType)
+			updateRequest2Status(updateRequest, v1alpha1.RevertRequestType)
 		return &flow.Status, errorfactory.NifiFlowUpdateRequestRunning{}
 	}
 

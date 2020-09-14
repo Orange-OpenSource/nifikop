@@ -36,7 +36,7 @@ func (n *nifiClient) GetVersionUpdateRequest(id string) (*nigoapi.VersionedFlowU
 	return &request, nil
 }
 
-func (n *nifiClient) CreateVersionReverseRequest(pgId string, entity nigoapi.VersionControlInformationEntity) (*nigoapi.VersionedFlowUpdateRequestEntity, error) {
+func (n *nifiClient) CreateVersionRevertRequest(pgId string, entity nigoapi.VersionControlInformationEntity) (*nigoapi.VersionedFlowUpdateRequestEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -44,7 +44,7 @@ func (n *nifiClient) CreateVersionReverseRequest(pgId string, entity nigoapi.Ver
 		return nil, ErrNoNodeClientsAvailable
 	}
 
-	// Request on Nifi Rest API to create the version reverse request
+	// Request on Nifi Rest API to create the version revert request
 	request, rsp, err := client.VersionsApi.InitiateRevertFlowVersion(nil, pgId, entity)
 	if err := errorUpdateOperation(rsp, err); err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (n *nifiClient) CreateVersionReverseRequest(pgId string, entity nigoapi.Ver
 	return &request, nil
 }
 
-func (n *nifiClient) GetVersionReverseRequest(id string) (*nigoapi.VersionedFlowUpdateRequestEntity, error) {
+func (n *nifiClient) GetVersionRevertRequest(id string) (*nigoapi.VersionedFlowUpdateRequestEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()
 	if client == nil {
@@ -61,7 +61,7 @@ func (n *nifiClient) GetVersionReverseRequest(id string) (*nigoapi.VersionedFlow
 		return nil, ErrNoNodeClientsAvailable
 	}
 
-	// Request on Nifi Rest API to get the reverse request information
+	// Request on Nifi Rest API to get the revert request information
 	request, rsp, err := client.VersionsApi.GetRevertRequest(nil, id)
 	if err := errorGetOperation(rsp, err); err != nil {
 		return nil, err

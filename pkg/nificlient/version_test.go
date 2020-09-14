@@ -106,30 +106,30 @@ func testGetVersionUpdateRequest(t *testing.T, entity *nigoapi.VersionControlInf
 	return client.GetVersionUpdateRequest(id)
 }
 
-func TestCreateVersionReverseRequest(t *testing.T) {
+func TestCreateVersionRevertRequest(t *testing.T) {
 	assert := assert.New(t)
 
-	mockEntity :=  MockVersionReverseRequest(
+	mockEntity :=  MockVersionRevertRequest(
 		"16cfd2ec-0174-1000-0000-00004b9b35cc",
 		"16cfd2ec-0174-1450-0000-00004b9b35cc",
 		"16cfd2ec-0174-6580-0000-00004b9b35cc",
 		"16cfd2ec-0174-10546-0000-00004b9b35cc",
 		5)
 
-	entity, err := testCreateVersionReverseRequest(t, &mockEntity, 200)
+	entity, err := testCreateVersionRevertRequest(t, &mockEntity, 200)
 	assert.Nil(err)
 	assert.NotNil(entity)
 
-	entity, err = testCreateVersionReverseRequest(t, &mockEntity, 404)
+	entity, err = testCreateVersionRevertRequest(t, &mockEntity, 404)
 	assert.IsType(ErrNifiClusterReturned404, err)
 	assert.Nil(entity)
 
-	entity, err = testCreateVersionReverseRequest(t, &mockEntity, 500)
+	entity, err = testCreateVersionRevertRequest(t, &mockEntity, 500)
 	assert.IsType(ErrNifiClusterNotReturned200, err)
 	assert.Nil(entity)
 }
 
-func testCreateVersionReverseRequest(t *testing.T, entity *nigoapi.VersionControlInformationEntity, status int) (*nigoapi.VersionedFlowUpdateRequestEntity, error) {
+func testCreateVersionRevertRequest(t *testing.T, entity *nigoapi.VersionControlInformationEntity, status int) (*nigoapi.VersionedFlowUpdateRequestEntity, error) {
 
 	cluster := testClusterMock(t)
 
@@ -150,35 +150,35 @@ func testCreateVersionReverseRequest(t *testing.T, entity *nigoapi.VersionContro
 				entity)
 		})
 
-	return client.CreateVersionReverseRequest(entity.VersionControlInformation.GroupId, *entity)
+	return client.CreateVersionRevertRequest(entity.VersionControlInformation.GroupId, *entity)
 }
 
-func TestGetVersionReverseRequest(t *testing.T) {
+func TestGetVersionRevertRequest(t *testing.T) {
 	assert := assert.New(t)
 
 	id := "16cfd2ec-0174-1000-0000-00004b9b35cc"
 
-	mockEntity :=  MockVersionReverseRequest(
+	mockEntity :=  MockVersionRevertRequest(
 		"16cfd2ec-0174-1000-0000-00004b9b35cc",
 		"16cfd2ec-0174-1450-0000-00004b9b35cc",
 		"16cfd2ec-0174-6580-0000-00004b9b35cc",
 		"16cfd2ec-0174-10546-0000-00004b9b35cc",
 		5)
 
-	entity, err := testGetVersionReverseRequest(t, &mockEntity, id, 200)
+	entity, err := testGetVersionRevertRequest(t, &mockEntity, id, 200)
 	assert.Nil(err)
 	assert.NotNil(entity)
 
-	entity, err = testGetVersionReverseRequest(t, &mockEntity, id,404)
+	entity, err = testGetVersionRevertRequest(t, &mockEntity, id,404)
 	assert.IsType(ErrNifiClusterReturned404, err)
 	assert.Nil(entity)
 
-	entity, err = testGetVersionReverseRequest(t, &mockEntity, id, 500)
+	entity, err = testGetVersionRevertRequest(t, &mockEntity, id, 500)
 	assert.IsType(ErrNifiClusterNotReturned200, err)
 	assert.Nil(entity)
 }
 
-func testGetVersionReverseRequest(t *testing.T, entity *nigoapi.VersionControlInformationEntity, id string, status int) (*nigoapi.VersionedFlowUpdateRequestEntity, error) {
+func testGetVersionRevertRequest(t *testing.T, entity *nigoapi.VersionControlInformationEntity, id string, status int) (*nigoapi.VersionedFlowUpdateRequestEntity, error) {
 
 	cluster := testClusterMock(t)
 
@@ -199,7 +199,7 @@ func testGetVersionReverseRequest(t *testing.T, entity *nigoapi.VersionControlIn
 				entity)
 		})
 
-	return client.GetVersionReverseRequest(id)
+	return client.GetVersionRevertRequest(id)
 }
 
 func MockVersionUpdateRequest(pgId, registryId, bucketId, flowId string, flowVersion int32) nigoapi.VersionControlInformationEntity {
@@ -212,7 +212,7 @@ func MockVersionUpdateRequest(pgId, registryId, bucketId, flowId string, flowVer
 	}
 }
 
-func MockVersionReverseRequest(pgId, registryId, bucketId, flowId string, flowVersion int32) nigoapi.VersionControlInformationEntity {
+func MockVersionRevertRequest(pgId, registryId, bucketId, flowId string, flowVersion int32) nigoapi.VersionControlInformationEntity {
 	var version int64 = 10
 	return nigoapi.VersionControlInformationEntity{
 		ProcessGroupRevision: &nigoapi.RevisionDto{

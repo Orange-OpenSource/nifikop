@@ -68,8 +68,8 @@ type NifiClient interface {
 	// Version func
 	CreateVersionUpdateRequest(pgId string, entity nigoapi.VersionControlInformationEntity) (*nigoapi.VersionedFlowUpdateRequestEntity, error)
 	GetVersionUpdateRequest(id string) (*nigoapi.VersionedFlowUpdateRequestEntity, error)
-	CreateVersionReverseRequest(pgId string, entity nigoapi.VersionControlInformationEntity) (*nigoapi.VersionedFlowUpdateRequestEntity, error)
-	GetVersionReverseRequest(id string) (*nigoapi.VersionedFlowUpdateRequestEntity, error)
+	CreateVersionRevertRequest(pgId string, entity nigoapi.VersionControlInformationEntity) (*nigoapi.VersionedFlowUpdateRequestEntity, error)
+	GetVersionRevertRequest(id string) (*nigoapi.VersionedFlowUpdateRequestEntity, error)
 
 	// Snippet func
 	CreateSnippet(entity nigoapi.SnippetEntity) (*nigoapi.SnippetEntity, error)
