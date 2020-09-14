@@ -91,7 +91,7 @@ func TestNewFromCluster(t *testing.T) {
 		func(req *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(
 				200,
-				MockGetClusterResponse(cluster))
+				MockGetClusterResponse(cluster, false))
 		})
 
 	_, err := NewFromCluster(mockClient{}, cluster)

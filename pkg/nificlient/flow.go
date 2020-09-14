@@ -80,19 +80,20 @@ func (n *nifiClient) UpdateFlowProcessGroup(entity nigoapi.ScheduleComponentsEnt
 	return &csEntity, nil
 }
 
-func (n *nifiClient) FlowDropRequest(connectionId, id string) (*nigoapi.DropRequestEntity, error) {
-	// Get nigoapi client, favoring the one associated to the coordinator node.
-	client := n.privilegeCoordinatorClient()
-	if client == nil {
-		log.Error(ErrNoNodeClientsAvailable, "Error during creating node client")
-		return nil, ErrNoNodeClientsAvailable
-	}
-
-	// Request on Nifi Rest API to get the drop request information
-	dropRequest, rsp, err := client.FlowfileQueuesApi.GetDropRequest(nil, connectionId, id)
-	if err := errorGetOperation(rsp, err); err != nil {
-		return nil, err
-	}
-
-	return &dropRequest, nil
-}
+// TODO : when last supported will be NiFi 1.12.X
+//func (n *nifiClient) FlowDropRequest(connectionId, id string) (*nigoapi.DropRequestEntity, error) {
+//	// Get nigoapi client, favoring the one associated to the coordinator node.
+//	client := n.privilegeCoordinatorClient()
+//	if client == nil {
+//		log.Error(ErrNoNodeClientsAvailable, "Error during creating node client")
+//		return nil, ErrNoNodeClientsAvailable
+//	}
+//
+//	// Request on Nifi Rest API to get the drop request information
+//	dropRequest, rsp, err := client.FlowfileQueuesApi.GetDropRequest(nil, connectionId, id)
+//	if err := errorGetOperation(rsp, err); err != nil {
+//		return nil, err
+//	}
+//
+//	return &dropRequest, nil
+//}

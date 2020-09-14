@@ -76,7 +76,10 @@ func NewMockNiFiClientFailOps() *mockNiFiClient {
 	}
 }
 
-func MockGetClusterResponse(cluster *v1alpha1.NifiCluster) map[string]interface{} {
+func MockGetClusterResponse(cluster *v1alpha1.NifiCluster, empty bool) map[string]interface{} {
+	if empty {
+		return make(map[string]interface{})
+	}
 	return map[string]interface{}{
 		"cluster": map[string]interface{}{
 			"nodes": []nigoapi.NodeDto{

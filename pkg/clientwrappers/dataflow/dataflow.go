@@ -15,6 +15,7 @@ import (
 
 var log = logf.Log.WithName("dataflow-method")
 
+// DataflowExist check if the NifiDataflow exist on NiFi Cluster
 func DataflowExist(client client.Client, flow *v1alpha1.NifiDataflow, cluster *v1alpha1.NifiCluster) (bool, error) {
 
 	if flow.Status.ProcessGroupID == "" {
@@ -37,6 +38,7 @@ func DataflowExist(client client.Client, flow *v1alpha1.NifiDataflow, cluster *v
 	return flowEntity != nil, nil
 }
 
+// CreateDataflow will deploy the NifiDataflow on NiFi Cluster
 func CreateDataflow(
 	client client.Client,
 	flow *v1alpha1.NifiDataflow,
@@ -60,6 +62,7 @@ func CreateDataflow(
 	return &flow.Status, nil
 }
 
+// ScheduleDataflow will schedule the controller services and components of the NifiDataflow.
 func ScheduleDataflow(client client.Client, flow *v1alpha1.NifiDataflow, cluster *v1alpha1.NifiCluster) error {
 	nClient, err := common.NewNodeConnection(log, client, cluster)
 	if err != nil {
@@ -113,6 +116,7 @@ func ScheduleDataflow(client client.Client, flow *v1alpha1.NifiDataflow, cluster
 	return nil
 }
 
+// IsOutOfSyncDataflow control if the deployed dataflow is out of sync with the NifiDataflow resource
 func IsOutOfSyncDataflow(
 	client client.Client,
 	flow *v1alpha1.NifiDataflow,
@@ -136,7 +140,8 @@ func IsOutOfSyncDataflow(
 	}
 	processGroups = append(processGroups, *pGEntity)
 
-	return isParameterContextChanged(parameterContext, processGroups) || isVersioningChanged(flow, registry, pGEntity) || !isVersionSync(flow, pGEntity) || localChanged(pGEntity) ||
+	return isParameterContextChanged(parameterContext, processGroups) ||
+		isVersioningChanged(flow, registry, pGEntity) || !isVersionSync(flow, pGEntity) || localChanged(pGEntity) ||
 		isParentProcessGroupChanged(flow, pGEntity) || isNameChanged(flow, pGEntity), nil
 }
 
@@ -168,6 +173,7 @@ func isNameChanged(flow *v1alpha1.NifiDataflow, pgFlowEntity *nigoapi.ProcessGro
 	return flow.Name != pgFlowEntity.Component.Name
 }
 
+// isVersionSync check if the flow version is out of sync.
 func isVersionSync(flow *v1alpha1.NifiDataflow, pgFlowEntity *nigoapi.ProcessGroupEntity) bool {
 	return *flow.Spec.FlowVersion == pgFlowEntity.Component.VersionControlInformation.Version
 }
@@ -176,6 +182,7 @@ func localChanged(pgFlowEntity *nigoapi.ProcessGroupEntity) bool {
 	return strings.Contains(pgFlowEntity.Component.VersionControlInformation.State, "LOCALLY_MODIFIED")
 }
 
+// isVersioningChanged check if the versioning configuration is out of sync on process group.
 func isVersioningChanged(
 	flow *v1alpha1.NifiDataflow,
 	registry *v1alpha1.NifiRegistryClient,
@@ -187,6 +194,7 @@ func isVersioningChanged(
 		registry.Status.Id != pgFlowEntity.Component.VersionControlInformation.RegistryId
 }
 
+// SyncDataflow implements the logic to sync a NifiDataflow with the deployed flow.
 func SyncDataflow(
 	client client.Client,
 	flow *v1alpha1.NifiDataflow,
@@ -368,6 +376,7 @@ func SyncDataflow(
 	return &flow.Status, nil
 }
 
+// prepareUpdatePG ensure drain or drop logic
 func prepareUpdatePG(
 	client client.Client,
 	flow *v1alpha1.NifiDataflow,
@@ -482,7 +491,10 @@ func prepareUpdatePG(
 	return &flow.Status, nil
 }
 
-func RemoveDataflow(client client.Client, flow *v1alpha1.NifiDataflow, cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiDataflowStatus, error) {
+func RemoveDataflow(
+	client client.Client,
+	flow *v1alpha1.NifiDataflow,
+	cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiDataflowStatus, error) {
 
 	// Prepare Dataflow
 	status, err := prepareUpdatePG(client, flow, cluster)
@@ -570,7 +582,10 @@ func UnscheduleDataflow(client client.Client, flow *v1alpha1.NifiDataflow, clust
 	return nil
 }
 
-func processGroupFromFlow(flowEntity *nigoapi.ProcessGroupFlowEntity, flow *v1alpha1.NifiDataflow) *nigoapi.ProcessGroupEntity {
+// processGroupFromFlow convert a ProcessGroupFlowEntity to NifiDataflow
+func processGroupFromFlow(
+	flowEntity *nigoapi.ProcessGroupFlowEntity,
+	flow *v1alpha1.NifiDataflow) *nigoapi.ProcessGroupEntity {
 
 	for _, entity := range flowEntity.ProcessGroupFlow.Flow.ProcessGroups {
 		if entity.Id == flow.Status.ProcessGroupID {
@@ -581,7 +596,11 @@ func processGroupFromFlow(flowEntity *nigoapi.ProcessGroupFlowEntity, flow *v1al
 	return nil
 }
 
-func listComponents(client client.Client, cluster *v1alpha1.NifiCluster, processGroupID string) ([]nigoapi.ProcessGroupEntity, []nigoapi.ProcessorEntity, []nigoapi.ConnectionEntity, []nigoapi.PortEntity, error) {
+// listComponents will get all ProcessGroups, Processors, Connections and Ports recursively
+func listComponents(
+	client client.Client,
+	cluster *v1alpha1.NifiCluster,
+	processGroupID string) ([]nigoapi.ProcessGroupEntity, []nigoapi.ProcessorEntity, []nigoapi.ConnectionEntity, []nigoapi.PortEntity, error) {
 
 	var processGroups []nigoapi.ProcessGroupEntity
 	var processors []nigoapi.ProcessorEntity
@@ -653,7 +672,10 @@ func updateRequest2Status(updateRequest *nigoapi.VersionedFlowUpdateRequestEntit
 	}
 }
 
-func updateProcessGroupEntity(flow *v1alpha1.NifiDataflow, registry *v1alpha1.NifiRegistryClient, entity *nigoapi.ProcessGroupEntity) {
+func updateProcessGroupEntity(
+	flow *v1alpha1.NifiDataflow,
+	registry *v1alpha1.NifiRegistryClient,
+	entity *nigoapi.ProcessGroupEntity) {
 
 	var defaultVersion int64 = 0
 	if entity == nil {
