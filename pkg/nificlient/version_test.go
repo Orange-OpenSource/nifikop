@@ -200,6 +200,7 @@ func testGetVersionRevertRequest(t *testing.T, entity *nigoapi.VersionControlInf
 		})
 
 	return client.GetVersionRevertRequest(id)
+
 }
 
 func MockVersionUpdateRequest(pgId, registryId, bucketId, flowId string, flowVersion int32) nigoapi.VersionControlInformationEntity {
