@@ -34,6 +34,6 @@ a dynamic reconfiguration.
 In a cloud native approach, we are looking for important management features, which we have applied to NiFi Dataflow : 
 
 - **Automated deployment :** Based on the NiFi registry, you can describe your `NiFiDataflow` resource that will be deployed and run on the targeted NiFi cluster.
-- **Portability :** On kubernetes everything is a yaml file, so with NiFiKop we give you the ability to describe your clusters but also the `registry clients`, `paramater contexts` and `dataflows` of your NiFi application, so that you can redeploy the same thing in a different namespace or cluster.
-- **State management :** With NiFiKop resources, you describe what you want, and the operator deals with the NiFi Rest API to make sure the resource stay in sync (even if someone manually makes changes directly on NiFi cluster).
+- **Portability :** On kubernetes everything is a yaml file, so with NiFiKop we give you the ability to describe your clusters but also the `registry clients`, `parameter contexts` and `dataflows` of your NiFi application, so that you can redeploy the same thing in a different namespace or cluster.
+- **State management :** With NiFiKop resources, you can describe what you want, and the operator deals with the NiFi Rest API to make sure the resource stays in sync (even if someone manually makes changes directly on NiFi cluster).
 - **Configurations :** Based on the `Parameter Contexts`, NiFiKop allows you to associate to your `Dataflow` (= your applications) with a different configuration depending on the environment !

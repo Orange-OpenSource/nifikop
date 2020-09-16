@@ -59,6 +59,7 @@ module.exports = {
                         },
                     ]
                 },
+                "3_tasks/3_nifi_dataflow"
             ],
             "Examples": [
                 "4_examples/1_simple_nifi_cluster"

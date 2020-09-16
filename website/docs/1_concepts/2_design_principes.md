@@ -39,7 +39,7 @@ With the Orange NiFi operator we can:
 The [Dataflow Lifecycle management feature](/nifikop/docs/1_concepts/3_features#dataflow-lifecycle-management-via-crd) introduces 3 new CRDs :
 
 - **NiFiRegistryClient :** Allowing you to declare a registry client.
-- **NiFiParameterContext :** Allowing you to create parameter context, with two kinds of parameters, a simple `map[string]string` for non-sensitive parameters and a `list of secrets` which contains sensitives parameters.
+- **NiFiParameterContext :** Allowing you to create parameter context, with two kinds of parameters, a simple `map[string]string` for non-sensitive parameters and a `list of secrets` which contains sensitive parameters.
 - **NiFiDataflow :** Allowing you to declare a Dataflow based on a `NiFiRegistryClient` and optionally a `ParameterContext`, which will be deployed and managed by the operator on the `targeted NiFi cluster`.
 
 The following diagram shows the interactions between all the components : 
