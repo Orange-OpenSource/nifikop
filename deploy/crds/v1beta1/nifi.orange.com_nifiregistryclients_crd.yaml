@@ -33,8 +33,8 @@ spec:
           description: NifiRegistryClientSpec defines the desired state of NifiRegistryClient
           properties:
             clusterRef:
-              description: contains the reference to the NifiCluster with the one
-                the registry client is linked
+              description: Contains the reference to the NifiCluster with the one
+                the registry client is linked.
               properties:
                 name:
                   type: string
@@ -44,6 +44,7 @@ spec:
               - name
               type: object
             description:
+              description: The Description of the Registry client.
               type: string
             uri:
               description: The URI of the NiFi registry that should be used for pulling
@@ -57,7 +58,7 @@ spec:
           description: NifiRegistryClientStatus defines the observed state of NifiRegistryClient
           properties:
             id:
-              description: Queued flow files The nifi registry client's id
+              description: The nifi registry client's id
               type: string
             version:
               description: The last nifi registry client revision version catched
