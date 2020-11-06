@@ -126,13 +126,13 @@ Remember to set your NiFiCluster CR properly to use the newly created StorageCla
 kubectl create -n nifi -f config/samples/simplenificluster.yaml
 ```
 
-## Easy way: installing with Helm
+## Installing with Helm
 
-Alternatively, if you are using Helm, you can deploy the operator using a Helm chart [Helm chart](https://github.com/Orange-OpenSource/nifikop/tree/master/helm):
+You can deploy the operator using a Helm chart [Helm chart](https://github.com/Orange-OpenSource/nifikop/tree/master/helm):
 
-> To install the an other version of the operator use `helm install --name=nifikop --namespace=nifi --set operator.image.tag=x.y.z orange-incubator/nifikop`
+> To install  an other version of the operator use `helm install --name=nifikop --namespace=nifi --set operator.image.tag=x.y.z orange-incubator/nifikop`
 
-Deploy the NiFiKop crds : 
+First, eploy the NiFiKop crds : 
 
 <Tabs
   defaultValue="k8s16+"
