@@ -189,6 +189,18 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		return errors.WrapIfWithDetails(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
 	}
 
+	// Handle PDB
+	if r.NifiCluster.Spec.DisruptionBudget.Create {
+		o, err := r.podDisruptionBudget(log)
+		if err != nil {
+			return errors.WrapIfWithDetails(err, "failed to compute podDisruptionBudget")
+		}
+		err = k8sutil.Reconcile(log, r.Client, o, r.NifiCluster)
+		if err != nil {
+			return errors.WrapIfWithDetails(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
+		}
+	}
+
 	// Handle Pod delete
 	err = r.reconcileNifiPodDelete(log)
 	if err != nil {

@@ -40,6 +40,18 @@ spec:
                   TODO : rework to define into internalListener ! (Note: if ssl enabled
                   need Cluster & SiteToSite & Https port)'
                 type: boolean
+              disruptionBudget:
+                description: Defines the configuration for PodDisruptionBudget
+                properties:
+                  budget:
+                    description: The budget to set for the PDB, can either be static
+                      number or a percentage
+                    pattern: ^[0-9]+$|^[0-9]{1,2}%$|^100%$
+                    type: string
+                  create:
+                    description: If set to true, will create a podDisruptionBudget
+                    type: boolean
+                type: object
               initContainerImage:
                 description: initContainerImage can override the default image used
                   into the init container to check if ZoooKeeper server is reachable.

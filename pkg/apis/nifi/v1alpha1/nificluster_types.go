@@ -75,6 +75,8 @@ type NifiClusterSpec struct {
 	NodeConfigGroups map[string]NodeConfig `json:"nodeConfigGroups,omitempty"`
 	// all node requires an image, unique id, and storageConfigs settings
 	Nodes []Node `json:"nodes"`
+	// Defines the configuration for PodDisruptionBudget
+	DisruptionBudget DisruptionBudget `json:"disruptionBudget,omitempty"`
 	// LdapConfiguration specifies the configuration if you want to use LDAP
 	LdapConfiguration LdapConfiguration `json:"ldapConfiguration,omitempty"`
 	// NifiClusterTaskSpec specifies the configuration of the nifi cluster Tasks
@@ -83,6 +85,16 @@ type NifiClusterSpec struct {
 	//VaultConfig         	VaultConfig         `json:"vaultConfig,omitempty"`
 	// listenerConfig specifies nifi's listener specifig configs
 	ListenersConfig ListenersConfig `json:"listenersConfig"`
+}
+
+// DisruptionBudget defines the configuration for PodDisruptionBudget
+type DisruptionBudget struct {
+	// If set to true, will create a podDisruptionBudget
+	// +optional
+	Create bool `json:"create,omitempty"`
+	// The budget to set for the PDB, can either be static number or a percentage
+	// +kubebuilder:validation:Pattern:="^[0-9]+$|^[0-9]{1,2}%$|^100%$"
+	Budget string `json:"budget,omitempty"`
 }
 
 type ServicePolicy struct {

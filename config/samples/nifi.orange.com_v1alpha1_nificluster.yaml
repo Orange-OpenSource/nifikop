@@ -153,6 +153,12 @@ spec:
       # Additionnal annotation to attach to the pod associated
       # https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set
 #      nodeAnnotations:
+  # disruptionBudget defines the configuration for PodDisruptionBudget
+  disruptionBudget:
+    # create will enable the PodDisruptionBudget when set to true
+    create: false
+  # The budget to set for the PDB, can either be static number or a percentage
+  #   budget: "1"
   # all node requires an image, unique id, and storageConfigs settings
   nodes:
     # Unique Node id

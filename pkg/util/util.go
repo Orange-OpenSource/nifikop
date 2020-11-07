@@ -202,3 +202,11 @@ func NifiUserSliceContains(list []*v1alpha1.NifiUser, u *v1alpha1.NifiUser) bool
 	}
 	return false
 }
+
+// computes the max between 2 ints
+func Max(x, y int) int {
+	if x < y {
+		return y
+	}
+	return x
+}
