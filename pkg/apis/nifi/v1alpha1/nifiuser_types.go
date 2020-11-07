@@ -27,9 +27,6 @@ type NifiUserSpec struct {
 	ClusterRef ClusterReference `json:"clusterRef"`
 	// List of DNSNames that the user will used to request the NifiCluster (allowing to create the right certificates associated)
 	DNSNames []string `json:"dnsNames,omitempty"`
-	//
-	//TopicGrants []UserTopicGrant `json:"topicGrants,omitempty"`
-
 	// Whether or not the the operator also include a Java keystore format (JKS) with you secret
 	IncludeJKS bool `json:"includeJKS,omitempty"`
 }
@@ -38,7 +35,10 @@ type NifiUserSpec struct {
 // +k8s:openapi-gen=true
 type NifiUserStatus struct {
 	State UserState `json:"state"`
-	//	ACLs  []string  `json:"acls,omitempty"`
+	// The nifi registry client's id
+	Id string `json:"id"`
+	// The last nifi registry client revision version catched
+	Version int64 `json:"version"`
 }
 
 // Nifi User is the Schema for the nifi users API

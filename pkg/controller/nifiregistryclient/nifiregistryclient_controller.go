@@ -221,15 +221,15 @@ func (r *ReconcileNifiRegistryClient) checkFinalizers(ctx context.Context, reqLo
 			return common.RequeueWithError(reqLogger, "failed to finalize kafkatopic", err)
 		}
 		if err = r.removeFinalizer(ctx, registryClient); err != nil {
-			return common.RequeueWithError(reqLogger, "failed to remove finalizer from kafkatopic", err)
+			return common.RequeueWithError(reqLogger, "failed to remove finalizer from nifiregistryclient", err)
 		}
 	}
 	return common.Reconciled()
 }
 
-func (r *ReconcileNifiRegistryClient) removeFinalizer(ctx context.Context, flow *v1alpha1.NifiRegistryClient) error {
-	flow.SetFinalizers(util.StringSliceRemove(flow.GetFinalizers(), registryClientFinalizer))
-	_, err := r.updateAndFetchLatest(ctx, flow)
+func (r *ReconcileNifiRegistryClient) removeFinalizer(ctx context.Context, registryClient *v1alpha1.NifiRegistryClient) error {
+	registryClient.SetFinalizers(util.StringSliceRemove(registryClient.GetFinalizers(), registryClientFinalizer))
+	_, err := r.updateAndFetchLatest(ctx, registryClient)
 	return err
 }
 

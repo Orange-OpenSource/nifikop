@@ -199,25 +199,6 @@ func (r *ReconcileNifiUser) Reconcile(request reconcile.Request) (reconcile.Resu
 		return common.RequeueWithError(reqLogger, "failed to ensure NifiCluster label on user", err)
 	}
 
-	// If topic grants supplied, grab a broker connection and set ACLs
-	// TODO : Check Grant into NiFi
-	/*if len(instance.Spec.TopicGrants) > 0 {
-		broker, close, err := newBrokerConnection(reqLogger, r.Client, cluster)
-		if err != nil {
-			return checkBrokerConnectionError(reqLogger, err)
-		}
-		defer close()
-
-		// TODO (tinyzimmer): Should probably take this opportunity to see if we are removing any ACLs
-		for _, grant := range instance.Spec.TopicGrants {
-			reqLogger.Info(fmt.Sprintf("Ensuring %s ACLs for User: %s -> Topic: %s", grant.AccessType, user.DN(), grant.TopicName))
-			// CreateUserACLs returns no error if the ACLs already exist
-			if err = broker.CreateUserACLs(grant.AccessType, grant.PatternType, user.DN(), grant.TopicName); err != nil {
-				return common.RequeueWithError(reqLogger, "failed to ensure ACLs for NifiUser", err)
-			}
-		}
-	}*/
-
 	// ensure a finalizer for cleanup on deletion
 	if !util.StringSliceContains(instance.GetFinalizers(), userFinalizer) {
 		r.addFinalizer(reqLogger, instance)

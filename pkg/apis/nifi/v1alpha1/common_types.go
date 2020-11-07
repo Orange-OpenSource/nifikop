@@ -105,6 +105,13 @@ type SecretReference struct {
 	Namespace string `json:"namespace,omitempty"`
 }
 
+// UserReference states a reference to a user for user group
+// provisioning
+type UserReference struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace,omitempty"`
+}
+
 const (
 	// PKIBackendCertManager invokes cert-manager for user certificate management
 	PKIBackendCertManager PKIBackend = "cert-manager"
