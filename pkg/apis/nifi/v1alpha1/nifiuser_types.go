@@ -22,19 +22,20 @@ import (
 // +k8s:openapi-gen=true
 type NifiUserSpec struct {
 	// Name of the secret where all cert resources will be stored
-	SecretName string `json:"secretName"`
+	SecretName string `json:"secretName,omitempty"`
 	// contains the reference to the NifiCluster with the one the user is linked
 	ClusterRef ClusterReference `json:"clusterRef"`
 	// List of DNSNames that the user will used to request the NifiCluster (allowing to create the right certificates associated)
 	DNSNames []string `json:"dnsNames,omitempty"`
 	// Whether or not the the operator also include a Java keystore format (JKS) with you secret
 	IncludeJKS bool `json:"includeJKS,omitempty"`
+	// Whether or not a certificate will be created for this user.
+	CreateCert *bool `json:"createCert,omitempty"`
 }
 
 // NifiUserStatus defines the observed state of NifiUser
 // +k8s:openapi-gen=true
 type NifiUserStatus struct {
-	State UserState `json:"state"`
 	// The nifi registry client's id
 	Id string `json:"id"`
 	// The last nifi registry client revision version catched
@@ -65,4 +66,11 @@ type NifiUserList struct {
 
 func init() {
 	SchemeBuilder.Register(&NifiUser{}, &NifiUserList{})
+}
+
+func (u *NifiUserSpec) GetCreateCert() bool {
+	if u.CreateCert != nil {
+		return *u.CreateCert
+	}
+	return true
 }

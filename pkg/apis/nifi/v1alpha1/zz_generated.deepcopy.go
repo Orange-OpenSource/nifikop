@@ -831,6 +831,11 @@ func (in *NifiUserSpec) DeepCopyInto(out *NifiUserSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.CreateCert != nil {
+		in, out := &in.CreateCert, &out.CreateCert
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

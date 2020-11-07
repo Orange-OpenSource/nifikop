@@ -125,3 +125,11 @@ type NifiDataflowList struct {
 func init() {
 	SchemeBuilder.Register(&NifiDataflow{}, &NifiDataflowList{})
 }
+
+func (d *NifiDataflowSpec) GetRunOnce() bool {
+	if d.RunOnce != nil {
+		return *d.RunOnce
+	}
+	return true
+}
+

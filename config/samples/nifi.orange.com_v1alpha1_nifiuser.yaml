@@ -1,14 +1,13 @@
 apiVersion: nifi.orange.com/v1alpha1
-kind: NifiUserGroup
+kind: NifiUser
 metadata:
-  name: group-test
+  name: user-test
 spec:
   # Contains the reference to the NifiCluster with the one the registry client is linked.
   clusterRef:
     name: nc
     namespace: nifikop
-  usersRef:
-    - name: nc-0-node.nc-headless.nifikop.svc.cluster.local
-    - name: nc-controller.nifikop.mgt.cluster.local
-  accessPolicies: []
+  includeJKS: true
+  createCert: false
+#  accessPolicies: []
 

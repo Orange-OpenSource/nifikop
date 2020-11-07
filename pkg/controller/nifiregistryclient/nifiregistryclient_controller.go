@@ -218,7 +218,7 @@ func (r *ReconcileNifiRegistryClient) checkFinalizers(ctx context.Context, reqLo
 	var err error
 	if util.StringSliceContains(registryClient.GetFinalizers(), registryClientFinalizer) {
 		if err = r.finalizeNifiRegistryClient(reqLogger, registryClient, cluster); err != nil {
-			return common.RequeueWithError(reqLogger, "failed to finalize kafkatopic", err)
+			return common.RequeueWithError(reqLogger, "failed to finalize nifiregistryclient", err)
 		}
 		if err = r.removeFinalizer(ctx, registryClient); err != nil {
 			return common.RequeueWithError(reqLogger, "failed to remove finalizer from nifiregistryclient", err)

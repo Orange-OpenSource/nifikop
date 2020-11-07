@@ -96,6 +96,13 @@ type NifiClient interface {
 	UpdateUserGroup(entity nigoapi.UserGroupEntity) (*nigoapi.UserGroupEntity, error)
 	RemoveUserGroup(entity nigoapi.UserGroupEntity) error
 
+	// User  func
+	GetUsers() ([]nigoapi.UserEntity, error)
+	GetUser(id string) (*nigoapi.UserEntity, error)
+	CreateUser(entity nigoapi.UserEntity) (*nigoapi.UserEntity, error)
+	UpdateUser(entity nigoapi.UserEntity) (*nigoapi.UserEntity, error)
+	RemoveUser(entity nigoapi.UserEntity) error
+
 	Build() error
 }
 
