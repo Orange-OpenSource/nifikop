@@ -121,6 +121,8 @@ type NifiClusterStatus struct {
 	State ClusterState `json:"state"`
 	// RollingUpgradeStatus defines status of rolling upgrade
 	RollingUpgrade RollingUpgradeStatus `json:"rollingUpgradeStatus,omitempty"`
+	// RootProcessGroupId contains the uuid of the root process group for this cluster
+	RootProcessGroupId string `json:"rootProcessGroupId,omitempty"`
 }
 
 // RollingUpgradeStatus defines status of rolling upgrade

@@ -2453,6 +2453,10 @@ spec:
               - errorCount
               - lastSuccess
               type: object
+            rootProcessGroupId:
+              description: RootProcessGroupId contains the uuid of the root process
+                group for this cluster
+              type: string
             state:
               description: ClusterState holds info about the cluster state
               type: string

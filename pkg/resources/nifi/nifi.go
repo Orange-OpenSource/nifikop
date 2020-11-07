@@ -22,6 +22,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/Orange-OpenSource/nifikop/pkg/apis/nifi/v1alpha1"
+	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/dataflow"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/scale"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
@@ -212,6 +213,17 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	if err != nil && len(r.NifiCluster.Status.NodesState) > 0 {
 		return err
 	}
+
+	// Reconcile cluster communications
+	pgRootId, err := dataflow.RootProcessGroup(r.Client, r.NifiCluster)
+	if err != nil {
+		return err
+	}
+
+	if err := k8sutil.UpdateRootProcessGroupIdStatus(r.Client, r.NifiCluster, pgRootId, log); err != nil {
+		return err
+	}
+	//
 
 	log.V(1).Info("Reconciled")
 
