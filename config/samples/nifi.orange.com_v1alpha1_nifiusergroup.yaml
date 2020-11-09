@@ -10,5 +10,7 @@ spec:
   usersRef:
     - name: nc-0-node.nc-headless.nifikop.svc.cluster.local
     - name: nc-controller.nifikop.mgt.cluster.local
-  accessPolicies: []
-
+  accessPolicies:
+    - type: global
+      action: read
+      resource: /counters

@@ -21,6 +21,8 @@ import (
 // NifiUserSpec defines the desired state of NifiUser
 // +k8s:openapi-gen=true
 type NifiUserSpec struct {
+	//
+	Identity string `json:"identity,omitempty"`
 	// Name of the secret where all cert resources will be stored
 	SecretName string `json:"secretName,omitempty"`
 	// contains the reference to the NifiCluster with the one the user is linked
@@ -31,6 +33,7 @@ type NifiUserSpec struct {
 	IncludeJKS bool `json:"includeJKS,omitempty"`
 	// Whether or not a certificate will be created for this user.
 	CreateCert *bool `json:"createCert,omitempty"`
+	AccessPolicies []AccessPolicy `json:"accessPolicies,omitempty"`
 }
 
 // NifiUserStatus defines the observed state of NifiUser
@@ -73,4 +76,11 @@ func (u *NifiUserSpec) GetCreateCert() bool {
 		return *u.CreateCert
 	}
 	return true
+}
+
+func (u *NifiUser) GetIdentity() string {
+	if u.Spec.Identity == "" {
+		return u.Name
+	}
+	return u.Spec.Identity
 }

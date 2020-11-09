@@ -66,8 +66,10 @@ type NifiClusterSpec struct {
 	OneNifiNodePerNode bool `json:"oneNifiNodePerNode"`
 	// propage
 	PropagateLabels bool `json:"propagateLabels,omitempty"`
-	// TODO : remove once the user management is implemented into the operator
-	InitialAdminUser string `json:"initialAdminUser,omitempty""`
+	//
+	ManagedAdminUsers []ManagedUser `json:"managedAdminUsers,omitempty""`
+	//
+	ManagedReaderUsers []ManagedUser `json:"managedReaderUsers,omitempty""`
 	// readOnlyConfig specifies the read-only type Nifi config cluster wide, all theses
 	// will be merged with node specified readOnly configurations, so it can be overwritten per node.
 	ReadOnlyConfig ReadOnlyConfig `json:"readOnlyConfig,omitempty"`
@@ -351,6 +353,20 @@ type NifiCluster struct {
 
 	Spec   NifiClusterSpec   `json:"spec,omitempty"`
 	Status NifiClusterStatus `json:"status,omitempty"`
+}
+
+type ManagedUser struct {
+	//
+	Identity string `json:"identity,omitempty"`
+	//
+	Name string `json:"name"`
+}
+
+func (u *ManagedUser) GetIdentity() string {
+	if u.Identity == "" {
+		return u.Name
+	}
+	return u.Identity
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

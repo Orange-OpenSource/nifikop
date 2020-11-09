@@ -13,7 +13,7 @@ type NifiUserGroupSpec struct {
 	ClusterRef ClusterReference `json:"clusterRef"`
 	// Contains the list of reference to NifiUsers that are part to the group.
 	UsersRef []UserReference `json:"usersRef,omitempty"`
-	AccessPolicies []string `json:"accessPolicies,omitempty"`
+	AccessPolicies []AccessPolicy `json:"accessPolicies,omitempty"`
 }
 
 // NifiUserGroupStatus defines the observed state of NifiUserGroup

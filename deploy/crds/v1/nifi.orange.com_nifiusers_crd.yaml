@@ -31,6 +31,31 @@ spec:
           spec:
             description: NifiUserSpec defines the desired state of NifiUser
             properties:
+              accessPolicies:
+                items:
+                  properties:
+                    action:
+                      description: AccessPolicyAction represents the access policy
+                        action
+                      type: string
+                    componentId:
+                      type: string
+                    componentType:
+                      type: string
+                    resource:
+                      description: AccessPolicyResource represents the access policy
+                        resource
+                      type: string
+                    type:
+                      description: AccessPolicyType represents the type of access
+                        policy
+                      type: string
+                  required:
+                  - action
+                  - resource
+                  - type
+                  type: object
+                type: array
               clusterRef:
                 description: contains the reference to the NifiCluster with the one
                   the user is linked
@@ -52,6 +77,8 @@ spec:
                 items:
                   type: string
                 type: array
+              identity:
+                type: string
               includeJKS:
                 description: Whether or not the the operator also include a Java keystore
                   format (JKS) with you secret

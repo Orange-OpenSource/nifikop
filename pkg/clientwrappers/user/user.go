@@ -3,6 +3,7 @@ package user
 import (
 	"github.com/Orange-OpenSource/nifikop/pkg/apis/nifi/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers"
+	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/accesspolicies"
 	"github.com/Orange-OpenSource/nifikop/pkg/controller/common"
 	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
@@ -52,7 +53,7 @@ func FindUserByIdentity(client client.Client, user *v1alpha1.NifiUser,
 	}
 
 	for _, entity := range entities {
-		if user.Name == entity.Component.Identity {
+		if user.GetIdentity() == entity.Component.Identity {
 			return &v1alpha1.NifiUserStatus{
 				Id:      entity.Id,
 				Version: *entity.Revision.Version,
@@ -110,6 +111,51 @@ func SyncUser(client client.Client, user *v1alpha1.NifiUser,
 	status.Version = *entity.Revision.Version
 	status.Id = entity.Id
 
+	// Remove from access policy
+	for _, entity := range entity.Component.AccessPolicies {
+		contains := false
+		for _,  accessPolicy := range user.Spec.AccessPolicies {
+			if entity.Component.Action == string(accessPolicy.Action) &&
+				entity.Component.Resource == accessPolicy.GetResource(cluster) {
+				contains = true
+				break
+			}
+		}
+		if !contains {
+			if err := accesspolicies.UpdateAccessPolicyEntity(client,
+				&nigoapi.AccessPolicyEntity{
+					Component: &nigoapi.AccessPolicyDto{
+						Id: entity.Component.Id,
+						Resource: entity.Component.Resource,
+						Action: entity.Component.Action,
+					},
+				},
+				[]*v1alpha1.NifiUser{}, []*v1alpha1.NifiUser{user},
+				[]*v1alpha1.NifiUserGroup{}, []*v1alpha1.NifiUserGroup{}, cluster); err != nil {
+				return &status, err
+			}
+		}
+	}
+
+	// add
+	for _,  accessPolicy := range user.Spec.AccessPolicies {
+		contains := false
+		for _, entity := range entity.Component.AccessPolicies {
+			if entity.Component.Action == string(accessPolicy.Action) &&
+				entity.Component.Resource == accessPolicy.GetResource(cluster) {
+				contains = true
+				break
+			}
+		}
+		if !contains {
+			if err := accesspolicies.UpdateAccessPolicy(client, &accessPolicy,
+				[]*v1alpha1.NifiUser{user}, []*v1alpha1.NifiUser{},
+				[]*v1alpha1.NifiUserGroup{}, []*v1alpha1.NifiUserGroup{}, cluster); err != nil {
+				return &status, err
+			}
+		}
+	}
+
 	return &status, nil
 }
 
@@ -134,7 +180,7 @@ func RemoveUser(client client.Client, user *v1alpha1.NifiUser,	cluster *v1alpha1
 }
 
 func userIsSync(user *v1alpha1.NifiUser, entity *nigoapi.UserEntity) bool {
-	return user.Name == entity.Component.Identity
+	return user.GetIdentity() == entity.Component.Identity
 }
 
 func updateUserEntity(user *v1alpha1.NifiUser, entity *nigoapi.UserEntity) {
@@ -156,5 +202,5 @@ func updateUserEntity(user *v1alpha1.NifiUser, entity *nigoapi.UserEntity) {
 		}
 	}
 
-	entity.Component.Identity = user.Name
+	entity.Component.Identity = user.GetIdentity()
 }

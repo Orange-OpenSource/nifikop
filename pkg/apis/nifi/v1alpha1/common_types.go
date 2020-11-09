@@ -14,6 +14,8 @@
 
 package v1alpha1
 
+import "fmt"
+
 // DataflowState defines the state of a NifiDataflow
 type DataflowState string
 
@@ -43,6 +45,15 @@ type InitClusterNode bool
 
 // PKIBackend represents an interface implementing the PKIManager
 type PKIBackend string
+
+// AccessPolicyType represents the type of access policy
+type AccessPolicyType string
+
+// AccessPolicyAction represents the access policy action
+type AccessPolicyAction string
+
+// AccessPolicyResource represents the access policy resource
+type AccessPolicyResource string
 
 func (r State) IsUpscale() bool {
 	return r == GracefulUpscaleRequired || r == GracefulUpscaleSucceeded || r == GracefulUpscaleRunning
@@ -111,6 +122,69 @@ type UserReference struct {
 	Name      string `json:"name"`
 	Namespace string `json:"namespace,omitempty"`
 }
+
+type AccessPolicy struct {
+	//
+	Type AccessPolicyType `json:"type"`
+	//
+	Action AccessPolicyAction `json:"action"`
+	//
+	Resource AccessPolicyResource `json:"resource"`
+	//
+	ComponentType string `json:"componentType,omitempty"`
+	//
+	ComponentId string `json:"componentId,omitempty"`
+}
+
+func (a *AccessPolicy) GetResource(cluster *NifiCluster) string {
+	if a.Type == GlobalAccessPolicyType {
+		return string(a.Resource)
+	}
+	componentId := a.ComponentId
+	if a.ComponentType == "process-groups" && componentId == "" {
+		componentId = cluster.Status.RootProcessGroupId
+	}
+	resource := a.Resource
+	if a.Resource == ComponentsAccessPolicyResource {
+		resource = ""
+	}
+	return fmt.Sprintf("%s/%s/%s", resource, a.ComponentType, componentId)
+}
+
+const(
+	//
+	GlobalAccessPolicyType AccessPolicyType = "global"
+	//
+	ComponentAccessPolicyType AccessPolicyType = "component"
+
+	//
+	ReadAccessPolicyAction AccessPolicyAction = "read"
+	//
+	WriteAccessPolicyAction AccessPolicyAction = "write"
+
+	// Global
+	FlowAccessPolicyResource AccessPolicyResource = "/flow"
+	ControllerAccessPolicyResource AccessPolicyResource = "/controller"
+	ParameterContextAccessPolicyResource AccessPolicyResource = "/parameter-context"
+	ProvenanceAccessPolicyResource AccessPolicyResource = "/provenance"
+	RestrictedComponentsAccessPolicyResource AccessPolicyResource = "/restricted-components"
+	PoliciesAccessPolicyResource AccessPolicyResource = "/policies"
+	TenantsAccessPolicyResource AccessPolicyResource = "/tenants"
+	SiteToSiteAccessPolicyResource AccessPolicyResource = "/site-to-site"
+	ProxyAccessPolicyResource AccessPolicyResource = "/proxy"
+	CountersAccessPolicyResource AccessPolicyResource = "/counters"
+
+	// Component
+	ComponentsAccessPolicyResource AccessPolicyResource = "/"
+	OperationAccessPolicyResource AccessPolicyResource = "/operation"
+	ProvenanceDataAccessPolicyResource AccessPolicyResource = "/provenance-data"
+	DataAccessPolicyResource AccessPolicyResource = "/data"
+	PoliciesComponentAccessPolicyResource AccessPolicyResource = "/policies"
+	DataTransferAccessPolicyResource AccessPolicyResource = "/data-transfer"
+
+	// ComponentType
+	ProcessGroupType string = "process-groups"
+)
 
 const (
 	// PKIBackendCertManager invokes cert-manager for user certificate management

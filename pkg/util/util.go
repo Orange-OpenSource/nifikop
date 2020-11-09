@@ -15,10 +15,12 @@
 package util
 
 import (
-	"github.com/Orange-OpenSource/nifikop/pkg/apis/nifi/v1alpha1"
+	"crypto/sha1"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/Orange-OpenSource/nifikop/pkg/apis/nifi/v1alpha1"
 
 	"emperror.dev/errors"
 	"github.com/imdario/mergo"
@@ -209,4 +211,10 @@ func Max(x, y int) int {
 		return y
 	}
 	return x
+}
+
+func Hash(s string) string {
+	h := sha1.New()
+	h.Write([]byte(s))
+	return string(h.Sum(nil))
 }

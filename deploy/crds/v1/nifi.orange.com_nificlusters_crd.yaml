@@ -1116,10 +1116,6 @@ spec:
                   - name
                   type: object
                 type: array
-              initialAdminUser:
-                description: 'TODO : remove once the user management is implemented
-                  into the operator'
-                type: string
               ldapConfiguration:
                 description: LdapConfiguration specifies the configuration if you
                   want to use LDAP
@@ -1231,6 +1227,28 @@ spec:
                 required:
                 - internalListeners
                 type: object
+              managedAdminUsers:
+                items:
+                  properties:
+                    identity:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                  - name
+                  type: object
+                type: array
+              managedReaderUsers:
+                items:
+                  properties:
+                    identity:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                  - name
+                  type: object
+                type: array
               nifiClusterTaskSpec:
                 description: NifiClusterTaskSpec specifies the configuration of the
                   nifi cluster Tasks

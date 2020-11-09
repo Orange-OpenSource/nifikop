@@ -3,6 +3,7 @@ package usergroup
 import (
 	"github.com/Orange-OpenSource/nifikop/pkg/apis/nifi/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers"
+	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/accesspolicies"
 	"github.com/Orange-OpenSource/nifikop/pkg/controller/common"
 	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
@@ -80,6 +81,44 @@ func SyncUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup, user
 	status := userGroup.Status
 	status.Version = *entity.Revision.Version
 	status.Id = entity.Id
+
+	// Remove from access policy
+	for _, entity := range entity.Component.AccessPolicies {
+		contains := false
+		for _,  accessPolicy := range userGroup.Spec.AccessPolicies {
+			if entity.Component.Action == string(accessPolicy.Action) &&
+				entity.Component.Resource == accessPolicy.GetResource(cluster) {
+				contains = true
+				break
+			}
+		}
+		if !contains {
+			if err := accesspolicies.UpdateAccessPolicyEntity(client, &entity,
+				[]*v1alpha1.NifiUser{}, []*v1alpha1.NifiUser{},
+				[]*v1alpha1.NifiUserGroup{}, []*v1alpha1.NifiUserGroup{userGroup}, cluster); err != nil {
+				return &status, err
+			}
+		}
+	}
+
+	// add
+	for _,  accessPolicy := range userGroup.Spec.AccessPolicies {
+		contains := false
+		for _, entity := range entity.Component.AccessPolicies {
+			if entity.Component.Action == string(accessPolicy.Action) &&
+				entity.Component.Resource == accessPolicy.GetResource(cluster) {
+				contains = true
+				break
+			}
+		}
+		if !contains {
+			if err := accesspolicies.UpdateAccessPolicy(client, &accessPolicy,
+				[]*v1alpha1.NifiUser{}, []*v1alpha1.NifiUser{},
+				[]*v1alpha1.NifiUserGroup{userGroup}, []*v1alpha1.NifiUserGroup{}, cluster); err != nil {
+				return &status, err
+			}
+		}
+	}
 
 	return &status, nil
 }
