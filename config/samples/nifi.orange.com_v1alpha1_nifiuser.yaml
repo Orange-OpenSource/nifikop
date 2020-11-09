@@ -10,5 +10,7 @@ spec:
     namespace: nifikop
   includeJKS: true
   createCert: false
-#  accessPolicies: []
-
+#  accessPolicies:
+#    - type: global
+#      action: read
+#      resource: /counters

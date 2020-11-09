@@ -11,7 +11,12 @@ spec:
   clusterSecure: true
   siteToSiteSecure: true
   oneNifiNodePerNode: false
-  initialAdminUser: alexandre.guitton@orange.com
+  managedAdminUsers:
+    -  identity : "alexandre.guitton@orange.com"
+       name: "aguitton"
+  managedReaderUsers:
+    -  identity : "toton@orange.com"
+       name: "toto"
   propagateLabels: true
   nifiClusterTaskSpec:
     retryDurationMinutes: 10

@@ -44,7 +44,12 @@ spec:
   oneNifiNodePerNode: false
   #
   propagateLabels: true
-#  initialAdminUser:
+#  managedAdminUsers:
+#    -  identity : "alexandre.guitton@orange.com"
+#       name: "aguitton"
+#  managedReaderUsers:
+#    -  identity : "toto@orange.com"
+#       name: "toto"
   # readOnlyConfig specifies the read-only type Nifi config cluster wide, all theses
   # will be merged with node specified readOnly configurations, so it can be overwritten per node.
   readOnlyConfig:
