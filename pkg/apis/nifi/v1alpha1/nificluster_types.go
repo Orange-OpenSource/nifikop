@@ -54,21 +54,15 @@ type NifiClusterSpec struct {
 	InitContainers []corev1.Container `json:"initContainers,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,2,rep,name=containers"`
 	// clusterImage can specify the whole NiFi cluster image in one place
 	ClusterImage string `json:"clusterImage,omitempty"`
-	// Cluster nodes secure mode : https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#cluster_common_properties
-	// TODO : rework to define into internalListener ! (Note: if ssl enabled need Cluster & SiteToSite & Https port)
-	ClusterSecure bool `json:"clusterSecure,omitempty"`
-	// Site to Site properties Secure mode : https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#site_to_site_properties
-	// TODO : rework to define into internalListener !
-	SiteToSiteSecure bool `json:"siteToSiteSecure,omitempty"`
 	// oneNifiNodePerNode if set to true every nifi node is started on a new node, if there is not enough node to do that
 	// it will stay in pending state. If set to false the operator also tries to schedule the nifi node to a unique node
 	// but if the node number is insufficient the nifi node will be scheduled to a node where a nifi node is already running.
 	OneNifiNodePerNode bool `json:"oneNifiNodePerNode"`
 	// propage
 	PropagateLabels bool `json:"propagateLabels,omitempty"`
-	//
+	// managedAdminUsers contains the list of users that will be added to the managed admin group (with all rights)
 	ManagedAdminUsers []ManagedUser `json:"managedAdminUsers,omitempty""`
-	//
+	// managedReaderUsers contains the list of users that will be added to the managed reader group (with all view rights)
 	ManagedReaderUsers []ManagedUser `json:"managedReaderUsers,omitempty""`
 	// readOnlyConfig specifies the read-only type Nifi config cluster wide, all theses
 	// will be merged with node specified readOnly configurations, so it can be overwritten per node.
@@ -356,9 +350,11 @@ type NifiCluster struct {
 }
 
 type ManagedUser struct {
-	//
+	// identity field is use to define the user identity on NiFi cluster side,
+	// it use full when the user's name doesn't suite with Kubernetes resource name.
 	Identity string `json:"identity,omitempty"`
-	//
+	// name field is use to name the NifiUser resource, if not identity is provided it will be used to name
+	// the user on NiFi cluster side.
 	Name string `json:"name"`
 }
 

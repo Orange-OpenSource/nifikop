@@ -2,8 +2,17 @@
 
 This Helm chart install NiFiKop the Orange's Nifi Kubernetes operator to create/configure/manage NiFi 
 clusters in a Kubernetes Namespace.
-It will uses a Custom Ressource Definition CRD: `nificlusters.nifi.orange.com`, 
-which implements a `NifiCluster` kubernetes custom ressource definition.
+
+It will use Custom Ressources Definition CRDs:
+ 
+- `nificlusters.nifi.orange.com`, 
+- `nifiusers.nifi.orange.com`, 
+- `nifiusergroups.nifi.orange.com`, 
+- `nifiregistryclients.nifi.orange.com`, 
+- `nifiparametercontexts.nifi.orange.com`, 
+- `nifidataflows.nifi.orange.com`, 
+
+which implements kubernetes custom ressource definition.
 
 ## Introduction
 
@@ -35,29 +44,37 @@ $ helm install --name nifikop orange-incubator/nifikop -f values.yaml
 
 ### Installing the Chart
 
-You need to manually install the crds beforehand
+You need to manually install the crds beforehand if your kubernetes version before 1.16 : 
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/Orange-OpenSource/nifikop/master/deploy/crds/nifi.orange.com_nificlusters_crd.yaml
-kubectl apply -f https://raw.githubusercontent.com/Orange-OpenSource/nifikop/master/deploy/crds/nifi.orange.com_nifiusers_crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/Orange-OpenSource/nifikop/master/deploy/crds/v1beta1/nifi.orange.com_nificlusters_crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/Orange-OpenSource/nifikop/master/deploy/crds/v1beta1/nifi.orange.com_nifiusers_crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/Orange-OpenSource/nifikop/master/deploy/crds/v1beta1/nifi.orange.com_nifiusergroups_crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/Orange-OpenSource/nifikop/master/deploy/crds/v1beta1/nifi.orange.com_nifidataflows_crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/Orange-OpenSource/nifikop/master/deploy/crds/v1beta1/nifi.orange.com_nifiparametercontexts_crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/Orange-OpenSource/nifikop/master/deploy/crds/v1beta1/nifi.orange.com_nifiregistryclients_crd.yaml
 ```
 
 You can make a dry run of the chart before deploying :
 
 ```console 
-helm install --dry-run --debug.enabled orange-incubator/nifikop --set debug.enabled=true --name nifikop
+helm install nifikop orange-incubator/nifikop \
+    --dry-run \
+    --debug.enabled \
+    --set debug.enabled=true \
+    --set namespaces={"nifikop"}
 ```
 
-To install the chart with the release name my-release:
+To install the chart with the release name `nifikop` :
 
 ```console
-$ helm install --name nifikop orange-incubator/nifikop
+$ helm install nifikop orange-incubator/nifikop
 ```
 
 We can surcharge default parameters using `--set` flag :
 
 ```console
-$ helm install --replace --set image.tag=asyncronous --name nifikop orange-incubator/nifikop
+$ helm install nifikop orange-incubator/nifikop --replace --set image.tag=asyncronous 
 ```
 
 > the `--replace` flag allow you to reuses a charts release name
@@ -92,6 +109,11 @@ Manually delete the CRD:
 
 ```
 kubectl delete crd nificlusters.nifi.orange.com
+kubectl delete crd nifiusers.nifi.orange.com
+kubectl delete crd nifiusergroups.nifi.orange.com
+kubectl delete crd nifiregistryclients.nifi.orange.com
+kubectl delete crd nifiparametercontexts.nifi.orange.com
+kubectl delete crd nifidataflows.nifi.orange.com
 ```
 
 > **!!!!!!!!WARNING!!!!!!!!**
@@ -103,8 +125,8 @@ kubectl delete crd nificlusters.nifi.orange.com
 > Please never delete a CRD without very very good care
 
 
-Helm always keeps records of what releases happened. Need to see the deleted releases? `helm list --deleted`
-shows those, and `helm list --all` shows all of the releases (deleted and currently deployed, as well as releases that
+Helm always keeps records of what releases happened. Need to see the deleted releases? `helm ls --deleted`
+shows those, and `helm ls --all` shows all of the releases (deleted and currently deployed, as well as releases that
 failed):
 
 Because Helm keeps records of deleted releases, a release name cannot be re-used. (If you really need to re-use a
@@ -118,7 +140,7 @@ Note that because releases are preserved in this way, you can rollback a deleted
 To purge a release
 
 ```console
-helm delete --purge nifikop
+helm del nifikop
 ```
 
 
@@ -132,12 +154,12 @@ cluster, and you may deploy a chart with an existing CRD already deployed.
 In that case you can get an error like :
 
 ```
-$ helm install --name nifikop ./helm/nifikop
+$ helm install nifikop ./helm/nifikop
 Error: customresourcedefinitions.apiextensions.k8s.io "nificlusters.nifi.orange.com" already exists
 ```
 
 In this case there si a parameter to say to not uses the hook to install the CRD :
 
 ```
-$ helm install --name nifikop ./helm/nifikop --no-hooks
+$ helm install nifikop ./helm/nifikop --skip-crds
 ```

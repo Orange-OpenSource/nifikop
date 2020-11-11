@@ -84,7 +84,6 @@ func testSecuredCluster(t *testing.T) *v1alpha1.NifiCluster {
 		PKIBackend: pki.MockBackend,
 	}
 
-	cluster.Spec.ClusterSecure = true
 	return cluster
 }
 

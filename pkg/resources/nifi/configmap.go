@@ -22,6 +22,7 @@ import (
 	"text/template"
 
 	"github.com/Orange-OpenSource/nifikop/pkg/apis/nifi/v1alpha1"
+	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates/config"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
@@ -54,7 +55,7 @@ func (r *Reconciler) configMap(id int32, nodeConfig *v1alpha1.NodeConfig, server
 		},
 	}
 
-	if r.NifiCluster.Spec.ListenersConfig.SSLSecrets != nil && r.NifiCluster.Spec.ClusterSecure && r.NifiCluster.Spec.SiteToSiteSecure {
+	if nificlient.UseSSL(r.NifiCluster) {
 		configMap.Data["authorizers.xml"] = r.getAuthorizersConfigString(nodeConfig, id, log)
 	}
 	return configMap
@@ -123,6 +124,7 @@ func (r *Reconciler) getNifiPropertiesConfigString(nConfig *v1alpha1.NodeConfig,
 		webProxyHosts = strings.Join(append(dnsNames, base.WebProxyHosts...), ",")
 	}
 
+	useSSL := nificlient.UseSSL(r.NifiCluster)
 	var out bytes.Buffer
 	t := template.Must(template.New("nConfig-config").Parse(config.NifiPropertiesTemplate))
 	if err := t.Execute(&out, map[string]interface{}{
@@ -138,8 +140,8 @@ func (r *Reconciler) getNifiPropertiesConfigString(nConfig *v1alpha1.NodeConfig,
 			r.NifiCluster.Spec.ListenersConfig.UseExternalDNS,
 			log),
 		"ProvenanceStorage":                  nConfig.GetProvenanceStorage(),
-		"SiteToSiteSecure":                   r.NifiCluster.Spec.SiteToSiteSecure,
-		"ClusterSecure":                      r.NifiCluster.Spec.ClusterSecure,
+		"SiteToSiteSecure":                   useSSL,
+		"ClusterSecure":                      useSSL,
 		"WebProxyHosts":                      webProxyHosts,
 		"NeedClientAuth":                     base.NeedClientAuth,
 		"Authorizer":                         base.GetAuthorizer(),

@@ -9,10 +9,11 @@ import (
 // NifiUserGroupSpec defines the desired state of NifiUserGroup
 // +k8s:openapi-gen=true
 type NifiUserGroupSpec struct {
-	// Contains the reference to the NifiCluster with the one the registry client is linked.
+	// clusterRef contains the reference to the NifiCluster with the one the registry client is linked.
 	ClusterRef ClusterReference `json:"clusterRef"`
-	// Contains the list of reference to NifiUsers that are part to the group.
+	// userRef contains the list of reference to NifiUsers that are part to the group.
 	UsersRef []UserReference `json:"usersRef,omitempty"`
+	// accessPolicies defines the list of access policies that will be granted to the group.
 	AccessPolicies []AccessPolicy `json:"accessPolicies,omitempty"`
 }
 

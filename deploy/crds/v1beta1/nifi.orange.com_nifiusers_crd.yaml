@@ -35,18 +35,49 @@ spec:
               items:
                 properties:
                   action:
-                    description: AccessPolicyAction represents the access policy action
+                    description: action defines the kind of action that will be granted,
+                      could be "read" or "write"
+                    enum:
+                    - global
+                    - component
                     type: string
                   componentId:
+                    description: componentId is used if the type is "component", it's
+                      allow to define the id of the component on which is the access
+                      policy
                     type: string
                   componentType:
+                    description: componentType is used if the type is "component",
+                      it's allow to define the kind of component on which is the access
+                      policy
                     type: string
                   resource:
-                    description: AccessPolicyResource represents the access policy
-                      resource
+                    description: 'resource defines the kind of resource targeted by
+                      this access policies, please refer to the following page : https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#access-policies'
+                    enum:
+                    - /flow
+                    - /controller
+                    - /parameter-context
+                    - /provenance
+                    - /restricted-components
+                    - /policies
+                    - /tenants
+                    - /site-to-site
+                    - /proxy
+                    - /counters
+                    - /
+                    - /operation
+                    - /provenance-data
+                    - /data
+                    - /policies
+                    - /data-transfer
                     type: string
                   type:
-                    description: AccessPolicyType represents the type of access policy
+                    description: type defines the kind of access policy, could be
+                      "global" or "component".
+                    enum:
+                    - global
+                    - component
                     type: string
                 required:
                 - action

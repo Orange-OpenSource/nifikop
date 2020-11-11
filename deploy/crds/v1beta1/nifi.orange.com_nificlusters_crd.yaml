@@ -35,11 +35,6 @@ spec:
               description: clusterImage can specify the whole NiFi cluster image in
                 one place
               type: string
-            clusterSecure:
-              description: 'Cluster nodes secure mode : https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#cluster_common_properties
-                TODO : rework to define into internalListener ! (Note: if ssl enabled
-                need Cluster & SiteToSite & Https port)'
-              type: boolean
             disruptionBudget:
               description: Defines the configuration for PodDisruptionBudget
               properties:
@@ -1212,22 +1207,38 @@ spec:
               - internalListeners
               type: object
             managedAdminUsers:
+              description: managedAdminUsers contains the list of users that will
+                be added to the managed admin group (with all rights)
               items:
                 properties:
                   identity:
+                    description: identity field is use to define the user identity
+                      on NiFi cluster side, it use full when the user's name doesn't
+                      suite with Kubernetes resource name.
                     type: string
                   name:
+                    description: name field is use to name the NifiUser resource,
+                      if not identity is provided it will be used to name the user
+                      on NiFi cluster side.
                     type: string
                 required:
                 - name
                 type: object
               type: array
             managedReaderUsers:
+              description: managedReaderUsers contains the list of users that will
+                be added to the managed reader group (with all view rights)
               items:
                 properties:
                   identity:
+                    description: identity field is use to define the user identity
+                      on NiFi cluster side, it use full when the user's name doesn't
+                      suite with Kubernetes resource name.
                     type: string
                   name:
+                    description: name field is use to name the NifiUser resource,
+                      if not identity is provided it will be used to name the user
+                      on NiFi cluster side.
                     type: string
                 required:
                 - name
@@ -2396,10 +2407,6 @@ spec:
               required:
               - headlessEnabled
               type: object
-            siteToSiteSecure:
-              description: 'Site to Site properties Secure mode : https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#site_to_site_properties
-                TODO : rework to define into internalListener !'
-              type: boolean
             zkAddresse:
               description: 'zKAddresse specifies the ZooKeeper connection string in
                 the form hostname:port where host and port are those of a Zookeeper
