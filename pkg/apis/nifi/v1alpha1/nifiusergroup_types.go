@@ -20,9 +20,9 @@ type NifiUserGroupSpec struct {
 // NifiUserGroupStatus defines the observed state of NifiUserGroup
 // +k8s:openapi-gen=true
 type NifiUserGroupStatus struct {
-	// The nifi registry client's id
+	// The nifi usergroup's node id
 	Id string `json:"id"`
-	// The last nifi registry client revision version catched
+	// The last nifi usergroup's node revision version catched
 	Version int64 `json:"version"`
 }
 

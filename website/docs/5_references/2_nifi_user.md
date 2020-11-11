@@ -1,7 +1,7 @@
 ---
 id: 2_nifi_user
 title: NiFi User
-sidebar_label: NiFi user
+sidebar_label: NiFi User
 ---
 
 `NifiUser` is the Schema for the nifi users API.
@@ -10,13 +10,13 @@ sidebar_label: NiFi user
 apiVersion: nifi.orange.com/v1alpha1
 kind: NifiUser
 metadata:
-  name: example-user
-  namespace: nifi
+  name: aguitton
 spec:
+  identity: alexandre.guitton@orange.com
   clusterRef:
-    name: nifi
-  secretName: example-user-secret
-  includeJKS: true
+    name: nc
+    namespace: nifikop
+  createCert: false
 ```
 
 ## NifiUser
@@ -30,6 +30,7 @@ spec:
 
 |Field|Type|Description|Required|Default|
 |-----|----|-----------|--------|--------|
+|identity|string| identity field is use to define the user identity on NiFi cluster side, it use full when the user's name doesn't suite with Kubernetes resource name. |No| - |
 |secretName|string| name of the secret where all cert resources will be stored. |No| - |
 |clusterRef|[ClusterReference](#clusterreference)|  contains the reference to the NifiCluster with the one the user is linked. |Yes| - |
 |DNSNames|\[ \]string| list of DNSNames that the user will used to request the NifiCluster (allowing to create the right certificates associated). |Yes| - |

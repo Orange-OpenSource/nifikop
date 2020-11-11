@@ -61,9 +61,9 @@ module.exports = {
                 },
                 "3_tasks/3_nifi_dataflow"
             ],
-            "Examples": [
-                "4_examples/1_simple_nifi_cluster"
-            ],
+            // "Examples": [
+            //     "4_examples/1_simple_nifi_cluster"
+            // ],
             "Reference": [
                 {
                     "type" : "category",
@@ -81,6 +81,8 @@ module.exports = {
                 "5_references/3_nifi_registry_client",
                 "5_references/4_nifi_parameter_context",
                 "5_references/5_nifi_dataflow",
+                "5_references/6_nifi_usergroup",
+
             ],
             "Contributing" : [
                 "6_contributing/1_developer_guide",

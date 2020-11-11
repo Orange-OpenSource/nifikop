@@ -122,10 +122,10 @@ spec:
             description: NifiUserGroupStatus defines the observed state of NifiUserGroup
             properties:
               id:
-                description: The nifi registry client's id
+                description: The nifi usergroup's node id
                 type: string
               version:
-                description: The last nifi registry client revision version catched
+                description: The last nifi usergroup's node revision version catched
                 format: int64
                 type: integer
             required:
