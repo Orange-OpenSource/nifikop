@@ -155,7 +155,7 @@ func (r *Reconciler) getNifiPropertiesConfigString(nConfig *v1alpha1.NodeConfig,
 		//
 		"LdapConfiguration":      r.NifiCluster.Spec.LdapConfiguration,
 		"IsNode":                 nConfig.GetIsNode(),
-		"ZookeeperConnectString": r.NifiCluster.Spec.ZKAddresse,
+		"ZookeeperConnectString": r.NifiCluster.Spec.ZKAddress,
 		"ZookeeperPath":          r.NifiCluster.Spec.GetZkPath(),
 	}); err != nil {
 		log.Error(err, "error occurred during parsing the config template")
@@ -249,7 +249,7 @@ func (r *Reconciler) getStateManagementConfigString(nConfig *v1alpha1.NodeConfig
 	if err := t.Execute(&out, map[string]interface{}{
 		"NifiCluster":            r.NifiCluster,
 		"Id":                     id,
-		"ZookeeperConnectString": r.NifiCluster.Spec.ZKAddresse,
+		"ZookeeperConnectString": r.NifiCluster.Spec.ZKAddress,
 		"ZookeeperPath":          r.NifiCluster.Spec.GetZkPath(),
 	}); err != nil {
 		log.Error(err, "error occurred during parsing the config template")

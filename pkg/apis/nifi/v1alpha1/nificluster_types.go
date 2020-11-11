@@ -40,10 +40,10 @@ type NifiClusterSpec struct {
 	Service ServicePolicy `json:"service,omitempty"`
 	// Pod defines the policy for  pods owned by NiFiKop operator.
 	Pod PodPolicy `json:"pod,omitempty"`
-	// zKAddresse specifies the ZooKeeper connection string
+	// zKAddress specifies the ZooKeeper connection string
 	// in the form hostname:port where host and port are those of a Zookeeper server.
 	// TODO: rework for nice zookeeper connect string =
-	ZKAddresse string `json:"zkAddresse"`
+	ZKAddress string `json:"zkAddresse"`
 	// zKPath specifies the Zookeeper chroot path as part
 	// of its Zookeeper connection string which puts its data under same path in the global ZooKeeper namespace.
 	ZKPath string `json:"zkPath,omitempty"`

@@ -55,7 +55,7 @@ const (
 
 func (r *Reconciler) pod(id int32, nodeConfig *v1alpha1.NodeConfig, pvcs []corev1.PersistentVolumeClaim, log logr.Logger) runtime.Object {
 
-	zkAddresse := r.NifiCluster.Spec.ZKAddresse
+	zkAddresse := r.NifiCluster.Spec.ZKAddress
 	zkHostname := zk.GetHostnameAddress(zkAddresse)
 	zkPort := zk.GetPortAddress(zkAddresse)
 
