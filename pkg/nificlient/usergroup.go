@@ -70,7 +70,6 @@ func (n *nifiClient) CreateUserGroup(entity nigoapi.UserGroupEntity) (*nigoapi.U
 	if err := errorCreateOperation(rsp, err); err != nil {
 		return nil, err
 	}
-
 	return &userGroupEntity, nil
 }
 

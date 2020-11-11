@@ -16,24 +16,26 @@ var log = logf.Log.WithName("usergroup-method")
 func ExistUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup,
 	cluster *v1alpha1.NifiCluster) (bool, error) {
 
-	if userGroup.Status.Id == "" {
-		return false, nil
-	}
-
 	nClient, err := common.NewNodeConnection(log, client, cluster)
 	if err != nil {
 		return false, err
 	}
 
-	entity, err := nClient.GetUserGroup(userGroup.Status.Id)
-	if err := clientwrappers.ErrorGetOperation(log, err, "Get user-group"); err != nil {
+	entities, err := nClient.GetUserGroups()
+	if err := clientwrappers.ErrorGetOperation(log, err, "Get user-groups"); err != nil {
 		if err == nificlient.ErrNifiClusterReturned404 {
 			return false, nil
 		}
 		return false, err
 	}
 
-	return entity != nil, nil
+	for _, entity := range entities {
+		if entity.Component.Identity == userGroup.GetIdentity() {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func CreateUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.NifiUser,
@@ -65,10 +67,30 @@ func SyncUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup, user
 		return nil, err
 	}
 
-	entity, err := nClient.GetUserGroup(userGroup.Status.Id)
-	if err := clientwrappers.ErrorGetOperation(log, err, "Get user-group"); err != nil {
-		return nil, err
+	var entity *nigoapi.UserGroupEntity
+	if userGroup.Status.Id == "" {
+		entities, err := nClient.GetUserGroups()
+		if err := clientwrappers.ErrorGetOperation(log, err, "Get user-groups"); err != nil {
+			if err == nificlient.ErrNifiClusterReturned404 {
+				return nil, nil
+			}
+			return nil, err
+		}
+
+		for _, e := range entities {
+			if e.Component.Identity == userGroup.GetIdentity() {
+				entity = &e
+				userGroup.Status.Id = e.Component.Id
+				break
+			}
+		}
+	} else {
+		entity, err = nClient.GetUserGroup(userGroup.Status.Id)
+		if err := clientwrappers.ErrorGetOperation(log, err, "Get user-group"); err != nil {
+			return nil, err
+		}
 	}
+
 
 	if !userGroupIsSync(userGroup, users, entity) {
 		updateUserGroupEntity(userGroup, users, entity)
