@@ -26,6 +26,7 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/scale"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
+	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
 	"github.com/Orange-OpenSource/nifikop/pkg/pki"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates"
@@ -225,8 +226,10 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		return err
 	}
 
-	if err := r.reconcileNifiUsersAndGroups(log); err != nil {
-		return errors.WrapIf(err, "failed to reconcile resource")
+	if nificlient.UseSSL(r.NifiCluster) {
+		if err := r.reconcileNifiUsersAndGroups(log); err != nil {
+			return errors.WrapIf(err, "failed to reconcile resource")
+		}
 	}
 	
 	log.V(1).Info("Reconciled")
