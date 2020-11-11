@@ -32,6 +32,8 @@ spec:
           description: NifiUserSpec defines the desired state of NifiUser
           properties:
             accessPolicies:
+              description: accessPolicies defines the list of access policies that
+                will be granted to the group.
               items:
                 properties:
                   action:
@@ -121,10 +123,10 @@ spec:
           description: NifiUserStatus defines the observed state of NifiUser
           properties:
             id:
-              description: The nifi registry client's id
+              description: The nifi user's node id
               type: string
             version:
-              description: The last nifi registry client revision version catched
+              description: The last nifi  user's node revision version catched
               format: int64
               type: integer
           required:

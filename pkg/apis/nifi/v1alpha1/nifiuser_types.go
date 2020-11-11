@@ -33,15 +33,16 @@ type NifiUserSpec struct {
 	IncludeJKS bool `json:"includeJKS,omitempty"`
 	// Whether or not a certificate will be created for this user.
 	CreateCert *bool `json:"createCert,omitempty"`
+	// accessPolicies defines the list of access policies that will be granted to the group.
 	AccessPolicies []AccessPolicy `json:"accessPolicies,omitempty"`
 }
 
 // NifiUserStatus defines the observed state of NifiUser
 // +k8s:openapi-gen=true
 type NifiUserStatus struct {
-	// The nifi registry client's id
+	// The nifi user's node id
 	Id string `json:"id"`
-	// The last nifi registry client revision version catched
+	// The last nifi  user's node revision version catched
 	Version int64 `json:"version"`
 }
 
