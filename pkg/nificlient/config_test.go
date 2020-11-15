@@ -128,9 +128,9 @@ func TestUseSSL(t *testing.T) {
 	assert := assert.New(t)
 
 	cluster := testCluster(t)
-	assert.Equal(false, useSSL(cluster))
+	assert.Equal(false, UseSSL(cluster))
 	cluster = testSecuredCluster(t)
-	assert.Equal(true, useSSL(cluster))
+	assert.Equal(true, UseSSL(cluster))
 }
 
 func TestGenerateNodesAddress(t *testing.T) {
