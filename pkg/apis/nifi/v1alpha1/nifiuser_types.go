@@ -21,8 +21,8 @@ import (
 // NifiUserSpec defines the desired state of NifiUser
 // +k8s:openapi-gen=true
 type NifiUserSpec struct {
-	// identity field is use to define the user identity on NiFi cluster side,
-	// it use full when the user's name doesn't suite with Kubernetes resource name.
+	// identity field is used to define the user identity on NiFi cluster side, when the user's name doesn't
+	// suit with Kubernetes resource name.
 	Identity string `json:"identity,omitempty"`
 	// Name of the secret where all cert resources will be stored
 	SecretName string `json:"secretName,omitempty"`

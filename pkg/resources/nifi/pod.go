@@ -55,9 +55,9 @@ const (
 
 func (r *Reconciler) pod(id int32, nodeConfig *v1alpha1.NodeConfig, pvcs []corev1.PersistentVolumeClaim, log logr.Logger) runtime.Object {
 
-	zkAddresse := r.NifiCluster.Spec.ZKAddress
-	zkHostname := zk.GetHostnameAddress(zkAddresse)
-	zkPort := zk.GetPortAddress(zkAddresse)
+	zkAddress := r.NifiCluster.Spec.ZKAddress
+	zkHostname := zk.GetHostnameAddress(zkAddress)
+	zkPort := zk.GetPortAddress(zkAddress)
 
 	// ContainersPorts initialization
 	nifiNodeContainersPorts := r.generateContainerPortForInternalListeners()
@@ -217,7 +217,7 @@ until nc -vzw 1 %s %s; do
 	echo "waiting for zookeeper..."
 	sleep 2
 done`,
-						zkAddresse, zkHostname, zkPort)},
+						zkAddress, zkHostname, zkPort)},
 					Resources: generateInitContainerResources(),
 				},
 			}...),
@@ -284,7 +284,7 @@ done`,
 					Env: []corev1.EnvVar{
 						{
 							Name:  "NIFI_ZOOKEEPER_CONNECT_STRING",
-							Value: zkAddresse,
+							Value: zkAddress,
 						},
 						{
 							Name: "POD_IP",

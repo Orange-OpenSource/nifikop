@@ -30,7 +30,7 @@ spec:
 
 |Field|Type|Description|Required|Default|
 |-----|----|-----------|--------|--------|
-|identity|string| identity field is use to define the user identity on NiFi cluster side, it use full when the user's name doesn't suite with Kubernetes resource name. |No| - |
+|identity|string| used to define the user identity on NiFi cluster side, when the user's name doesn't suit with Kubernetes resource name. |No| - |
 |secretName|string| name of the secret where all cert resources will be stored. |No| - |
 |clusterRef|[ClusterReference](#clusterreference)|  contains the reference to the NifiCluster with the one the user is linked. |Yes| - |
 |DNSNames|\[ \]string| list of DNSNames that the user will used to request the NifiCluster (allowing to create the right certificates associated). |Yes| - |
@@ -57,11 +57,11 @@ spec:
 
 |Field|Type|Description|Required|Default|
 |-----|----|-----------|--------|--------|
-|type|[AccessPolicyType](#accesspolicytype)| type defines the kind of access policy, could be "global" or "component". |Yes| - |
-|action|[AccessPolicyAction](#accesspolicyaction)|action defines the kind of action that will be granted, could be "read" or "write". |Yes| - |
-|resource|[AccessPolicyResource](#accesspolicyresource)| esource defines the kind of resource targeted by this access policies, please refer to the following page : https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#access-policies |Yes| - |
-|componentType|string| is used if the type is "component", it's allow to define the kind of component on which is the access policy. |No| - |
-|componentId|string| tis used if the type is "component", it's allow to define the id of the component on which is the access policy. |No| - |
+|type|[AccessPolicyType](#accesspolicytype)| defines the kind of access policy, could be "global" or "component". |Yes| - |
+|action|[AccessPolicyAction](#accesspolicyaction)| defines the kind of action that will be granted, could be "read" or "write". |Yes| - |
+|resource|[AccessPolicyResource](#accesspolicyresource)| defines the kind of resource targeted by this access policies, please refer to the following page : https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#access-policies |Yes| - |
+|componentType|string| used if the type is "component", it allows to define the kind of component on which is the access policy. |No| - |
+|componentId|string| used if the type is "component", it allows to define the id of the component on which is the access policy. |No| - |
 
 ## AccessPolicyType
 
@@ -82,7 +82,7 @@ spec:
 |Name|Value|Description|
 |-----|----|------------|
 |FlowAccessPolicyResource|/flow|About the UI|
-|ControllerAccessPolicyResource|/controller|bout the controller including Reporting Tasks, Controller Services, Parameter Contexts and Nodes in the Cluster|
+|ControllerAccessPolicyResource|/controller| about the controller including Reporting Tasks, Controller Services, Parameter Contexts and Nodes in the Cluster|
 |ParameterContextAccessPolicyResource|/parameter-context|About the Parameter Contexts. Access to Parameter Contexts are inherited from the "access the controller" policies unless overridden.|
 |ProvenanceAccessPolicyResource|/provenance|Allows users to submit a Provenance Search and request Event Lineage|
 |RestrictedComponentsAccessPolicyResource|/restricted-components|About the restricted components assuming other permissions are sufficient. The restricted components may indicate which specific permissions are required. Permissions can be granted for specific restrictions or be granted regardless of restrictions. If permission is granted regardless of restrictions, the user can create/modify all restricted components.|

@@ -2407,7 +2407,7 @@ spec:
               required:
               - headlessEnabled
               type: object
-            zkAddresse:
+            zkAddress:
               description: 'zKAddress specifies the ZooKeeper connection string in
                 the form hostname:port where host and port are those of a Zookeeper
                 server. TODO: rework for nice zookeeper connect string ='
@@ -2421,7 +2421,7 @@ spec:
           - listenersConfig
           - nodes
           - oneNifiNodePerNode
-          - zkAddresse
+          - zkAddress
           type: object
         status:
           description: NifiClusterStatus defines the observed state of NifiCluster

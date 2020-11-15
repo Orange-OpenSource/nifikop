@@ -17,7 +17,7 @@ spec:
 #  # defines the list of access policies that will be granted to the group.
 #  accessPolicies:
 #      # defines the kind of access policy, could be "global" or "component".
-#    - type: global
+#    - type: component
 #      # defines the kind of action that will be granted, could be "read" or "write"
 #      action: read
 #      # resource defines the kind of resource targeted by this access policies, please refer to the following page :

@@ -110,9 +110,9 @@ spec:
                   type: string
                 type: array
               identity:
-                description: identity field is use to define the user identity on
-                  NiFi cluster side, it use full when the user's name doesn't suite
-                  with Kubernetes resource name.
+                description: identity field is used to define the user identity on
+                  NiFi cluster side, when the user's name doesn't suit with Kubernetes
+                  resource name.
                 type: string
               includeJKS:
                 description: Whether or not the the operator also include a Java keystore

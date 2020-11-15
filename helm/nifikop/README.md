@@ -39,12 +39,14 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 Alternatively, a YAML file that specifies the values for the above parameters can be provided while installing the chart. For example,
 
 ```console
-$ helm install --name nifikop orange-incubator/nifikop -f values.yaml
+$ helm install nifikop \
+    orange-incubator/nifikop \
+    -f values.yaml
 ```
 
 ### Installing the Chart
 
-You need to manually install the crds beforehand if your kubernetes version before 1.16 : 
+In the case where you don't want to deploy the crds using helm (`--skip-crds`) or you are using a version of kubernetes that is under 1.16, you need to deploy manually the crds beforehand:
 
 ```console
 kubectl apply -f https://raw.githubusercontent.com/Orange-OpenSource/nifikop/master/deploy/crds/v1beta1/nifi.orange.com_nificlusters_crd.yaml
@@ -68,7 +70,7 @@ helm install nifikop orange-incubator/nifikop \
 To install the chart with the release name `nifikop` :
 
 ```console
-$ helm install nifikop orange-incubator/nifikop
+$ helm install nifikop orange-incubator/nifikop --set namespaces={"nifikop"}
 ```
 
 We can surcharge default parameters using `--set` flag :
@@ -98,7 +100,7 @@ If you want to delete the operator from your Kubernetes cluster, the operator de
 should be deleted.
 
 ```
-$ helm delete nifikop
+$ helm del nifikop
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the helm release.
@@ -143,23 +145,15 @@ To purge a release
 helm del nifikop
 ```
 
-
 ## Troubleshooting
 
 ### Install of the CRD
 
-By default, the chart will install via a helm hook the NifiCluster CRD, but this installation is global for the whole
-cluster, and you may deploy a chart with an existing CRD already deployed.
+By default, the chart will install the CRDs, but this installation is global for the whole
+cluster, and you may want to not modify the already deployed CRDs.
 
-In that case you can get an error like :
-
-```
-$ helm install nifikop ./helm/nifikop
-Error: customresourcedefinitions.apiextensions.k8s.io "nificlusters.nifi.orange.com" already exists
-```
-
-In this case there si a parameter to say to not uses the hook to install the CRD :
+In this case there is a parameter to say to not install the CRDs :
 
 ```
-$ helm install nifikop ./helm/nifikop --skip-crds
+$ helm install --name nifikop ./helm/nifikop --set namespaces={"nifikop"} --skip-crds
 ```
