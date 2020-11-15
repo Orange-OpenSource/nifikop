@@ -14,8 +14,6 @@ kind: NifiCluster
 ...
 spec:
   ...
-  clusterSecure: true
-  siteToSiteSecure: true
   initialAdminUser: aguitton.ext@orange.com
   ...
   readOnlyConfig:
@@ -41,8 +39,6 @@ spec:
       create: true
 ```
 
-- `clusterSecure` : cluster nodes secure mode : https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#cluster_common_properties.
-- `siteToSiteSecure` : site to Site properties Secure mode : https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#site_to_site_properties.
 - `initialAdminUser` : name of the user account which will be configured as initial admin into NiFi cluster : https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#initial-admin-identity
 - `readOnlyConfig.nifiProperties.webProxyHosts` : A list of allowed HTTP Host header values to consider when NiFi is running securely and will be receiving requests to a different host[:port] than it is bound to. [web-properties](https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#web-properties)
 
