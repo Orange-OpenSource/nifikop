@@ -26,7 +26,7 @@ mkdir -p $GOPATH/src/github.com/operator-framework/
 cd $GOPATH/src/github.com/operator-framework/
 git clone https://github.com/operator-framework/operator-sdk.git
 cd operator-sdk
-git checkout v1.18.0
+git checkout v0.18.x
 make tidy
 make install
 ```
