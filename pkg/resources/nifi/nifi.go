@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"emperror.dev/errors"
-	"github.com/Orange-OpenSource/nifikop/pkg/apis/nifi/v1alpha1"
+	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/dataflow"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/scale"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
@@ -215,7 +215,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		return err
 	}
 
-	
 	// Reconcile cluster communications
 	pgRootId, err := dataflow.RootProcessGroup(r.Client, r.NifiCluster)
 	if err != nil {
@@ -231,7 +230,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 			return errors.WrapIf(err, "failed to reconcile resource")
 		}
 	}
-	
+
 	log.V(1).Info("Reconciled")
 
 	return nil
@@ -650,7 +649,7 @@ func (r *Reconciler) reconcileNifiUsersAndGroups(log logr.Logger) error {
 				pkicommon.LabelsForNifiPKI(r.NifiCluster.Name), r.NifiCluster,
 			),
 			Spec: v1alpha1.NifiUserSpec{
-				Identity: managedUser.GetIdentity(),
+				Identity:   managedUser.GetIdentity(),
 				CreateCert: &pFalse,
 				ClusterRef: v1alpha1.ClusterReference{
 					Name:      r.NifiCluster.Name,
@@ -683,7 +682,7 @@ func (r *Reconciler) reconcileNifiUsersAndGroups(log logr.Logger) error {
 			),
 			Spec: v1alpha1.NifiUserGroupSpec{
 				ClusterRef: v1alpha1.ClusterReference{
-					Name: r.NifiCluster.Name,
+					Name:      r.NifiCluster.Name,
 					Namespace: r.NifiCluster.Namespace,
 				},
 				UsersRef: append(managedAdminUserRef, v1alpha1.UserReference{
@@ -735,7 +734,7 @@ func (r *Reconciler) reconcileNifiUsersAndGroups(log logr.Logger) error {
 			),
 			Spec: v1alpha1.NifiUserGroupSpec{
 				ClusterRef: v1alpha1.ClusterReference{
-					Name: r.NifiCluster.Name,
+					Name:      r.NifiCluster.Name,
 					Namespace: r.NifiCluster.Namespace,
 				},
 				UsersRef: managedAdminUserRef,
@@ -767,7 +766,7 @@ func (r *Reconciler) reconcileNifiUsersAndGroups(log logr.Logger) error {
 			),
 			Spec: v1alpha1.NifiUserGroupSpec{
 				ClusterRef: v1alpha1.ClusterReference{
-					Name: r.NifiCluster.Name,
+					Name:      r.NifiCluster.Name,
 					Namespace: r.NifiCluster.Namespace,
 				},
 				UsersRef: managedNodeUserRef,
