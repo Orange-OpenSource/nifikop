@@ -2,9 +2,16 @@
 
 ### Added
 
+- [PR #53](https://github.com/Orange-OpenSource/nifikop/pull/53) - **[Operator/NifiUser]** Cert-manager integration can now be disabled (it's still required for secured cluster).
+
 ### Changed
 
+- [PR #53](https://github.com/Orange-OpenSource/nifikop/pull/53) - **[Operator]** Upgrade operator-sdk from v0.18.0 to v.1.3.0, which upgrade k8s dependencies to 0.19.4 and migrate to Kubebuilder aligned project layout.
+
 ### Deprecated
+
+- [PR #53](https://github.com/Orange-OpenSource/nifikop/pull/53) - **[Operator/CRD]** No more support for Kubernetes cluster under version 1.16 (we no longer provide crds in version v1beta1)
+
 
 ### Removed
 
