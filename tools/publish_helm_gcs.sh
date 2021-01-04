@@ -52,7 +52,7 @@ setup_helm_client() {
     PATH="$(pwd)/tmp/linux-amd64/:$PATH"
 
 #    helm init --client-only
-    helm repo add incubator-squidflow "$INCUBATOR_REPO_URL"
+    helm repo add orange-incubator "$INCUBATOR_REPO_URL"
 }
 
 authenticate() {
