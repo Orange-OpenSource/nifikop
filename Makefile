@@ -173,9 +173,15 @@ bundle-build:
 	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
 
 helm-package:
-	@echo Packaging $(HELM_VERSION)
-	helm package helm/nifikop
-	mv nifikop-$(HELM_VERSION).tgz $(HELM_TARGET_DIR)
+	@echo Packaging $(CHART_VERSION)
+ifdef CHART_VERSION
+	    echo $(CHART_VERSION)
+	    helm package --version $(CHART_VERSION) helm/nifikop
+else
+		CHART_VERSION=$(HELM_VERSION)
+	    helm package helm/nifikop
+endif
+	mv nifikop-$(CHART_VERSION).tgz $(HELM_TARGET_DIR)
 	helm repo index $(HELM_TARGET_DIR)/
 
 # Push the docker image
