@@ -20,6 +20,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/version"
+	certv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"strings"
@@ -61,14 +62,15 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
-	var namespaces string
+	var certManagerEnabled bool
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	flag.StringVar(&namespaces, "namespaces", "", "Comma separated list of namespaces where operator listens for resources")
+	flag.BoolVar(&certManagerEnabled, "cert-manager-enabled", false, "Enable cert-manager integration")
+
 	opts := zap.Options{
 		Development: true,
 	}
@@ -114,6 +116,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := certv1.AddToScheme(mgr.GetScheme()); err != nil {
+		setupLog.Error(err, "")
+		os.Exit(1)
+	}
+
 	if err = (&controllers.NifiClusterReconciler{
 		Client:       mgr.GetClient(),
 		DirectClient: mgr.GetAPIReader(),
@@ -125,11 +132,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&controllers.NifiClusterTaskReconciler{
+		Client:       mgr.GetClient(),
+		Log:          ctrl.Log.WithName("controllers").WithName("NifiClusterTask"),
+		Scheme:       mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "NifiClusterTask")
+		os.Exit(1)
+	}
+
 	if err = (&controllers.NifiUserReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("NifiUser"),
 		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
+	}).SetupWithManager(mgr, certManagerEnabled); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NifiUser")
 		os.Exit(1)
 	}

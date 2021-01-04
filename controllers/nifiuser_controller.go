@@ -221,12 +221,16 @@ func (r *NifiUserReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *NifiUserReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+func (r *NifiUserReconciler) SetupWithManager(mgr ctrl.Manager, certManagerEnabled bool) error {
+	builder := ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.NifiUser{}).
-		Owns(&certv1.Certificate{}).
-		Owns(&corev1.Secret{}).
-		Complete(r)
+		Owns(&corev1.Secret{})
+
+	if certManagerEnabled {
+		builder.Owns(&certv1.Certificate{})
+	}
+
+	return builder.Complete(r)
 }
 
 func (r *NifiUserReconciler) ensureClusterLabel(ctx context.Context, cluster *v1alpha1.NifiCluster, user *v1alpha1.NifiUser) (*v1alpha1.NifiUser, error) {
