@@ -675,6 +675,7 @@ func (r *Reconciler) reconcileNifiUsersAndGroups(log logr.Logger) error {
 	}
 
 	groups := []*v1alpha1.NifiUserGroup{
+		// Managed admins
 		{
 			ObjectMeta: templates.ObjectMeta(
 				"managed-admins",
@@ -727,6 +728,7 @@ func (r *Reconciler) reconcileNifiUsersAndGroups(log logr.Logger) error {
 				},
 			},
 		},
+		// Managed Readers
 		{
 			ObjectMeta: templates.ObjectMeta(
 				"managed-readers",
@@ -737,7 +739,7 @@ func (r *Reconciler) reconcileNifiUsersAndGroups(log logr.Logger) error {
 					Name:      r.NifiCluster.Name,
 					Namespace: r.NifiCluster.Namespace,
 				},
-				UsersRef: managedAdminUserRef,
+				UsersRef: managedReaderUserRef,
 				AccessPolicies: []v1alpha1.AccessPolicy{
 					// Global
 					{Type: v1alpha1.GlobalAccessPolicyType, Action: v1alpha1.ReadAccessPolicyAction, Resource: v1alpha1.FlowAccessPolicyResource},
@@ -759,6 +761,7 @@ func (r *Reconciler) reconcileNifiUsersAndGroups(log logr.Logger) error {
 				},
 			},
 		},
+		// Managed Nodes
 		{
 			ObjectMeta: templates.ObjectMeta(
 				"managed-nodes",
