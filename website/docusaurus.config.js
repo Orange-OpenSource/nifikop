@@ -45,8 +45,8 @@ module.exports = {
             },
           ],
         },
-        {to: 'docs/1_concepts/1_introduction', label: 'Docs', position: 'right'},
-        {to: 'blog', label: 'Blog', position: 'right'},
+        {to: 'docs/1_concepts/1_introduction', className: 'header-doc-link', 'aria-label': 'Documentation', position: 'right'},
+        {to: 'blog', className: 'header-blog-link', 'aria-label': 'Blog', position: 'right'},
         {
           href: 'https://github.com/Orange-OpenSource/nifikop',
           position: 'right',
