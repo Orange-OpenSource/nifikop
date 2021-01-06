@@ -90,6 +90,7 @@ spec:
 |ldapConfiguration|[LdapConfiguration](#ldapconfiguration)| specifies the configuration if you want to use LDAP.|No| nil |
 |nifiClusterTaskSpec|[NifiClusterTaskSpec](#nificlustertaskspec)| specifies the configuration of the nifi cluster Tasks.|No| nil |
 |listenersConfig|[ListenersConfig](/nifikop/docs/5_references/1_nifi_cluster/6_listeners_config)| listenersConfig specifies nifi's listener specifig configs.|Yes| - |
+|sidecarConfigs|\[  \][Container](https://godoc.org/k8s.io/api/core/v1#Container)|Defines additional sidecar configurations. [Check documentation for more informations]|
 
 ## NifiClusterStatus
 
