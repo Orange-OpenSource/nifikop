@@ -12,10 +12,11 @@
 
 - [PR #53](https://github.com/Orange-OpenSource/nifikop/pull/53) - **[Operator/CRD]** No more support for Kubernetes cluster under version 1.16 (we no longer provide crds in version v1beta1)
 
-
 ### Removed
 
 ### Fixed Bugs
+
+- [PR #53](https://github.com/Orange-OpenSource/nifikop/pull/53) - **[Operator]** Upgrade k8s dependencies to match with new version requirement : [#52](https://github.com/Orange-OpenSource/nifikop/issues/52) [#51](https://github.com/Orange-OpenSource/nifikop/issues/51) [#33](https://github.com/Orange-OpenSource/nifikop/issues/33) 
 
 ## v0.4.2-alpha-release
 
@@ -24,7 +25,6 @@
 ## v0.4.2-alpha-release
 
 - [PR #41](https://github.com/Orange-OpenSource/nifikop/pull/42) - **[Operator]** Access policies enum type list
-
 
 ### Added
 
