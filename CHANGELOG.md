@@ -7,6 +7,7 @@
 ### Changed
 
 - [PR #53](https://github.com/Orange-OpenSource/nifikop/pull/53) - **[Operator]** Upgrade operator-sdk from v0.18.0 to v.1.3.0, which upgrade k8s dependencies to 0.19.4 and migrate to Kubebuilder aligned project layout.
+- [PR #53](https://github.com/Orange-OpenSource/nifikop/pull/53) - **[CI]** Update steps with new Makefile commands.
 
 ### Deprecated
 
@@ -17,6 +18,8 @@
 ### Fixed Bugs
 
 - [PR #53](https://github.com/Orange-OpenSource/nifikop/pull/53) - **[Operator]** Upgrade k8s dependencies to match with new version requirement : [#52](https://github.com/Orange-OpenSource/nifikop/issues/52) [#51](https://github.com/Orange-OpenSource/nifikop/issues/51) [#33](https://github.com/Orange-OpenSource/nifikop/issues/33) 
+- [PR #53](https://github.com/Orange-OpenSource/nifikop/pull/53) - **[Operator]** Fix the users used into Reader user group
+- [PR #53](https://github.com/Orange-OpenSource/nifikop/pull/53) - **[Documentation]** Fix the chart version informations : [#51](https://github.com/Orange-OpenSource/nifikop/issues/51)
 
 ## v0.4.2-alpha-release
 
