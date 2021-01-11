@@ -62,18 +62,22 @@ func (r *Reconciler) externalServices() []runtimeClient.Object {
 		}
 
 		usedPorts := generateServicePortForInternalListeners(listeners)
-		services = append(services, &corev1.Service{
+		services = append(services,  &corev1.Service{
 			ObjectMeta: templates.ObjectMetaWithAnnotations(eService.Name, LabelsForNifi(r.NifiCluster.Name),
 				r.NifiCluster.Spec.Service.Annotations, r.NifiCluster),
 			Spec: corev1.ServiceSpec{
-				Type:            corev1.ServiceTypeLoadBalancer,
-				SessionAffinity: corev1.ServiceAffinityClientIP,
-				Selector:        LabelsForNifi(r.NifiCluster.Name),
-				Ports:           usedPorts,
+				Type:                     eService.Spec.Type,
+				SessionAffinity:          corev1.ServiceAffinityClientIP,
+				Selector:                 LabelsForNifi(r.NifiCluster.Name),
+				Ports:                    usedPorts,
+				ClusterIP: 		          eService.Spec.ClusterIP,
+				ExternalIPs:              eService.Spec.ExternalIPs,
+				LoadBalancerIP:           eService.Spec.LoadBalancerIP,
+				LoadBalancerSourceRanges: eService.Spec.LoadBalancerSourceRanges,
+				ExternalName:             eService.Spec.ExternalName,
 			},
 		})
 	}
-
 	return services
 }
 

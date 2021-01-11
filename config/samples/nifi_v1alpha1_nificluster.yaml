@@ -260,7 +260,7 @@ spec:
         type: ClusterIP
         portConfigs:
           - port: 8080
-            name: "http"
+            internalListenerName: "http"
       serviceAnnotations:
         toto: tata
     - name: "loadbalancer"
@@ -268,7 +268,7 @@ spec:
         type: LoadBalancer
         portConfigs:
           - port: 8080
-            name: "http"
+            internalListenerName: "http"
       serviceAnnotations:
         toto: tata
     - name: "nodepart"
@@ -276,7 +276,7 @@ spec:
         type: NodePort
         portConfigs:
           - port: 8080
-            name: "http"
+            internalListenerName: "http"
       serviceAnnotations:
         toto: tata
   sidecarConfigs:
