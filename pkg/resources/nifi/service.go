@@ -46,6 +46,37 @@ func (r *Reconciler) service(id int32, log logr.Logger) runtimeClient.Object {
 	}
 }
 
+func (r *Reconciler) externalServices() []runtimeClient.Object {
+
+	var services []runtimeClient.Object
+	for _, eService := range r.NifiCluster.Spec.ExternalServices {
+
+		var listeners []v1alpha1.InternalListenerConfig
+
+		for _, port := range eService.Spec.PortConfigs {
+			for  _, iListener := range r.NifiCluster.Spec.ListenersConfig.InternalListeners {
+				if port.InternalListenerName == iListener.Name {
+					listeners = append(listeners, iListener)
+				}
+			}
+		}
+
+		usedPorts := generateServicePortForInternalListeners(listeners)
+		services = append(services, &corev1.Service{
+			ObjectMeta: templates.ObjectMetaWithAnnotations(eService.Name, LabelsForNifi(r.NifiCluster.Name),
+				r.NifiCluster.Spec.Service.Annotations, r.NifiCluster),
+			Spec: corev1.ServiceSpec{
+				Type:            corev1.ServiceTypeLoadBalancer,
+				SessionAffinity: corev1.ServiceAffinityClientIP,
+				Selector:        LabelsForNifi(r.NifiCluster.Name),
+				Ports:           usedPorts,
+			},
+		})
+	}
+
+	return services
+}
+
 //
 func generateServicePortForInternalListeners(listeners []v1alpha1.InternalListenerConfig) []corev1.ServicePort {
 	var usedPorts []corev1.ServicePort

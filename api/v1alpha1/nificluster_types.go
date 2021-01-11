@@ -293,6 +293,8 @@ type InternalListenerConfig struct {
 
 type ExternalServiceConfig struct {
 	//
+	Name string `json:"name"`
+	//
 	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
 	// Spec
 	Spec ExternalServiceSpec `json:"spec,omitempty"`

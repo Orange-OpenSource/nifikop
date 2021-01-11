@@ -52,6 +52,56 @@ spec:
                     description: If set to true, will create a podDisruptionBudget
                     type: boolean
                 type: object
+              externalServices:
+                description: ExternalService specifies settings required to access
+                  nifi externally
+                items:
+                  properties:
+                    name:
+                      type: string
+                    serviceAnnotations:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    spec:
+                      description: Spec
+                      properties:
+                        clusterIP:
+                          type: string
+                        externalIPs:
+                          items:
+                            type: string
+                          type: array
+                        externalName:
+                          type: string
+                        loadBalancerIP:
+                          type: string
+                        loadBalancerSourceRanges:
+                          items:
+                            type: string
+                          type: array
+                        portConfigs:
+                          items:
+                            properties:
+                              name:
+                                type: string
+                              port:
+                                format: int32
+                                type: integer
+                            required:
+                            - name
+                            - port
+                            type: object
+                          type: array
+                        type:
+                          description: Service Type string describes ingress methods
+                            for a service
+                          type: string
+                      type: object
+                  required:
+                  - name
+                  type: object
+                type: array
               initContainerImage:
                 description: initContainerImage can override the default image used
                   into the init container to check if ZoooKeeper server is reachable.
@@ -1172,11 +1222,8 @@ spec:
                       domain which is "cluster.local"
                     type: string
                   internalListeners:
-                    description: 'externalListeners specifies settings required to
-                      access nifi externally TODO: enable externalListener configuration
-                      ExternalListeners []ExternalListenerConfig `json:"externalListeners,omitempty"`
-                      internalListeners specifies settings required to access nifi
-                      internally'
+                    description: internalListeners specifies settings required to
+                      access nifi internally
                     items:
                       description: InternalListenerConfig defines the internal listener
                         config for Nifi
