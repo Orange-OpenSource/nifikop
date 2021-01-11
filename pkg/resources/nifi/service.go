@@ -16,6 +16,7 @@ package nifi
 
 import (
 	"fmt"
+	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
 	"github.com/go-logr/logr"
@@ -27,10 +28,7 @@ import (
 
 func (r *Reconciler) service(id int32, log logr.Logger) runtimeClient.Object {
 
-	usedPorts := r.generateServicePortForInternalListeners()
-
-	usedPorts = append(usedPorts, r.generateServicePortForExternalListeners()...)
-	usedPorts = append(usedPorts, r.generateDefaultServicePort()...)
+	usedPorts := generateServicePortForInternalListeners(r.NifiCluster.Spec.ListenersConfig.InternalListeners)
 
 	return &corev1.Service{
 		ObjectMeta: templates.ObjectMeta(fmt.Sprintf("%s-%d", r.NifiCluster.Name, id),
@@ -49,48 +47,16 @@ func (r *Reconciler) service(id int32, log logr.Logger) runtimeClient.Object {
 }
 
 //
-func (r *Reconciler) generateServicePortForInternalListeners() []corev1.ServicePort {
+func generateServicePortForInternalListeners(listeners []v1alpha1.InternalListenerConfig) []corev1.ServicePort {
 	var usedPorts []corev1.ServicePort
 
-	for _, iListeners := range r.NifiCluster.Spec.ListenersConfig.InternalListeners {
+	for _, iListeners := range listeners {
 		usedPorts = append(usedPorts, corev1.ServicePort{
 			Name:       strings.ReplaceAll(iListeners.Name, "_", ""),
 			Port:       iListeners.ContainerPort,
 			TargetPort: intstr.FromInt(int(iListeners.ContainerPort)),
 			Protocol:   corev1.ProtocolTCP,
 		})
-	}
-
-	return usedPorts
-}
-
-//
-func (r *Reconciler) generateServicePortForExternalListeners() []corev1.ServicePort {
-	var usedPorts []corev1.ServicePort
-
-	/*for _, eListener := range r.NifiCluster.Spec.ListenersConfig.ExternalListeners {
-		usedPorts = append(usedPorts, corev1.ServicePort{
-			Name:       eListener.Name,
-			Protocol:   corev1.ProtocolTCP,
-			Port:       eListener.ContainerPort,
-			TargetPort: intstr.FromInt(int(eListener.ContainerPort)),
-		})
-	}*/
-
-	return usedPorts
-}
-
-//
-func (r *Reconciler) generateDefaultServicePort() []corev1.ServicePort {
-
-	usedPorts := []corev1.ServicePort{
-		// Prometheus metrics port for monitoring
-		/*{
-			Name:       "metrics",
-			Protocol:   corev1.ProtocolTCP,
-			Port:       v1alpha1.MetricsPort,
-			TargetPort: intstr.FromInt(v1alpha1.MetricsPort),
-		},*/
 	}
 
 	return usedPorts

@@ -15,27 +15,40 @@
 package nifi
 
 import (
+	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates"
 	corev1 "k8s.io/api/core/v1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // TODO: To remove ? Or to redo
-func (r *Reconciler) lbService() runtimeClient.Object {
+func (r *Reconciler) externalServices() []runtimeClient.Object {
 
-	usedPorts := r.generateServicePortForInternalListeners()
+	var services []runtimeClient.Object
+	for _, eService := range r.NifiCluster.Spec.ExternalServices {
 
-	usedPorts = append(usedPorts, r.generateServicePortForExternalListeners()...)
-	usedPorts = append(usedPorts, r.generateDefaultServicePort()...)
+		var listeners []v1alpha1.InternalListenerConfig
 
-	return &corev1.Service{
-		ObjectMeta: templates.ObjectMetaWithAnnotations(r.NifiCluster.Name, LabelsForNifi(r.NifiCluster.Name),
-			r.NifiCluster.Spec.Service.Annotations, r.NifiCluster),
-		Spec: corev1.ServiceSpec{
-			Type:            corev1.ServiceTypeLoadBalancer,
-			SessionAffinity: corev1.ServiceAffinityClientIP,
-			Selector:        LabelsForNifi(r.NifiCluster.Name),
-			Ports:           usedPorts,
-		},
+		for _, port := range eService.Spec.PortConfigs {
+			for  _, iListener := range r.NifiCluster.Spec.ListenersConfig.InternalListeners {
+				if port.InternalListenerName == iListener.Name {
+					listeners = append(listeners, iListener)
+				}
+			}
+		}
+
+		usedPorts := generateServicePortForInternalListeners(listeners)
+		services = append(services, &corev1.Service{
+			ObjectMeta: templates.ObjectMetaWithAnnotations(r.NifiCluster.Name, LabelsForNifi(r.NifiCluster.Name),
+				r.NifiCluster.Spec.Service.Annotations, r.NifiCluster),
+			Spec: corev1.ServiceSpec{
+				Type:            corev1.ServiceTypeLoadBalancer,
+				SessionAffinity: corev1.ServiceAffinityClientIP,
+				Selector:        LabelsForNifi(r.NifiCluster.Name),
+				Ports:           usedPorts,
+			},
+		})
 	}
+
+	return services
 }

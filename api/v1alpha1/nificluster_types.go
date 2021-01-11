@@ -84,6 +84,8 @@ type NifiClusterSpec struct {
 	ListenersConfig ListenersConfig `json:"listenersConfig"`
 	// SidecarsConfig defines additional sidecar configurations
 	SidecarConfigs []corev1.Container `json:"sidecarConfigs,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,2,rep,name=containers"`
+	// ExternalService specifies settings required to access nifi externally
+	ExternalServices []ExternalServiceConfig `json:"externalServices,omitempty"`
 }
 
 // DisruptionBudget defines the configuration for PodDisruptionBudget
@@ -233,9 +235,6 @@ type StorageConfig struct {
 
 //ListenersConfig defines the Nifi listener types
 type ListenersConfig struct {
-	// externalListeners specifies settings required to access nifi externally
-	// TODO: enable externalListener configuration
-	//ExternalListeners []ExternalListenerConfig `json:"externalListeners,omitempty"`
 	// internalListeners specifies settings required to access nifi internally
 	InternalListeners []InternalListenerConfig `json:"internalListeners"`
 	// sslSecrets contains information about ssl related kubernetes secrets if one of the
@@ -279,22 +278,6 @@ type SSLSecrets struct {
 	UserStore string `json:"userStore"`
 }*/
 
-// ExternalListenerConfig defines the external listener config for Nifi
-// TODO: enable configuration of ingress or something like this.
-type ExternalListenerConfig struct {
-	// TODO: remove type field # specific to Nifi ?
-	//
-	Type string `json:"type"`
-	//
-	Name string `json:"name"`
-	//
-	ExternalStartingPort int32 `json:"externalStartingPort"`
-	//
-	ContainerPort int32 `json:"containerPort"`
-	//
-	HostnameOverride string `json:"hostnameOverride,omitempty"`
-}
-
 // InternalListenerConfig defines the internal listener config for Nifi
 type InternalListenerConfig struct {
 	// +kubebuilder:validation:Enum={"cluster", "http", "https", "s2s"}
@@ -307,6 +290,36 @@ type InternalListenerConfig struct {
 	// The container port.
 	ContainerPort int32 `json:"containerPort"`
 }
+
+type ExternalServiceConfig struct {
+	//
+	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
+	// Spec
+	Spec ExternalServiceSpec `json:"spec,omitempty"`
+}
+
+type ExternalServiceSpec struct {
+	PortConfigs []PortConfig `json:"portConfigs,omitempty"`
+	// +optional
+	ClusterIP string `json:"clusterIP,omitempty" protobuf:"bytes,3,opt,name=clusterIP"`
+	// +optional
+	Type corev1.ServiceType `json:"type,omitempty" protobuf:"bytes,4,opt,name=type,casttype=ServiceType"`
+	// +optional
+	ExternalIPs []string `json:"externalIPs,omitempty" protobuf:"bytes,5,rep,name=externalIPs"`
+	// +optional
+	LoadBalancerIP string `json:"loadBalancerIP,omitempty" protobuf:"bytes,8,opt,name=loadBalancerIP"`
+	// +optional
+	LoadBalancerSourceRanges []string `json:"loadBalancerSourceRanges,omitempty" protobuf:"bytes,9,opt,name=loadBalancerSourceRanges"`
+	// +optional
+	ExternalName string `json:"externalName,omitempty" protobuf:"bytes,10,opt,name=externalName"`
+}
+
+type PortConfig struct {
+	Port int32 `json:"port" protobuf:"varint,3,opt,name=port"`
+	InternalListenerName string `json:"name"`
+}
+
+
 
 // LdapConfiguration specifies the configuration if you want to use LDAP
 type LdapConfiguration struct {
