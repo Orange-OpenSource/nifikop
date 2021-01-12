@@ -187,7 +187,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	var err error
 	// Reconcile external services
-	services := r.externalServices()
+	services := r.externalServices(log)
 	for _, o := range services {
 		err = k8sutil.Reconcile(log, r.Client, o, r.NifiCluster)
 		if err != nil {

@@ -20,6 +20,7 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
 	"github.com/go-logr/logr"
+	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -46,7 +47,7 @@ func (r *Reconciler) service(id int32, log logr.Logger) runtimeClient.Object {
 	}
 }
 
-func (r *Reconciler) externalServices() []runtimeClient.Object {
+func (r *Reconciler) externalServices(log logr.Logger) []runtimeClient.Object {
 
 	var services []runtimeClient.Object
 	for _, eService := range r.NifiCluster.Spec.ExternalServices {
@@ -60,11 +61,15 @@ func (r *Reconciler) externalServices() []runtimeClient.Object {
 				}
 			}
 		}
+		annotations := eService.ServiceAnnotations
+		if err := mergo.Merge(annotations, r.NifiCluster.Spec.Service.Annotations); err != nil {
+			log.Error(err, "error occurred during merging service annotations")
+		}
 
 		usedPorts := generateServicePortForInternalListeners(listeners)
 		services = append(services,  &corev1.Service{
 			ObjectMeta: templates.ObjectMetaWithAnnotations(eService.Name, LabelsForNifi(r.NifiCluster.Name),
-				r.NifiCluster.Spec.Service.Annotations, r.NifiCluster),
+				annotations, r.NifiCluster),
 			Spec: corev1.ServiceSpec{
 				Type:                     eService.Spec.Type,
 				SessionAffinity:          corev1.ServiceAffinityClientIP,
