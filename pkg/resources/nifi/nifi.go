@@ -649,7 +649,7 @@ func (r *Reconciler) reconcileNifiUsersAndGroups(log logr.Logger) error {
 	for _, managedUser := range managedUsers {
 		users = append(users, &v1alpha1.NifiUser{
 			ObjectMeta: templates.ObjectMeta(
-				managedUser.Name,
+				fmt.Sprintf("%s.%s",r.NifiCluster.Name, managedUser.Name),
 				pkicommon.LabelsForNifiPKI(r.NifiCluster.Name), r.NifiCluster,
 			),
 			Spec: v1alpha1.NifiUserSpec{
@@ -682,7 +682,7 @@ func (r *Reconciler) reconcileNifiUsersAndGroups(log logr.Logger) error {
 		// Managed admins
 		{
 			ObjectMeta: templates.ObjectMeta(
-				"managed-admins",
+				fmt.Sprintf("%s.managed-admins", r.NifiCluster.Name),
 				pkicommon.LabelsForNifiPKI(r.NifiCluster.Name), r.NifiCluster,
 			),
 			Spec: v1alpha1.NifiUserGroupSpec{
@@ -735,7 +735,7 @@ func (r *Reconciler) reconcileNifiUsersAndGroups(log logr.Logger) error {
 		// Managed Readers
 		{
 			ObjectMeta: templates.ObjectMeta(
-				"managed-readers",
+				fmt.Sprintf("%s.managed-readers", r.NifiCluster.Name),
 				pkicommon.LabelsForNifiPKI(r.NifiCluster.Name), r.NifiCluster,
 			),
 			Spec: v1alpha1.NifiUserGroupSpec{
@@ -768,7 +768,7 @@ func (r *Reconciler) reconcileNifiUsersAndGroups(log logr.Logger) error {
 		// Managed Nodes
 		{
 			ObjectMeta: templates.ObjectMeta(
-				"managed-nodes",
+				fmt.Sprintf("%s.managed-nodes", r.NifiCluster.Name),
 				pkicommon.LabelsForNifiPKI(r.NifiCluster.Name), r.NifiCluster,
 			),
 			Spec: v1alpha1.NifiUserGroupSpec{
