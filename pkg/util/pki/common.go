@@ -121,6 +121,7 @@ func ClusterDNSNames(cluster *v1alpha1.NifiCluster, nodeId int32) (names []strin
 	names = append(names,
 		nifi.ComputeNodeHostname(nodeId, cluster.Name, cluster.Namespace, cluster.Spec.Service.HeadlessEnabled,
 			cluster.Spec.ListenersConfig.GetClusterDomain(), cluster.Spec.ListenersConfig.UseExternalDNS))
+
 	if !cluster.Spec.ListenersConfig.UseExternalDNS {
 		// SVC notation
 		names = append(names,
@@ -146,10 +147,12 @@ func ClusterDNSNames(cluster *v1alpha1.NifiCluster, nodeId int32) (names []strin
 		if cluster.Spec.Service.HeadlessEnabled {
 			names = append(names,
 				nifi.ComputeNodeName(nodeId, cluster.Name))
+		} else {
+			names = append(names, nifi.ComputeNodeAllNodeHostname(
+				nodeId, cluster.Name, cluster.Namespace, cluster.Spec.Service.HeadlessEnabled,
+				cluster.Spec.ListenersConfig.GetClusterDomain(), cluster.Spec.ListenersConfig.UseExternalDNS))
 		}
-
 	}
-
 	return
 }
 

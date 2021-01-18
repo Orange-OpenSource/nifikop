@@ -159,10 +159,10 @@ done`,
 		},
 	}
 
-	if r.NifiCluster.Spec.Service.HeadlessEnabled {
-		pod.Spec.Hostname = nifiutil.ComputeNodeName(id, r.NifiCluster.Name)
-		pod.Spec.Subdomain = nifiutil.ComputeAllNodeServiceName(r.NifiCluster.Name, r.NifiCluster.Spec.Service.HeadlessEnabled)
-	}
+	//if r.NifiCluster.Spec.Service.HeadlessEnabled {
+	pod.Spec.Hostname = nifiutil.ComputeNodeName(id, r.NifiCluster.Name)
+	pod.Spec.Subdomain = nifiutil.ComputeAllNodeServiceName(r.NifiCluster.Name, r.NifiCluster.Spec.Service.HeadlessEnabled)
+	//}
 
 	if nodeConfig.NodeAffinity != nil {
 		pod.Spec.Affinity.NodeAffinity = nodeConfig.NodeAffinity
@@ -412,8 +412,10 @@ rm -f $NIFI_BASE_DIR/cluster.state `,
 		r.NifiCluster.Spec.ListenersConfig.GetClusterDomain(), r.NifiCluster.Spec.ListenersConfig.UseExternalDNS,
 		r.NifiCluster.Spec.ListenersConfig.InternalListeners)
 
-	command := []string{"bash", "-ce", fmt.Sprintf(`cp ${NIFI_HOME}/tmp/* ${NIFI_HOME}/conf/
-echo "Waiting for host to be reachable"
+	resolveIp := ""
+
+	if r.NifiCluster.Spec.Service.HeadlessEnabled {
+		resolveIp = fmt.Sprintf(`echo "Waiting for host to be reachable"
 notMatchedIp=true
 while $notMatchedIp
 do
@@ -428,9 +430,12 @@ do
 		notMatchedIp=false
 	fi
 done
-echo "Hostname is successfully binded withy IP adress"
+echo "Hostname is successfully binded withy IP adress"`, nodeAddress, nodeAddress)
+	}
+	command := []string{"bash", "-ce", fmt.Sprintf(`cp ${NIFI_HOME}/tmp/* ${NIFI_HOME}/conf/
 %s
-exec bin/nifi.sh run`, nodeAddress, nodeAddress, removesFileAction)}
+%s
+exec bin/nifi.sh run`, resolveIp, removesFileAction)}
 
 	return corev1.Container{
 		Name:            ContainerName,

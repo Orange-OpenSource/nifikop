@@ -137,6 +137,17 @@ func ComputeNodeHostname(
 		clusterDomain)
 }
 
+func ComputeNodeAllNodeHostname(
+	nodeId int32,
+	clusterName, namespace string,
+	headlessServiceEnabled bool,
+	clusterDomain string,
+	useExternalDNS bool) string {
+
+	return fmt.Sprintf("%s.%s", ComputeNodeName(nodeId, clusterName),
+		ComputeAllNodeServiceHostname(clusterName, namespace, headlessServiceEnabled, clusterDomain, useExternalDNS))
+}
+
 func ComputeAllNodeServiceHostname(
 	clusterName, namespace string,
 	headlessServiceEnabled bool,
