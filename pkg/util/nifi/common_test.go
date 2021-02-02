@@ -13,6 +13,7 @@
 // limitations under the License.package apis
 
 package nifi
+
 //
 //import (
 //	"fmt"

@@ -137,7 +137,7 @@ func ClusterDNSNames(cluster *v1alpha1.NifiCluster, nodeId int32) (names []strin
 				cluster.Spec.Service.HeadlessEnabled, cluster.Spec.ListenersConfig.UseExternalDNS))
 		names = append(names,
 			nifi.ComputeRequestNiFiNodeNamespace(nodeId, cluster.Name, cluster.Namespace,
-				cluster.Spec.Service.HeadlessEnabled,cluster.Spec.ListenersConfig.UseExternalDNS))
+				cluster.Spec.Service.HeadlessEnabled, cluster.Spec.ListenersConfig.UseExternalDNS))
 
 		// Service name only
 		names = append(names,

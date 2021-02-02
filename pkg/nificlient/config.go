@@ -77,7 +77,7 @@ func generateNodesAddress(cluster *v1alpha1.NifiCluster) map[int32]nodeUri {
 		if !(state.GracefulActionState.State.IsRunningState() || state.GracefulActionState.State.IsRequiredState()) && state.GracefulActionState.ActionStep != v1alpha1.RemoveStatus {
 			addresses[util.ConvertStringToInt32(nId)] = nodeUri{
 				HostListener: nifi.GenerateHostListenerNodeAddressFromCluster(util.ConvertStringToInt32(nId), cluster),
-				RequestHost: nifi.GenerateRequestNiFiNodeAddressFromCluster(util.ConvertStringToInt32(nId), cluster),
+				RequestHost:  nifi.GenerateRequestNiFiNodeAddressFromCluster(util.ConvertStringToInt32(nId), cluster),
 			}
 		}
 	}
