@@ -1,0 +1,6 @@
+specs:
+- output: '5.0'
+  openapi: http://localhost:8001/openapi/v2
+  prefix: com.orange.nifi.
+  patchDir: _custom/
+  extensionDir: _extensions/

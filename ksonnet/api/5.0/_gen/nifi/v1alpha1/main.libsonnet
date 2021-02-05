@@ -1,0 +1,16 @@
+{
+  local d = (import 'doc-util/main.libsonnet'),
+  '#':: d.pkg(name='v1alpha1', url='', help=''),
+  nifiCluster: (import 'nifiCluster.libsonnet'),
+  nifiClusterList: (import 'nifiClusterList.libsonnet'),
+  nifiDataflow: (import 'nifiDataflow.libsonnet'),
+  nifiDataflowList: (import 'nifiDataflowList.libsonnet'),
+  nifiParameterContext: (import 'nifiParameterContext.libsonnet'),
+  nifiParameterContextList: (import 'nifiParameterContextList.libsonnet'),
+  nifiRegistryClient: (import 'nifiRegistryClient.libsonnet'),
+  nifiRegistryClientList: (import 'nifiRegistryClientList.libsonnet'),
+  nifiUser: (import 'nifiUser.libsonnet'),
+  nifiUserGroup: (import 'nifiUserGroup.libsonnet'),
+  nifiUserGroupList: (import 'nifiUserGroupList.libsonnet'),
+  nifiUserList: (import 'nifiUserList.libsonnet'),
+}
