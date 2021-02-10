@@ -281,11 +281,57 @@ func (r *Reconciler) getLoginIdentityProvidersConfigString(nConfig *v1alpha1.Nod
 //
 func (r *Reconciler) getLogbackConfigString(nConfig *v1alpha1.NodeConfig, id int32, log logr.Logger) string {
 
+	crIntOrDefault := func(crValue, defaultValue int) int {
+		if crValue != 0 {
+			return crValue
+		}
+		return defaultValue
+	}
+	crStringOrDefault := func(crValue, defaultValue string) string {
+		if crValue != "" {
+			return crValue
+		}
+		return defaultValue
+	}
+
 	var out bytes.Buffer
 	t := template.Must(template.New("nConfig-config").Parse(config.LogbackTemplate))
 	if err := t.Execute(&out, map[string]interface{}{
-		"NifiCluster": r.NifiCluster,
-		"Id":          id,
+		"NifiCluster":             r.NifiCluster,
+		"Id":                      id,
+		"MaxHistoryAppFile":       crIntOrDefault(r.NifiCluster.Spec.Logback.MaxHistory.AppFile, 30),
+		"MaxHistoryUserFile":      crIntOrDefault(r.NifiCluster.Spec.Logback.MaxHistory.UserFile, 30),
+		"MaxHistoryBootstrapFile": crIntOrDefault(r.NifiCluster.Spec.Logback.MaxHistory.BootstrapFile, 5),
+		"MaxFileSizeAppFile":      crStringOrDefault(r.NifiCluster.Spec.Logback.MaxFileSize.AppFile, "100MB"),
+		"LogLevelNifi":            crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.Nifi, "INFO"),
+		"LogLevelNifiProcessors":  crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiProcessors, "WARN"),
+		"LogLevelNifiProcessorsStandardLogAttribute":             crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiProcessorsStandardLogAttribute, "INFO"),
+		"LogLevelNifiProcessorsStandardLogMessage":               crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiProcessorsStandardLogMessage, "INFO"),
+		"LogLevelNifiControllerRepositoryStandardProcessSession": crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiControllerRepositoryStandardProcessSession, "WARN"),
+		"LogLevelZookeeperClientCnxn":                            crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.ZookeeperClientCnxn, "ERROR"),
+		"LogLevelZookeeperServerNIOServerCnxn":                   crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.ZookeeperServerNIOServerCnxn, "ERROR"),
+		"LogLevelZookeeperServerNIOServerCnxnFactory":            crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.ZookeeperServerNIOServerCnxnFactory, "ERROR"),
+		"LogLevelZookeeperServerQuorum":                          crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.ZookeeperServerQuorum, "ERROR"),
+		"LogLevelZookeeperZooKeeper":                             crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.ZookeeperZooKeeper, "ERROR"),
+		"LogLevelZookeeperServerPrepRequestProcessor":            crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.ZookeeperServerPrepRequestProcessor, "ERROR"),
+		"LogLevelCalciteRuntimeCalciteException":                 crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.CalciteRuntimeCalciteException, "OFF"),
+		"LogLevelCuratorFrameworkRecipesLeaderLeaderSelector":    crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.CuratorFrameworkRecipesLeaderLeaderSelector, "OFF"),
+		"LogLevelCuratorConnectionState":                         crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.CuratorConnectionState, "OFF"),
+		"LogLevelNifiCluster":                                    crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiCluster, "DEBUG"),
+		"LogLevelNifiServerJettyServer":                          crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiServerJettyServer, "INFO"),
+		"LogLevelJetty":                                          crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.Jetty, "INFO"),
+		"LogLevelSpringframework":                                crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.Springframework, "ERROR"),
+		"LogLevelJerseyInternalErrors":                           crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.JerseyInternalErrors, "ERROR"),
+		"LogLevelNifiWebSecurity":                                crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiWebSecurity, "INFO"),
+		"LogLevelNifiWebApiConfig":                               crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiWebApiConfig, "INFO"),
+		"LogLevelNifiAuthorization":                              crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiAuthorization, "INFO"),
+		"LogLevelNifiClusterAuthorization":                       crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiClusterAuthorization, "INFO"),
+		"LogLevelNifiWebFilterRequestLogger":                     crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiWebFilterRequestLogger, "INFO"),
+		"LogLevelNifiBootstrap":                                  crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiBootstrap, "INFO"),
+		"LogLevelNifiBootstrapCommand":                           crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiBootstrapCommand, "INFO"),
+		"LogLevelNifiStdOut":                                     crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiStdOut, "INFO"),
+		"LogLevelNifiStdErr":                                     crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.NifiStdErr, "ERROR"),
+		"LogLevelRoot":                                           crStringOrDefault(r.NifiCluster.Spec.Logback.LogLevel.Root, "INFO"),
 	}); err != nil {
 		log.Error(err, "error occurred during parsing the config template")
 	}

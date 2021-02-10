@@ -86,6 +86,8 @@ type NifiClusterSpec struct {
 	SidecarConfigs []corev1.Container `json:"sidecarConfigs,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,2,rep,name=containers"`
 	// ExternalService specifies settings required to access nifi externally
 	ExternalServices []ExternalServiceConfig `json:"externalServices,omitempty"`
+
+	Logback Logback `json:"logback,omitempty"`
 }
 
 // DisruptionBudget defines the configuration for PodDisruptionBudget
@@ -440,6 +442,54 @@ type ManagedUser struct {
 	// name field is use to name the NifiUser resource, if not identity is provided it will be used to name
 	// the user on NiFi cluster side.
 	Name string `json:"name"`
+}
+
+type Logback struct {
+	MaxHistory  MaxHistory  `json:"maxHistory,omitempty"`
+	MaxFileSize MaxFileSize `json:"maxFileSize,omitempty"`
+	LogLevel    LogLevel    `json:"logLevel,omitempty"`
+}
+
+type MaxHistory struct {
+	AppFile       int `json:"appFile,omitempty"`
+	UserFile      int `json:"userFile,omitempty"`
+	BootstrapFile int `json:"bootstrapFile,omitempty"`
+}
+
+type MaxFileSize struct {
+	AppFile string `json:"appFile,omitempty"`
+}
+
+type LogLevel struct {
+	Nifi                                           string `json:"nifi,omitempty"`
+	NifiProcessors                                 string `json:"nifiProcessors,omitempty"`
+	NifiProcessorsStandardLogAttribute             string `json:"nifiProcessorsStandardLogAttribute,omitempty"`
+	NifiProcessorsStandardLogMessage               string `json:"nifiProcessorsStandardLogMessage,omitempty"`
+	NifiControllerRepositoryStandardProcessSession string `json:"nifiControllerRepositoryStandardProcessSession,omitempty"`
+	ZookeeperClientCnxn                            string `json:"zookeeperClientCnxn,omitempty"`
+	ZookeeperServerNIOServerCnxn                   string `json:"zookeeperServerNIOServerCnxn,omitempty"`
+	ZookeeperServerNIOServerCnxnFactory            string `json:"zookeeperServerNIOServerCnxnFactory,omitempty"`
+	ZookeeperServerQuorum                          string `json:"zookeeperServerQuorum,omitempty"`
+	ZookeeperZooKeeper                             string `json:"zookeeperZooKeeper,omitempty"`
+	ZookeeperServerPrepRequestProcessor            string `json:"zookeeperServerPrepRequestProcessor,omitempty"`
+	CalciteRuntimeCalciteException                 string `json:"calciteRuntimeCalciteException,omitempty"`
+	CuratorFrameworkRecipesLeaderLeaderSelector    string `json:"curatorFrameworkRecipesLeaderLeaderSelector,omitempty"`
+	CuratorConnectionState                         string `json:"curatorConnectionState,omitempty"`
+	NifiCluster                                    string `json:"nifiCluster,omitempty"`
+	NifiServerJettyServer                          string `json:"nifiServerJettyServer,omitempty"`
+	Jetty                                          string `json:"jetty,omitempty"`
+	Springframework                                string `json:"springframework,omitempty"`
+	JerseyInternalErrors                           string `json:"jerseyInternalErrors,omitempty"`
+	NifiWebSecurity                                string `json:"nifiWebSecurity,omitempty"`
+	NifiWebApiConfig                               string `json:"nifiWebApiConfig,omitempty"`
+	NifiAuthorization                              string `json:"nifiAuthorization,omitempty"`
+	NifiClusterAuthorization                       string `json:"nifiClusterAuthorization,omitempty"`
+	NifiWebFilterRequestLogger                     string `json:"nifiWebFilterRequestLogger,omitempty"`
+	NifiBootstrap                                  string `json:"nifiBootstrap,omitempty"`
+	NifiBootstrapCommand                           string `json:"nifiBootstrapCommand,omitempty"`
+	NifiStdOut                                     string `json:"nifiStdOut,omitempty"`
+	NifiStdErr                                     string `json:"nifiStdErr,omitempty"`
+	Root                                           string `json:"root,omitempty"`
 }
 
 func (u *ManagedUser) GetIdentity() string {

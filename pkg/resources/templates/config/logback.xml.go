@@ -44,9 +44,9 @@ var LogbackTemplate = `<?xml version="1.0" encoding="UTF-8"?>
               To ZIP rolled files, replace '.log' with '.log.zip'.
             -->
             <fileNamePattern>${org.apache.nifi.bootstrap.config.log.dir}/nifi-app_%d{yyyy-MM-dd_HH}.%i.log</fileNamePattern>
-            <maxFileSize>100MB</maxFileSize>
+            <maxFileSize>{{.MaxFileSizeAppFile}}</maxFileSize>
             <!-- keep 30 log files worth of history -->
-            <maxHistory>30</maxHistory>
+            <maxHistory>{{.MaxHistoryAppFile}}</maxHistory>
         </rollingPolicy>
         <immediateFlush>true</immediateFlush>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
@@ -65,7 +65,7 @@ var LogbackTemplate = `<?xml version="1.0" encoding="UTF-8"?>
             -->
             <fileNamePattern>${org.apache.nifi.bootstrap.config.log.dir}/nifi-user_%d.log</fileNamePattern>
             <!-- keep 30 log files worth of history -->
-            <maxHistory>30</maxHistory>
+            <maxHistory>{{.MaxHistoryUserFile}}</maxHistory>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>%date %level [%thread] %logger{40} %msg%n</pattern>
@@ -83,7 +83,7 @@ var LogbackTemplate = `<?xml version="1.0" encoding="UTF-8"?>
             -->
             <fileNamePattern>${org.apache.nifi.bootstrap.config.log.dir}/nifi-bootstrap_%d.log</fileNamePattern>
             <!-- keep 5 log files worth of history -->
-            <maxHistory>5</maxHistory>
+            <maxHistory>{{.MaxHistoryBootstrapFile}}</maxHistory>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>%date %level [%thread] %logger{40} %msg%n</pattern>
@@ -98,58 +98,58 @@ var LogbackTemplate = `<?xml version="1.0" encoding="UTF-8"?>
     
     <!-- valid logging levels: TRACE, DEBUG, INFO, WARN, ERROR -->
     
-    <logger name="org.apache.nifi" level="INFO"/>
-    <logger name="org.apache.nifi.processors" level="WARN"/>
-    <logger name="org.apache.nifi.processors.standard.LogAttribute" level="INFO"/>
-    <logger name="org.apache.nifi.processors.standard.LogMessage" level="INFO"/>
-    <logger name="org.apache.nifi.controller.repository.StandardProcessSession" level="WARN" />
+    <logger name="org.apache.nifi" level="{{.LogLevelNifi}}"/>
+    <logger name="org.apache.nifi.processors" level="{{.LogLevelNifiProcessors}}"/>
+    <logger name="org.apache.nifi.processors.standard.LogAttribute" level="{{.LogLevelNifiProcessorsStandardLogAttribute}}"/>
+    <logger name="org.apache.nifi.processors.standard.LogMessage" level="{{.LogLevelNifiProcessorsStandardLogMessage}}"/>
+    <logger name="org.apache.nifi.controller.repository.StandardProcessSession" level="{{.LogLevelNifiControllerRepositoryStandardProcessSession}}" />
     
     
-    <logger name="org.apache.zookeeper.ClientCnxn" level="ERROR" />
-    <logger name="org.apache.zookeeper.server.NIOServerCnxn" level="ERROR" />
-    <logger name="org.apache.zookeeper.server.NIOServerCnxnFactory" level="ERROR" />
-    <logger name="org.apache.zookeeper.server.quorum" level="ERROR" />
-    <logger name="org.apache.zookeeper.ZooKeeper" level="ERROR" />
-    <logger name="org.apache.zookeeper.server.PrepRequestProcessor" level="ERROR" />
+    <logger name="org.apache.zookeeper.ClientCnxn" level="{{.LogLevelZookeeperClientCnxn}}" />
+    <logger name="org.apache.zookeeper.server.NIOServerCnxn" level="{{.LogLevelZookeeperServerNIOServerCnxn}}" />
+    <logger name="org.apache.zookeeper.server.NIOServerCnxnFactory" level="{{.LogLevelZookeeperServerNIOServerCnxnFactory}}" />
+    <logger name="org.apache.zookeeper.server.quorum" level="{{.LogLevelZookeeperServerQuorum}}" />
+    <logger name="org.apache.zookeeper.ZooKeeper" level="{{.LogLevelZookeeperZooKeeper}}" />
+    <logger name="org.apache.zookeeper.server.PrepRequestProcessor" level="{{.LogLevelZookeeperServerPrepRequestProcessor}}" />
 
-    <logger name="org.apache.calcite.runtime.CalciteException" level="OFF" />
+    <logger name="org.apache.calcite.runtime.CalciteException" level="{{.LogLevelCalciteRuntimeCalciteException}}" />
 
-    <logger name="org.apache.curator.framework.recipes.leader.LeaderSelector" level="OFF" />
-    <logger name="org.apache.curator.ConnectionState" level="OFF" />
+    <logger name="org.apache.curator.framework.recipes.leader.LeaderSelector" level="{{.LogLevelCuratorFrameworkRecipesLeaderLeaderSelector}}" />
+    <logger name="org.apache.curator.ConnectionState" level="{{.LogLevelCuratorConnectionState}}" />
     
     <!-- Logger for managing logging statements for nifi clusters. -->
-    <logger name="org.apache.nifi.cluster" level="DEBUG"/>
+    <logger name="org.apache.nifi.cluster" level="{{.LogLevelNifiCluster}}"/>
 
     <!-- Logger for logging HTTP requests received by the web server. -->
-    <logger name="org.apache.nifi.server.JettyServer" level="INFO"/>
+    <logger name="org.apache.nifi.server.JettyServer" level="{{.LogLevelNifiServerJettyServer}}"/>
 
     <!-- Logger for managing logging statements for jetty -->
-    <logger name="org.eclipse.jetty" level="INFO"/>
+    <logger name="org.eclipse.jetty" level="{{.LogLevelJetty}}"/>
 
     <!-- Suppress non-error messages due to excessive logging by class or library -->
-    <logger name="org.springframework" level="ERROR"/>
+    <logger name="org.springframework" level="{{.LogLevelSpringframework}}"/>
     
     <!-- Suppress non-error messages due to known warning about redundant path annotation (NIFI-574) -->
-    <logger name="org.glassfish.jersey.internal.Errors" level="ERROR"/>
+    <logger name="org.glassfish.jersey.internal.Errors" level="{{.LogLevelJerseyInternalErrors}}"/>
 
     <!--
         Logger for capturing user events. We do not want to propagate these
         log events to the root logger. These messages are only sent to the
         user-log appender.
     -->
-    <logger name="org.apache.nifi.web.security" level="INFO" additivity="false">
+    <logger name="org.apache.nifi.web.security" level="{{.LogLevelNifiWebSecurity}}" additivity="false">
         <appender-ref ref="USER_FILE"/>
     </logger>
-    <logger name="org.apache.nifi.web.api.config" level="INFO" additivity="false">
+    <logger name="org.apache.nifi.web.api.config" level="{{.LogLevelNifiWebApiConfig}}" additivity="false">
         <appender-ref ref="USER_FILE"/>
     </logger>
-    <logger name="org.apache.nifi.authorization" level="INFO" additivity="false">
+    <logger name="org.apache.nifi.authorization" level="{{.LogLevelNifiAuthorization}}" additivity="false">
         <appender-ref ref="USER_FILE"/>
     </logger>
-    <logger name="org.apache.nifi.cluster.authorization" level="INFO" additivity="false">
+    <logger name="org.apache.nifi.cluster.authorization" level="{{.LogLevelNifiClusterAuthorization}}" additivity="false">
         <appender-ref ref="USER_FILE"/>
     </logger>
-    <logger name="org.apache.nifi.web.filter.RequestLogger" level="INFO" additivity="false">
+    <logger name="org.apache.nifi.web.filter.RequestLogger" level="{{.LogLevelNifiWebFilterRequestLogger}}" additivity="false">
         <appender-ref ref="USER_FILE"/>
     </logger>
 
@@ -157,26 +157,26 @@ var LogbackTemplate = `<?xml version="1.0" encoding="UTF-8"?>
     <!--
         Logger for capturing Bootstrap logs and NiFi's standard error and standard out. 
     -->
-    <logger name="org.apache.nifi.bootstrap" level="INFO" additivity="false">
+    <logger name="org.apache.nifi.bootstrap" level="{{.LogLevelNifiBootstrap}}" additivity="false">
         <appender-ref ref="BOOTSTRAP_FILE" />
     </logger>
-    <logger name="org.apache.nifi.bootstrap.Command" level="INFO" additivity="false">
+    <logger name="org.apache.nifi.bootstrap.Command" level="{{.LogLevelNifiBootstrapCommand}}" additivity="false">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="BOOTSTRAP_FILE" />
     </logger>
 
     <!-- Everything written to NiFi's Standard Out will be logged with the logger org.apache.nifi.StdOut at INFO level -->
-    <logger name="org.apache.nifi.StdOut" level="INFO" additivity="false">
+    <logger name="org.apache.nifi.StdOut" level="{{.LogLevelNifiStdOut}}" additivity="false">
         <appender-ref ref="BOOTSTRAP_FILE" />
     </logger>
     
     <!-- Everything written to NiFi's Standard Error will be logged with the logger org.apache.nifi.StdErr at ERROR level -->
-    <logger name="org.apache.nifi.StdErr" level="ERROR" additivity="false">
+    <logger name="org.apache.nifi.StdErr" level="{{.LogLevelNifiStdErr}}" additivity="false">
         <appender-ref ref="BOOTSTRAP_FILE" />
     </logger>
 
 
-    <root level="INFO">
+    <root level="{{.LogLevelRoot}}">
         <appender-ref ref="APP_FILE"/>
     </root>
     
