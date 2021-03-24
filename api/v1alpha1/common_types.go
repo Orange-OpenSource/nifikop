@@ -88,6 +88,20 @@ type NifiAccessType string
 // UserState defines the state of a NifiUser
 type UserState string
 
+// ConfigmapReference states a reference to a data into a configmap
+type ConfigmapReference struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace,omitempty"`
+	Data      string `json:"data"`
+}
+
+// SecretConfigReference states a reference to a data into a secret
+type SecretConfigReference struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace,omitempty"`
+	Data      string `json:"data"`
+}
+
 // ClusterReference states a reference to a cluster for dataflow/registryclient/user
 // provisioning
 type ClusterReference struct {
