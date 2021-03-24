@@ -204,6 +204,7 @@ type BootstrapProperties struct {
 	OverrideSecretConfig *SecretConfigReference `json:"overrideSecretConfig,omitempty"`
 }
 
+// Logback configuration that will be applied to the node.
 type LogbackConfig struct {
 	// logback.xml configuration that will replace the one produced based on template
 	ReplaceConfigMap *ConfigmapReference `json:"replaceConfigMap,omitempty"`
