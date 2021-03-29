@@ -14,14 +14,14 @@ import (
 
 var log = ctrl.Log.WithName("reportingtaks-method")
 
-const(
-	reportingTaskName = "managed-prometheus"
-	reportingTaskType_ = "org.apache.nifi.reporting.prometheus.PrometheusReportingTask"
+const (
+	reportingTaskName                = "managed-prometheus"
+	reportingTaskType_               = "org.apache.nifi.reporting.prometheus.PrometheusReportingTask"
 	reportingTaskEnpointPortProperty = "prometheus-reporting-task-metrics-endpoint-port"
-	reportingTaskStrategyProperty = "prometheus-reporting-task-metrics-strategy"
-	reportingTaskStrategy = "All Components"
-	reportingTaskSendJVMProperty = "prometheus-reporting-task-metrics-send-jvm"
-	reportingTaskSendJVM = "true"
+	reportingTaskStrategyProperty    = "prometheus-reporting-task-metrics-strategy"
+	reportingTaskStrategy            = "All Components"
+	reportingTaskSendJVMProperty     = "prometheus-reporting-task-metrics-send-jvm"
+	reportingTaskSendJVM             = "true"
 )
 
 func ExistReportingTaks(client client.Client, cluster *v1alpha1.NifiCluster) (bool, error) {
@@ -88,7 +88,7 @@ func SyncReportingTask(client client.Client, cluster *v1alpha1.NifiCluster) (*v1
 		if status.RunStatus == "RUNNING" {
 			entity, err = nClient.UpdateRunStatusReportingTask(entity.Id, nigoapi.ReportingTaskRunStatusEntity{
 				Revision: entity.Revision,
-				State: "STOPPED",
+				State:    "STOPPED",
 			})
 			if err := clientwrappers.ErrorUpdateOperation(log, err, "Update reporting-task status"); err != nil {
 				return nil, err
@@ -107,10 +107,10 @@ func SyncReportingTask(client client.Client, cluster *v1alpha1.NifiCluster) (*v1
 		return nil, errorfactory.NifiReportingTasksInvalid{}
 	}
 
-	if entity.Status.RunStatus == "STOPPED" ||  entity.Status.RunStatus == "DISABLED" {
+	if entity.Status.RunStatus == "STOPPED" || entity.Status.RunStatus == "DISABLED" {
 		entity, err = nClient.UpdateRunStatusReportingTask(entity.Id, nigoapi.ReportingTaskRunStatusEntity{
 			Revision: entity.Revision,
-			State: "RUNNING",
+			State:    "RUNNING",
 		})
 		if err := clientwrappers.ErrorUpdateOperation(log, err, "Update reporting-task status"); err != nil {
 			return nil, err
@@ -173,7 +173,7 @@ func updateReportingTaskEntity(cluster *v1alpha1.NifiCluster, entity *nigoapi.Re
 	entity.Component.Type_ = "org.apache.nifi.reporting.prometheus.PrometheusReportingTask"
 	entity.Component.Properties = map[string]string{
 		reportingTaskEnpointPortProperty: strconv.Itoa(*cluster.Spec.GetMetricPort()),
-		reportingTaskStrategyProperty: reportingTaskStrategy,
-		reportingTaskSendJVMProperty: reportingTaskSendJVM,
+		reportingTaskStrategyProperty:    reportingTaskStrategy,
+		reportingTaskSendJVMProperty:     reportingTaskSendJVM,
 	}
 }

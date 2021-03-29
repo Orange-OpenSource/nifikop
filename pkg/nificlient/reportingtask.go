@@ -39,7 +39,6 @@ func (n *nifiClient) GetReportingTask(id string) (*nigoapi.ReportingTaskEntity, 
 	return &out, nil
 }
 
-
 func (n *nifiClient) CreateReportingTask(entity nigoapi.ReportingTaskEntity) (*nigoapi.ReportingTaskEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
 	client := n.privilegeCoordinatorClient()

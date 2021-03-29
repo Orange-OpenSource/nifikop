@@ -819,7 +819,7 @@ func (r *Reconciler) reconcilePrometheusReportingTask(log logr.Logger) error {
 	// Check if the NiFi reporting task already exist
 	exist, err := reportingtask.ExistReportingTaks(r.Client, r.NifiCluster)
 	if err != nil {
-		return errors.WrapIfWithDetails(err, "failure checking for existing prometheus reporting task", )
+		return errors.WrapIfWithDetails(err, "failure checking for existing prometheus reporting task")
 	}
 
 	if !exist {
@@ -836,7 +836,7 @@ func (r *Reconciler) reconcilePrometheusReportingTask(log logr.Logger) error {
 	}
 
 	// Sync prometheus reporting task resource with NiFi side component
-	status, err := reportingtask.SyncReportingTask(r.Client,r.NifiCluster)
+	status, err := reportingtask.SyncReportingTask(r.Client, r.NifiCluster)
 	if err != nil {
 		return errors.WrapIfWithDetails(err, "failed to sync NifiRegistryClient")
 	}
@@ -847,4 +847,3 @@ func (r *Reconciler) reconcilePrometheusReportingTask(log logr.Logger) error {
 	}
 	return nil
 }
-

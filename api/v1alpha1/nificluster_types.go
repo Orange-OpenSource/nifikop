@@ -25,11 +25,11 @@ import (
 )
 
 const (
-	ClusterListenerType     = "cluster"
-	HttpListenerType        = "http"
-	HttpsListenerType       = "https"
-	S2sListenerType         = "s2s"
-	prometheusListenerType  = "prometheus"
+	ClusterListenerType    = "cluster"
+	HttpListenerType       = "http"
+	HttpsListenerType      = "https"
+	S2sListenerType        = "s2s"
+	prometheusListenerType = "prometheus"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
