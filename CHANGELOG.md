@@ -5,6 +5,7 @@
 - [PR #86](https://github.com/Orange-OpenSource/nifikop/pull/86) - **[Operator/Debugging]** Add events and improve HTTP calls error message
 - [PR #87](https://github.com/Orange-OpenSource/nifikop/pull/87) - **[Operator/Configuration]** Allow to override the `.properties` files using a config map and/or a secret.
 - [PR #87](https://github.com/Orange-OpenSource/nifikop/pull/87) - **[Operator/Configuration]** Allow to replace the `logback.xml` and `bootstrap_notification_service.xml` files using a config map or a secret.
+- [PR #88](https://github.com/Orange-OpenSource/nifikop/pull/88) - **[Operator/Monitoring]** By choosing `prometheus` as type for an internal service in a NiFiCluster resource, the operator automatically creates the associated `reporting task`.
 
 
 ### Changed
