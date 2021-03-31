@@ -115,7 +115,7 @@ helm install nifikop \
     orange-incubator/nifikop \
     --namespace=nifi \
     --version 0.6.0 \
-    --set image.tag=v0.6.0release \
+    --set image.tag=v0.6.0-release \
     --set resources.requests.memory=256Mi \
     --set resources.requests.cpu=250m \
     --set resources.limits.memory=256Mi \
@@ -135,7 +135,7 @@ We recommend to use a **custom StorageClass** to leverage the volume binding mod
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: exampleStorageclass
+  name: example-storageclass
 parameters:
   type: pd-standard
 provisioner: kubernetes.io/gce-pd
