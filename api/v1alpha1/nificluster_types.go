@@ -300,7 +300,7 @@ type SSLSecrets struct {
 	// https://cert-manager.io/docs/concepts/issuer/
 	IssuerRef *cmmeta.ObjectReference `json:"issuerRef,omitempty"`
 	// TODO : add vault
-	// +kubebuilder:validation:Enum={"cert-manager","vault"} // TODO add selfmanager to the enum
+	// +kubebuilder:validation:Enum={"cert-manager","vault", "selfmanager"}
 	PKIBackend PKIBackend `json:"pkiBackend,omitempty"`
 	//,"vault"
 }
