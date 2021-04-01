@@ -121,6 +121,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	// Setup the PKI if using SSL
 	if r.NifiCluster.Spec.ListenersConfig.SSLSecrets != nil {
 		// reconcile the PKI
+		// TODO Call made >Here<
 		if err := pki.GetPKIManager(r.Client, r.NifiCluster).ReconcilePKI(context.TODO(), log, r.Scheme, uniqueHostnames); err != nil {
 			return err
 		}

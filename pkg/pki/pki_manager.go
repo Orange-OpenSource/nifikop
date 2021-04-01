@@ -17,6 +17,7 @@ package pki
 import (
 	"context"
 	"crypto/tls"
+	"github.com/Orange-OpenSource/nifikop/pkg/pki/selfmanagerpki"
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/pki/certmanagerpki"
@@ -32,6 +33,10 @@ var MockBackend = v1alpha1.PKIBackend("mock")
 // GetPKIManager returns a PKI/User manager interface for a given cluster
 func GetPKIManager(client client.Client, cluster *v1alpha1.NifiCluster) pki.Manager {
 	switch cluster.Spec.ListenersConfig.SSLSecrets.PKIBackend {
+
+	// TODO selfmanager should be here
+	case "selfmanager": // Should be a const
+		return selfmanagerpki.New(client, cluster)
 
 	// Use cert-manager for pki backend
 	case v1alpha1.PKIBackendCertManager:
@@ -49,7 +54,6 @@ func GetPKIManager(client client.Client, cluster *v1alpha1.NifiCluster) pki.Mana
 	// Default use cert-manager - state explicitly for clarity and to make compiler happy
 	default:
 		return certmanagerpki.New(client, cluster)
-
 	}
 }
 
