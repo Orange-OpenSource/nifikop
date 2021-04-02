@@ -9,6 +9,7 @@ import (
 	"encoding/pem"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/util/pki"
+	"log"
 	"math/big"
 	"net"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -38,18 +39,23 @@ type selfManager struct {
 }
 
 func New(client client.Client, cluster *v1alpha1.NifiCluster) SelfManager {
-	//get our ca and server certificate
-	caCert, caKey, err := setupCA()
-	if err != nil {
-		panic(err)
+	selfmanager := selfManager{
+		client:  client,
+		cluster: cluster,
 	}
 
-	return &selfManager{client: client, cluster: cluster, caCert: caCert, caKey: caKey}
+	//get our ca and server certificate
+	err := selfmanager.setupCA()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return selfmanager
 }
 
-func setupCA() (ca *x509.Certificate, caPrivKey *rsa.PrivateKey, err error) {
+func (s selfManager) setupCA() (err error) {
 	// set up our CA certificate
-	ca = &x509.Certificate{
+	s.caCert = &x509.Certificate{
 		SerialNumber: big.NewInt(2019),
 		Subject: subject,
 		NotBefore:             time.Now(),
@@ -61,15 +67,15 @@ func setupCA() (ca *x509.Certificate, caPrivKey *rsa.PrivateKey, err error) {
 	}
 
 	// create our private and public key
-	caPrivKey, err = rsa.GenerateKey(rand.Reader, 4096)
+	s.caKey, err = rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
-		return nil, nil, err
+		return
 	}
 
 	// create the CA
-	caBytes, err := x509.CreateCertificate(rand.Reader, ca, ca, &caPrivKey.PublicKey, caPrivKey)
+	caBytes, err := x509.CreateCertificate(rand.Reader, s.caCert, s.caCert, &s.caKey.PublicKey, s.caKey)
 	if err != nil {
-		return nil, nil, err
+		return
 	}
 
 	// pem encode
@@ -82,13 +88,15 @@ func setupCA() (ca *x509.Certificate, caPrivKey *rsa.PrivateKey, err error) {
 	caPrivKeyPEM := new(bytes.Buffer)
 	pem.Encode(caPrivKeyPEM, &pem.Block{
 		Type:  "RSA PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(caPrivKey),
+		Bytes: x509.MarshalPKCS1PrivateKey(s.caKey),
 	})
 
-	return
+	return nil
 }
 
-func generateCert(ca *x509.Certificate, caPrivKey *rsa.PrivateKey) (certPEM *bytes.Buffer, certPrivKeyPEM *bytes.Buffer, err error) {
+// TODO PEM or Bytes + params ?
+// Generate one cert from selfmanager's CA
+func (s selfManager) generateCert() (certPEM *bytes.Buffer, certPrivKeyPEM *bytes.Buffer, err error) {
 	// set up our server certificate
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(2019),
@@ -106,7 +114,7 @@ func generateCert(ca *x509.Certificate, caPrivKey *rsa.PrivateKey) (certPEM *byt
 		return nil, nil, err
 	}
 
-	certBytes, err := x509.CreateCertificate(rand.Reader, cert, ca, &certPrivKey.PublicKey, caPrivKey)
+	certBytes, err := x509.CreateCertificate(rand.Reader, cert, s.caCert, &certPrivKey.PublicKey, s.caKey)
 	if err != nil {
 		return nil, nil, err
 	}
