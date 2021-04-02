@@ -38,6 +38,7 @@ type selfManager struct {
 	caKey  *rsa.PrivateKey
 }
 
+// Return a new fully instantiated SelfManager struct
 func New(client client.Client, cluster *v1alpha1.NifiCluster) SelfManager {
 	selfmanager := selfManager{
 		client:  client,
@@ -53,6 +54,7 @@ func New(client client.Client, cluster *v1alpha1.NifiCluster) SelfManager {
 	return selfmanager
 }
 
+// Sets up the caCert & caKey variables by setting up a new self signed CA
 func (s *selfManager) setupCA() (err error) {
 	// set up our CA certificate
 	s.caCert = &x509.Certificate{
