@@ -35,7 +35,7 @@ type selfManager struct {
 
 	// TODO PEMs or objects ?
 	caCert *x509.Certificate
-	caKey *rsa.PrivateKey
+	caKey  *rsa.PrivateKey
 }
 
 func New(client client.Client, cluster *v1alpha1.NifiCluster) SelfManager {
@@ -53,11 +53,11 @@ func New(client client.Client, cluster *v1alpha1.NifiCluster) SelfManager {
 	return selfmanager
 }
 
-func (s selfManager) setupCA() (err error) {
+func (s *selfManager) setupCA() (err error) {
 	// set up our CA certificate
 	s.caCert = &x509.Certificate{
-		SerialNumber: big.NewInt(2019),
-		Subject: subject,
+		SerialNumber:          big.NewInt(2019),
+		Subject:               subject,
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(10, 0, 0),
 		IsCA:                  true,
@@ -80,27 +80,33 @@ func (s selfManager) setupCA() (err error) {
 
 	// pem encode
 	caPEM := new(bytes.Buffer)
-	pem.Encode(caPEM, &pem.Block{
+	err = pem.Encode(caPEM, &pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: caBytes,
 	})
+	if err != nil {
+		return
+	}
 
 	caPrivKeyPEM := new(bytes.Buffer)
-	pem.Encode(caPrivKeyPEM, &pem.Block{
+	err = pem.Encode(caPrivKeyPEM, &pem.Block{
 		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(s.caKey),
 	})
+	if err != nil {
+		return
+	}
 
 	return nil
 }
 
 // TODO PEM or Bytes + params ?
 // Generate one cert from selfmanager's CA
-func (s selfManager) generateCert() (certPEM *bytes.Buffer, certPrivKeyPEM *bytes.Buffer, err error) {
+func (s *selfManager) generateCert() (certPEM *bytes.Buffer, certPrivKeyPEM *bytes.Buffer, err error) {
 	// set up our server certificate
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(2019),
-		Subject: subject,
+		Subject:      subject,
 		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(10, 0, 0),
@@ -120,16 +126,22 @@ func (s selfManager) generateCert() (certPEM *bytes.Buffer, certPrivKeyPEM *byte
 	}
 
 	certPEM = new(bytes.Buffer)
-	pem.Encode(certPEM, &pem.Block{
+	err = pem.Encode(certPEM, &pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: certBytes,
 	})
+	if err != nil {
+		return nil, nil, err
+	}
 
 	certPrivKeyPEM = new(bytes.Buffer)
-	pem.Encode(certPrivKeyPEM, &pem.Block{
+	err = pem.Encode(certPrivKeyPEM, &pem.Block{
 		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(certPrivKey),
 	})
+	if err != nil {
+		return nil, nil, err
+	}
 
 	return
 }
