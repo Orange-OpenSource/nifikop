@@ -38,7 +38,10 @@ func newMockCluster() *v1alpha1.NifiCluster {
 }
 
 func TestNew(t *testing.T) {
-	pkiManager := New(&mockClient{}, newMockCluster())
+	pkiManager, err := New(&mockClient{}, newMockCluster())
+	if err != nil {
+		t.Error("Expected no error from New, got:", err)
+	}
 	if reflect.TypeOf(pkiManager) != reflect.TypeOf(&selfManager{}) {
 		t.Error("Expected new selfmanager from New, got:", reflect.TypeOf(pkiManager))
 	}
@@ -49,8 +52,8 @@ func Test_generateCert(t *testing.T) {
 		client:  &mockClient{},
 		cluster: newMockCluster(),
 	}
-	err := selfmanager.setupCA()
-	if err != nil {
+
+	if err := selfmanager.setupCA(); err != nil {
 		t.Error("Expected no error from setupCA, got:", err)
 	}
 
@@ -71,8 +74,8 @@ func Test_setupCA(t *testing.T) {
 		client:  &mockClient{},
 		cluster: newMockCluster(),
 	}
-	err := selfmanager.setupCA()
-	if err != nil {
+
+	if err := selfmanager.setupCA(); err != nil {
 		t.Error("Expected no error from setupCA, got:", err)
 	}
 	if reflect.TypeOf(selfmanager.caCert) != reflect.TypeOf(&x509.Certificate{}) {
