@@ -5,11 +5,11 @@ import (
 )
 
 // TODO
-func Test_selfManager_FinalizePKI(t *testing.T) {
+func TestFinalizePKI(t *testing.T) {
 
 }
 
 // TODO
-func Test_selfManager_ReconcilePKI(t *testing.T) {
+func TestReconcilePKI(t *testing.T) {
 
 }

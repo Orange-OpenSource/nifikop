@@ -5,6 +5,6 @@ import (
 )
 
 // TODO
-func Test_selfManager_GetControllerTLSConfig(t *testing.T) {
+func TestGetControllerTLSConfig(t *testing.T) {
 
 }

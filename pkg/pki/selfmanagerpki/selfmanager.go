@@ -24,11 +24,8 @@ var subject = pkix.Name{
 	PostalCode:    []string{"75015"},
 }
 
-type SelfManager interface {
+type SelfManager struct {
 	pki.Manager
-}
-
-type selfManager struct {
 	client  client.Client
 	cluster *v1alpha1.NifiCluster
 
@@ -38,22 +35,22 @@ type selfManager struct {
 }
 
 // Return a new fully instantiated SelfManager struct
-func New(client client.Client, cluster *v1alpha1.NifiCluster) (SelfManager, error) {
-	selfmanager := selfManager{
+func New(client client.Client, cluster *v1alpha1.NifiCluster) (manager *SelfManager, err error) {
+	manager = &SelfManager{
 		client:  client,
 		cluster: cluster,
 	}
 
-	//get our ca and server certificate
-	if err := selfmanager.setupCA(); err != nil {
-		return nil, err
+	// setting up our ca and server certificate
+	if err = manager.setupCA(); err != nil {
+		return
 	}
 
-	return &selfmanager, nil
+	return
 }
 
 // Sets up the caCert & caKey variables by setting up a new self signed CA
-func (s *selfManager) setupCA() (err error) {
+func (s *SelfManager) setupCA() (err error) {
 	// set up our CA certificate
 	s.caCert = &x509.Certificate{
 		SerialNumber:          big.NewInt(2019),
@@ -99,7 +96,7 @@ func (s *selfManager) setupCA() (err error) {
 
 // TODO PEM or Bytes + params ?
 // Generate one cert from selfmanager's CA
-func (s *selfManager) generateCert() (certPEM *bytes.Buffer, certPrivKeyPEM *bytes.Buffer, err error) {
+func (s *SelfManager) generateCert() (certPEM *bytes.Buffer, certPrivKeyPEM *bytes.Buffer, err error) {
 	// set up our server certificate
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(2019),

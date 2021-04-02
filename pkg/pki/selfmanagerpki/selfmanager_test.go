@@ -42,22 +42,22 @@ func TestNew(t *testing.T) {
 	if err != nil {
 		t.Error("Expected no error from New, got:", err)
 	}
-	if reflect.TypeOf(pkiManager) != reflect.TypeOf(&selfManager{}) {
+	if reflect.TypeOf(pkiManager) != reflect.TypeOf(&SelfManager{}) {
 		t.Error("Expected new selfmanager from New, got:", reflect.TypeOf(pkiManager))
 	}
 }
 
-func Test_generateCert(t *testing.T) {
-	selfmanager := selfManager{
+func TestGenerateCert(t *testing.T) {
+	manager := SelfManager{
 		client:  &mockClient{},
 		cluster: newMockCluster(),
 	}
 
-	if err := selfmanager.setupCA(); err != nil {
+	if err := manager.setupCA(); err != nil {
 		t.Error("Expected no error from setupCA, got:", err)
 	}
 
-	certPEM, certKeyPEM, err := selfmanager.generateCert()
+	certPEM, certKeyPEM, err := manager.generateCert()
 	if err != nil {
 		t.Error("Expected no error from generateCert, got:", err)
 	}
@@ -69,19 +69,19 @@ func Test_generateCert(t *testing.T) {
 	}
 }
 
-func Test_setupCA(t *testing.T) {
-	selfmanager := selfManager{
+func TestSetupCA(t *testing.T) {
+	manager := SelfManager{
 		client:  &mockClient{},
 		cluster: newMockCluster(),
 	}
 
-	if err := selfmanager.setupCA(); err != nil {
+	if err := manager.setupCA(); err != nil {
 		t.Error("Expected no error from setupCA, got:", err)
 	}
-	if reflect.TypeOf(selfmanager.caCert) != reflect.TypeOf(&x509.Certificate{}) {
-		t.Error("Expected caCert to be x509.Certificate from setupCA, got:", reflect.TypeOf(selfmanager.caCert))
+	if reflect.TypeOf(manager.caCert) != reflect.TypeOf(&x509.Certificate{}) {
+		t.Error("Expected caCert to be x509.Certificate from setupCA, got:", reflect.TypeOf(manager.caCert))
 	}
-	if reflect.TypeOf(selfmanager.caKey) != reflect.TypeOf(&rsa.PrivateKey{}) {
-		t.Error("Expected cakey to be rsa.PrivateKey from setupCA, got:", reflect.TypeOf(selfmanager.caKey))
+	if reflect.TypeOf(manager.caKey) != reflect.TypeOf(&rsa.PrivateKey{}) {
+		t.Error("Expected cakey to be rsa.PrivateKey from setupCA, got:", reflect.TypeOf(manager.caKey))
 	}
 }

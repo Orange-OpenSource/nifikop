@@ -5,10 +5,10 @@ import (
 )
 
 // TODO
-func Test_selfManager_FinalizeUserCertificate(t *testing.T) {
+func TestFinalizeUserCertificate(t *testing.T) {
 }
 
 // TODO
-func Test_selfManager_ReconcileUserCertificate(t *testing.T) {
+func TestReconcileUserCertificate(t *testing.T) {
 
 }

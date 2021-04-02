@@ -17,8 +17,8 @@ package pki
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"github.com/Orange-OpenSource/nifikop/pkg/pki/selfmanagerpki"
-	"log"
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/pki/certmanagerpki"
@@ -35,11 +35,11 @@ var MockBackend = v1alpha1.PKIBackend("mock")
 func GetPKIManager(client client.Client, cluster *v1alpha1.NifiCluster) pki.Manager {
 	switch cluster.Spec.ListenersConfig.SSLSecrets.PKIBackend {
 
-	// TODO selfmanager should be here
 	case "selfmanager": // Should be a const
 		selfmanager, err := selfmanagerpki.New(client, cluster)
 		if err != nil {
-			log.Panic("Error while setting up SelfManager as PKI Manager : ", err)
+			// TODO what to do ?
+			fmt.Println("Error while setting up SelfManager as PKI Manager : ", err)
 		}
 		return selfmanager
 
