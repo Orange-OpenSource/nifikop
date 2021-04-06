@@ -9,6 +9,9 @@ import (
 	"encoding/pem"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/util/pki"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"math/big"
 	"net"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -30,8 +33,9 @@ type SelfManager struct {
 	cluster *v1alpha1.NifiCluster
 
 	// TODO PEMs or objects ?
-	caCert *x509.Certificate
-	caKey  *rsa.PrivateKey
+	caCert     *x509.Certificate
+	caCertByte []byte
+	caKey      *rsa.PrivateKey
 }
 
 // Return a new fully instantiated SelfManager struct
@@ -69,7 +73,7 @@ func (s *SelfManager) setupCA() (err error) {
 	}
 
 	// create the CA
-	caBytes, err := x509.CreateCertificate(rand.Reader, s.caCert, s.caCert, &s.caKey.PublicKey, s.caKey)
+	s.caCertByte, err = x509.CreateCertificate(rand.Reader, s.caCert, s.caCert, &s.caKey.PublicKey, s.caKey)
 	if err != nil {
 		return
 	}
@@ -78,7 +82,7 @@ func (s *SelfManager) setupCA() (err error) {
 	caPEM := new(bytes.Buffer)
 	if err = pem.Encode(caPEM, &pem.Block{
 		Type:  "CERTIFICATE",
-		Bytes: caBytes,
+		Bytes: s.caCertByte,
 	}); err != nil {
 		return
 	}
@@ -96,7 +100,7 @@ func (s *SelfManager) setupCA() (err error) {
 
 // TODO PEM or Bytes + params ?
 // Generate one cert from selfmanager's CA
-func (s *SelfManager) generateCert() (certPEM *bytes.Buffer, certPrivKeyPEM *bytes.Buffer, err error) {
+func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM *bytes.Buffer, certPrivKeyPEM *bytes.Buffer, err error) {
 	// set up our server certificate
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(2019),
@@ -107,6 +111,11 @@ func (s *SelfManager) generateCert() (certPEM *bytes.Buffer, certPrivKeyPEM *byt
 		SubjectKeyId: []byte{1, 2, 3, 4, 6},
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		KeyUsage:     x509.KeyUsageDigitalSignature,
+	}
+
+	// Add DNS Names if provided
+	if user.Spec.DNSNames != nil && len(user.Spec.DNSNames) > 0 {
+		cert.DNSNames = user.Spec.DNSNames
 	}
 
 	certPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
@@ -135,5 +144,46 @@ func (s *SelfManager) generateCert() (certPEM *bytes.Buffer, certPrivKeyPEM *byt
 		return
 	}
 
+	return
+}
+
+func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runtime.Scheme) (secret *corev1.Secret, err error) {
+
+	cert, keyPEM, err := s.generateUserCert(user)
+	if err != nil {
+		return nil, err
+	}
+
+	secret = &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      user.GetName(),
+			Namespace: user.GetNamespace(),
+		},
+		Data: map[string][]byte{
+			// TODO wich types ?
+			v1alpha1.CoreCACertKey: s.caCertByte,
+			//v1alpha1.CACertKey:  s.caCert,
+			corev1.TLSCertKey:       cert.Bytes(),
+			corev1.TLSPrivateKeyKey: keyPEM.Bytes(),
+		},
+	}
+
+	// TODO what to do for jks ?
+	//if user.Spec.IncludeJKS {
+	//	secret.Data.Keystores = &certv1.CertificateKeystores{
+	//		JKS: &certv1.JKSKeystore{
+	//			Create: true,
+	//			PasswordSecretRef: certmeta.SecretKeySelector{
+	//				LocalObjectReference: certmeta.LocalObjectReference{
+	//					Name: user.Spec.SecretName,
+	//				},
+	//				Key: v1alpha1.PasswordKey,
+	//			},
+	//		},
+	//	}
+	//}
+
+	// TODO ??
+	//controllerutil.SetControllerReference(user, secret, scheme)
 	return
 }

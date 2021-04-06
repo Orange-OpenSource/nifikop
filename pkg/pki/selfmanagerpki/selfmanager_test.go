@@ -59,7 +59,7 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func TestGenerateCert(t *testing.T) {
+func TestGenerateUserCert(t *testing.T) {
 	manager := SelfManager{
 		client:  &mockClient{},
 		cluster: newMockCluster(),
@@ -69,7 +69,7 @@ func TestGenerateCert(t *testing.T) {
 		t.Error("Expected no error from setupCA, got:", err)
 	}
 
-	certPEM, certKeyPEM, err := manager.generateCert()
+	certPEM, certKeyPEM, err := manager.generateUserCert(newMockUser())
 	if err != nil {
 		t.Error("Expected no error from generateCert, got:", err)
 	}
