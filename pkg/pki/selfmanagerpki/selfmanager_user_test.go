@@ -50,9 +50,10 @@ func TestReconcileUserCertificate(t *testing.T) {
 
 	manager.client.Create(context.TODO(), newMockUser())
 	if _, err := manager.ReconcileUserCertificate(ctx, newMockUser(), scheme.Scheme); err == nil {
+		// TODO modify assertion => Get secret == true
 		t.Error("Expected resource not ready error, got nil")
 	} else if reflect.TypeOf(err) != reflect.TypeOf(errorfactory.ResourceNotReady{}) {
-		t.Error("Expected resource not ready error, got:", reflect.TypeOf(err))
+		t.Error("Expe cted resource not ready error, got:", reflect.TypeOf(err))
 	}
 	if err := manager.client.Delete(context.TODO(), newMockUserSecret()); err != nil {
 		t.Error("could not delete test secret")
@@ -65,6 +66,7 @@ func TestReconcileUserCertificate(t *testing.T) {
 	}
 
 	// Test error conditions
+	// TODO error cases
 	//manager = newMock(newMockCluster())
 	//manager.client.Create(context.TODO(), newMockUser())
 	//manager.client.Create(context.TODO(), manager.clusterCertificateForUser(newMockUser(), scheme.Scheme))
