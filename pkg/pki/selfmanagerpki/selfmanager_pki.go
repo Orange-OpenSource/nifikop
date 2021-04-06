@@ -6,7 +6,6 @@ import (
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	"github.com/go-logr/logr"
-	certv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -77,19 +76,19 @@ func (s SelfManager) FinalizePKI(ctx context.Context, logger logr.Logger) error 
 
 		}
 		for _, obj := range objNames {
-			// Delete the certificates first so we don't accidentally recreate the
-			// secret after it gets deleted
-			cert := &certv1.Certificate{}
-			if err := s.client.Get(ctx, obj, cert); err != nil {
-				if apierrors.IsNotFound(err) {
-					continue
-				} else {
-					return err
-				}
-			}
-			if err := s.client.Delete(ctx, cert); err != nil {
-				return err
-			}
+			//// Delete the certificates first so we don't accidentally recreate the
+			//// secret after it gets deleted
+			//cert := &certv1.Certificate{}
+			//if err := s.client.Get(ctx, obj, cert); err != nil {
+			//	if apierrors.IsNotFound(err) {
+			//		continue
+			//	} else {
+			//		return err
+			//	}
+			//}
+			//if err := s.client.Delete(ctx, cert); err != nil {
+			//	return err
+			//}
 
 			// Might as well delete the secret and leave the controller reference earlier
 			// as a safety belt
