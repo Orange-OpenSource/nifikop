@@ -5,13 +5,25 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
+	certv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	"k8s.io/client-go/kubernetes/scheme"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"testing"
 )
 
 type mockClient struct {
 	client.Client
+}
+
+func newMock(cluster *v1alpha1.NifiCluster) *SelfManager {
+	certv1.AddToScheme(scheme.Scheme)
+	v1alpha1.SchemeBuilder.AddToScheme(scheme.Scheme)
+	return &SelfManager{
+		cluster: cluster,
+		client:  fake.NewFakeClientWithScheme(scheme.Scheme),
+	}
 }
 
 func newMockCluster() *v1alpha1.NifiCluster {
