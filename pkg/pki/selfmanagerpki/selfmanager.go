@@ -7,14 +7,17 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"fmt"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	certutil "github.com/Orange-OpenSource/nifikop/pkg/util/cert"
 	"github.com/Orange-OpenSource/nifikop/pkg/util/pki"
+	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"math/big"
-	"net"
+	"net/url"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"time"
@@ -109,13 +112,20 @@ func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte,
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(2019),
 		Subject:      subject,
-		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},
+		//IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(10, 0, 0),
 		SubjectKeyId: []byte{1, 2, 3, 4, 6},
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		KeyUsage:     x509.KeyUsageDigitalSignature,
 	}
+
+	// URLs
+	urls, err := url.Parse(fmt.Sprintf(pkicommon.SpiffeIdTemplate, s.cluster.Name, user.GetNamespace(), user.GetName()))
+	if err != nil {
+		return
+	}
+	cert.URIs = []*url.URL{urls}
 
 	// Add DNS Names if provided
 	if user.Spec.DNSNames != nil && len(user.Spec.DNSNames) > 0 {
@@ -155,7 +165,7 @@ func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte,
 
 func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runtime.Scheme) (secret *corev1.Secret, err error) {
 
-	cert, keyPEM, err := s.generateUserCert(user)
+	certPEM, keyPEM, err := s.generateUserCert(user)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +177,7 @@ func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runt
 		},
 		Data: map[string][]byte{
 			v1alpha1.CoreCACertKey:  s.caCertPEM,
-			corev1.TLSCertKey:       cert,
+			corev1.TLSCertKey:       certPEM,
 			corev1.TLSPrivateKeyKey: keyPEM,
 		},
 	}
