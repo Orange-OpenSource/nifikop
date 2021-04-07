@@ -88,16 +88,4 @@ func TestReconcilePKI(t *testing.T) {
 	if err := manager.ReconcilePKI(ctx, log, scheme.Scheme, []string{}); err != nil {
 		t.Error("Expected successful reconcile, got:", err)
 	}
-
-	//cluster.Spec.ListenersConfig.SSLSecrets.Create = false
-	//manager = newMock(cluster)
-	//if err := manager.ReconcilePKI(ctx, log, scheme.Scheme, []string{}); err == nil {
-	//	t.Error("Expected error got nil")
-	//} else if reflect.TypeOf(err) != reflect.TypeOf(errorfactory.ResourceNotReady{}) {
-	//	t.Error("Expected not ready error, got:", reflect.TypeOf(err))
-	//}
-	//manager.client.Create(ctx, newPreCreatedSecret())
-	//if err := manager.ReconcilePKI(ctx, log, scheme.Scheme, []string{}); err != nil {
-	//	t.Error("Expected successful reconcile, got:", err)
-	//}
 }
