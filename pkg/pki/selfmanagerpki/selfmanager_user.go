@@ -26,7 +26,6 @@ func (s *SelfManager) ReconcileUserCertificate(ctx context.Context, user *v1alph
 	if err != nil && apierrors.IsNotFound(err) {
 		// No secret found, generate & create one
 
-		// TODO Why before
 		if user.Spec.IncludeJKS {
 			if err := s.injectJKSPassword(ctx, user); err != nil {
 				return nil, err
@@ -63,46 +62,6 @@ func (s *SelfManager) FinalizeUserCertificate(ctx context.Context, user *v1alpha
 
 	return nil
 }
-
-//// clusterCertificateForUser generates a Certificate object for a NifiUser
-//func (s *SelfManager) clusterCertificateForUser(user *v1alpha1.NifiUser, scheme *runtime.Scheme) *certv1.Certificate {
-//	caName, caKind := s.getCA()
-//	cert := &certv1.Certificate{
-//		ObjectMeta: metav1.ObjectMeta{
-//			Name:      user.GetName(),
-//			Namespace: user.GetNamespace(),
-//		},
-//		Spec: certv1.CertificateSpec{
-//			SecretName:  user.Spec.SecretName,
-//			KeyEncoding: certv1.PKCS8,
-//			CommonName:  user.GetName(),
-//			URISANs:     []string{fmt.Sprintf(pkicommon.SpiffeIdTemplate, s.cluster.Name, user.GetNamespace(), user.GetName())},
-//			Usages:      []certv1.KeyUsage{certv1.UsageClientAuth, certv1.UsageServerAuth},
-//			IssuerRef: certmeta.ObjectReference{
-//				Name: caName,
-//				Kind: caKind,
-//			},
-//		},
-//	}
-//	if user.Spec.IncludeJKS {
-//		cert.Spec.Keystores = &certv1.CertificateKeystores{
-//			JKS: &certv1.JKSKeystore{
-//				Create: true,
-//				PasswordSecretRef: certmeta.SecretKeySelector{
-//					LocalObjectReference: certmeta.LocalObjectReference{
-//						Name: user.Spec.SecretName,
-//					},
-//					Key: v1alpha1.PasswordKey,
-//				},
-//			},
-//		}
-//	}
-//	if user.Spec.DNSNames != nil && len(user.Spec.DNSNames) > 0 {
-//		cert.Spec.DNSNames = user.Spec.DNSNames
-//	}
-//	controllerutil.SetControllerReference(user, cert, scheme)
-//	return cert
-//}
 
 // getUserSecret fetches the secret created for a user
 func (s *SelfManager) getUserSecret(ctx context.Context, user *v1alpha1.NifiUser) (secret *corev1.Secret, err error) {
