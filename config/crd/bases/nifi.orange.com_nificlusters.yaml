@@ -1347,6 +1347,7 @@ spec:
                         enum:
                         - cert-manager
                         - vault
+                        - selfmanager
                         type: string
                       tlsSecretName:
                         description: 'tlsSecretName should contain all ssl certs required
