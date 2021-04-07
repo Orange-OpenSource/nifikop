@@ -17,13 +17,11 @@ type mockClient struct {
 	client.Client
 }
 
-func newMock(cluster *v1alpha1.NifiCluster) *SelfManager {
+func newMock(cluster *v1alpha1.NifiCluster) (manager *SelfManager, err error) {
 	certv1.AddToScheme(scheme.Scheme)
 	v1alpha1.SchemeBuilder.AddToScheme(scheme.Scheme)
-	return &SelfManager{
-		cluster: cluster,
-		client:  fake.NewFakeClientWithScheme(scheme.Scheme),
-	}
+	manager, err = New(fake.NewFakeClientWithScheme(scheme.Scheme), cluster)
+	return
 }
 
 func newMockCluster() *v1alpha1.NifiCluster {
@@ -60,13 +58,9 @@ func TestNew(t *testing.T) {
 }
 
 func TestGenerateUserCert(t *testing.T) {
-	manager := SelfManager{
-		client:  &mockClient{},
-		cluster: newMockCluster(),
-	}
-
-	if err := manager.setupCA(); err != nil {
-		t.Error("Expected no error from setupCA, got:", err)
+	manager, err := New(&mockClient{}, newMockCluster())
+	if err != nil {
+		t.Error("Expected no error from New, got:", err)
 	}
 
 	certPEM, certKeyPEM, err := manager.generateUserCert(newMockUser())
@@ -95,5 +89,11 @@ func TestSetupCA(t *testing.T) {
 	}
 	if reflect.TypeOf(manager.caKey) != reflect.TypeOf(&rsa.PrivateKey{}) {
 		t.Error("Expected cakey to be rsa.PrivateKey from setupCA, got:", reflect.TypeOf(manager.caKey))
+	}
+	if reflect.TypeOf(manager.caCertPEM) != reflect.TypeOf(&[]byte{}) {
+		t.Error("Expected caCertPEM to be []byte from setupCA, got:", reflect.TypeOf(manager.caCertPEM))
+	}
+	if reflect.TypeOf(manager.caKeyPEM) != reflect.TypeOf(&[]byte{}) {
+		t.Error("Expected cakeyPEM to be []byte from setupCA, got:", reflect.TypeOf(manager.caKeyPEM))
 	}
 }

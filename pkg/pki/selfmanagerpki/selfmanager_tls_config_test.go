@@ -26,7 +26,10 @@ func newMockControllerSecret(valid bool) *corev1.Secret {
 }
 
 func TestGetControllerTLSConfig(t *testing.T) {
-	manager := newMock(newMockCluster())
+	manager, err := newMock(newMockCluster())
+	if err != nil {
+		t.Error("Expected no error from New, got:", err)
+	}
 
 	// Test good controller secret
 	manager.client.Create(context.TODO(), newMockControllerSecret(true))
@@ -34,7 +37,10 @@ func TestGetControllerTLSConfig(t *testing.T) {
 		t.Error("Expected no error, got:", err)
 	}
 
-	manager = newMock(newMockCluster())
+	manager, err = newMock(newMockCluster())
+	if err != nil {
+		t.Error("Expected no error from New, got:", err)
+	}
 
 	// Test non-existent controller secret
 	if _, err := manager.GetControllerTLSConfig(); err == nil {

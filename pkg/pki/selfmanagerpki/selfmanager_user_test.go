@@ -3,11 +3,9 @@ package selfmanagerpki
 import (
 	"context"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
-	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	certutil "github.com/Orange-OpenSource/nifikop/pkg/util/cert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	"reflect"
 	"testing"
 )
 
@@ -36,24 +34,31 @@ func newMockUserSecret() *corev1.Secret {
 }
 
 func TestFinalizeUserCertificate(t *testing.T) {
-	manager := newMock(newMockCluster())
+	manager, err := newMock(newMockCluster())
+	if err != nil {
+		t.Error("Expected no error from New, got:", err)
+	}
+
 	if err := manager.FinalizeUserCertificate(context.Background(), &v1alpha1.NifiUser{}); err != nil {
 		t.Error("Expected no error, got:", err)
 	}
 
 	// TODO check if the secret is correctly deleted ?
+	// Get...
+	// Should get error...
 }
 
 func TestReconcileUserCertificate(t *testing.T) {
-	manager := newMock(newMockCluster())
+	manager, err := newMock(newMockCluster())
+	if err != nil {
+		t.Error("Expected no error from New, got:", err)
+	}
+
 	ctx := context.Background()
 
 	manager.client.Create(context.TODO(), newMockUser())
-	if _, err := manager.ReconcileUserCertificate(ctx, newMockUser(), scheme.Scheme); err == nil {
-		// TODO modify assertion => Get secret == true
-		t.Error("Expected resource not ready error, got nil")
-	} else if reflect.TypeOf(err) != reflect.TypeOf(errorfactory.ResourceNotReady{}) {
-		t.Error("Expe cted resource not ready error, got:", reflect.TypeOf(err))
+	if _, err := manager.ReconcileUserCertificate(ctx, newMockUser(), scheme.Scheme); err != nil {
+		t.Error("Expected no error, got : ", err)
 	}
 	if err := manager.client.Delete(context.TODO(), newMockUserSecret()); err != nil {
 		t.Error("could not delete test secret")

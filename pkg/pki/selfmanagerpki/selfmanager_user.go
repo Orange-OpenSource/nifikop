@@ -2,7 +2,6 @@ package selfmanagerpki
 
 import (
 	"context"
-	"errors"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
@@ -25,7 +24,6 @@ func (s *SelfManager) ReconcileUserCertificate(ctx context.Context, user *v1alph
 
 	if err != nil && apierrors.IsNotFound(err) {
 		// No secret found, generate & create one
-
 		if user.Spec.IncludeJKS {
 			if err := s.injectJKSPassword(ctx, user); err != nil {
 				return nil, err
@@ -67,30 +65,7 @@ func (s *SelfManager) FinalizeUserCertificate(ctx context.Context, user *v1alpha
 func (s *SelfManager) getUserSecret(ctx context.Context, user *v1alpha1.NifiUser) (secret *corev1.Secret, err error) {
 	secret = &corev1.Secret{}
 	err = s.client.Get(ctx, types.NamespacedName{Name: user.Spec.SecretName, Namespace: user.Namespace}, secret)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return secret, errorfactory.New(errorfactory.ResourceNotReady{}, err, "user secret not ready")
-		}
-		return secret, errorfactory.New(errorfactory.APIFailure{}, err, "failed to get user secret")
-	}
-	if user.Spec.IncludeJKS {
-		if len(secret.Data) != 6 {
-			return secret, errorfactory.New(errorfactory.ResourceNotReady{}, err, "user secret not populated yet")
-		}
-	} else {
-		if len(secret.Data) != 3 {
-			return secret, errorfactory.New(errorfactory.ResourceNotReady{}, err, "user secret not populated yet")
-		}
-	}
-
-	for _, v := range secret.Data {
-		if len(v) == 0 {
-			return secret, errorfactory.New(errorfactory.ResourceNotReady{},
-				errors.New("not all secret value populated"), "secret is not ready")
-		}
-	}
-
-	return secret, nil
+	return
 }
 
 // ensureControllerReference ensures that a NifiUser owns a given Secret

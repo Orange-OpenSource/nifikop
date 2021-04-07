@@ -56,7 +56,10 @@ func newCASecret() *corev1.Secret {
 }
 
 func TestFinalizePKI(t *testing.T) {
-	manager := newMock(newMockCluster())
+	manager, err := newMock(newMockCluster())
+	if err != nil {
+		t.Error("Expected no error from New, got:", err)
+	}
 
 	if err := manager.FinalizePKI(context.Background(), log); err != nil {
 		t.Error("Expected no error on finalize, got:", err)
@@ -65,7 +68,11 @@ func TestFinalizePKI(t *testing.T) {
 
 func TestReconcilePKI(t *testing.T) {
 	cluster := newMockCluster()
-	manager := newMock(cluster)
+	manager, err := newMock(cluster)
+	if err != nil {
+		t.Error("Expected no error from New, got:", err)
+	}
+
 	ctx := context.Background()
 
 	for _, node := range cluster.Spec.Nodes {
