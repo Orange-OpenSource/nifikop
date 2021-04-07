@@ -35,10 +35,10 @@ var MockBackend = v1alpha1.PKIBackend("mock")
 func GetPKIManager(client client.Client, cluster *v1alpha1.NifiCluster) pki.Manager {
 	switch cluster.Spec.ListenersConfig.SSLSecrets.PKIBackend {
 
-	case "selfmanager": // Should be a const
+	case v1alpha1.PKIBackendSelfManager:
 		selfmanager, err := selfmanagerpki.New(client, cluster)
 		if err != nil {
-			// TODO what to do ?
+			// TODO what to do with the error ? (panic, retry, event, etc.)
 			fmt.Println("Error while setting up SelfManager as PKI Manager : ", err)
 		}
 		return selfmanager
