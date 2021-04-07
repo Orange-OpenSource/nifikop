@@ -1,9 +1,6 @@
 package selfmanagerpki
 
 import (
-	"bytes"
-	"crypto/rsa"
-	"crypto/x509"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	certv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -67,11 +64,11 @@ func TestGenerateUserCert(t *testing.T) {
 	if err != nil {
 		t.Error("Expected no error from generateCert, got:", err)
 	}
-	if reflect.TypeOf(certPEM) != reflect.TypeOf(&bytes.Buffer{}) {
-		t.Error("Expected caCert to be bytes.Buffer from setupCA, got:", reflect.TypeOf(certPEM))
+	if certPEM == nil {
+		t.Error("Expected caCert not to be nil")
 	}
-	if reflect.TypeOf(certKeyPEM) != reflect.TypeOf(&bytes.Buffer{}) {
-		t.Error("Expected cakey to be bytes.Buffer from setupCA, got:", reflect.TypeOf(certKeyPEM))
+	if certKeyPEM == nil {
+		t.Error("Expected cakey not to be nil")
 	}
 }
 
@@ -84,16 +81,16 @@ func TestSetupCA(t *testing.T) {
 	if err := manager.setupCA(); err != nil {
 		t.Error("Expected no error from setupCA, got:", err)
 	}
-	if reflect.TypeOf(manager.caCert) != reflect.TypeOf(&x509.Certificate{}) {
-		t.Error("Expected caCert to be x509.Certificate from setupCA, got:", reflect.TypeOf(manager.caCert))
+	if manager.caCert == nil {
+		t.Error("Expected caCert not to be nil")
 	}
-	if reflect.TypeOf(manager.caKey) != reflect.TypeOf(&rsa.PrivateKey{}) {
-		t.Error("Expected cakey to be rsa.PrivateKey from setupCA, got:", reflect.TypeOf(manager.caKey))
+	if manager.caKey == nil {
+		t.Error("Expected cakey not to be nil")
 	}
-	if reflect.TypeOf(manager.caCertPEM) != reflect.TypeOf(&[]byte{}) {
-		t.Error("Expected caCertPEM to be []byte from setupCA, got:", reflect.TypeOf(manager.caCertPEM))
+	if manager.caCertPEM == nil {
+		t.Error("Expected caCertPEM not to be nil")
 	}
-	if reflect.TypeOf(manager.caKeyPEM) != reflect.TypeOf(&[]byte{}) {
-		t.Error("Expected cakeyPEM to be []byte from setupCA, got:", reflect.TypeOf(manager.caKeyPEM))
+	if manager.caKeyPEM == nil {
+		t.Error("Expected cakeyPEM not to be nil")
 	}
 }
