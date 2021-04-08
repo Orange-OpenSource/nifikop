@@ -8,6 +8,7 @@ import (
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -15,7 +16,10 @@ import (
 func (s *SelfManager) ReconcilePKI(ctx context.Context, logger logr.Logger, scheme *runtime.Scheme, externalHostnames []string) error {
 	logger.Info("Reconciling selfmanager PKI")
 
-	resources := s.fullPKI(s.cluster, scheme, externalHostnames)
+	resources, err := s.fullPKI(s.cluster, scheme, externalHostnames)
+	if err != nil {
+		return err
+	}
 
 	for _, o := range resources {
 		if err := reconcile(ctx, logger, s.client, o, s.cluster); err != nil {
@@ -26,15 +30,41 @@ func (s *SelfManager) ReconcilePKI(ctx context.Context, logger logr.Logger, sche
 	return nil
 }
 
-func (s *SelfManager) fullPKI(cluster *v1alpha1.NifiCluster, scheme *runtime.Scheme, externalHostnames []string) []runtime.Object {
+func (s *SelfManager) fullPKI(cluster *v1alpha1.NifiCluster, scheme *runtime.Scheme, externalHostnames []string) ([]runtime.Object, error) {
 	var objects []runtime.Object
+
+	caSecret, err := s.caCertForCluster(cluster, scheme)
+	if err != nil {
+		return objects, err
+	}
+	objects = append(objects, caSecret)
 
 	objects = append(objects, pkicommon.ControllerUserForCluster(cluster))
 	// Node "users"
 	for _, user := range pkicommon.NodeUsersForCluster(cluster, externalHostnames) {
 		objects = append(objects, user)
 	}
-	return objects
+	return objects, nil
+}
+
+func (s *SelfManager) caCertForCluster(cluster *v1alpha1.NifiCluster, scheme *runtime.Scheme) (*corev1.Secret, error) {
+	certPEM, keyPEM, err := s.generateCaCert()
+	if err != nil {
+		return nil, err
+	}
+
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf(pkicommon.NodeCACertTemplate, cluster.Name),
+			Namespace: cluster.Namespace,
+			Labels:    pkicommon.LabelsForNifiPKI(cluster.Name),
+		},
+		Data: map[string][]byte{
+			v1alpha1.CoreCACertKey:  s.caCertPEM,
+			corev1.TLSCertKey:       certPEM,
+			corev1.TLSPrivateKeyKey: keyPEM,
+		},
+	}, nil
 }
 
 func (s SelfManager) FinalizePKI(ctx context.Context, logger logr.Logger) error {

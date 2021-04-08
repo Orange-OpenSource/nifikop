@@ -14,7 +14,6 @@ import (
 	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	"math/big"
 	"net/url"
@@ -96,7 +95,7 @@ func (s *SelfManager) setupCA() (err error) {
 
 	caPrivKeyPEM := new(bytes.Buffer)
 	if err = pem.Encode(caPrivKeyPEM, &pem.Block{
-		Type:  "RSA PRIVATE KEY",
+		Type:  "PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(s.caKey),
 	}); err != nil {
 		return
@@ -106,7 +105,6 @@ func (s *SelfManager) setupCA() (err error) {
 	return
 }
 
-// Generate one cert from selfmanager's CA
 func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte, certPrivKeyPEM []byte, err error) {
 	// set up our server certificate
 	cert := &x509.Certificate{
@@ -153,7 +151,52 @@ func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte,
 
 	certPrivKeyPEMBuffer := new(bytes.Buffer)
 	if err = pem.Encode(certPrivKeyPEMBuffer, &pem.Block{
-		Type:  "RSA PRIVATE KEY",
+		Type:  "PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(certPrivKey),
+	}); err != nil {
+		return
+	}
+	certPrivKeyPEM = certPrivKeyPEMBuffer.Bytes()
+
+	return
+}
+
+// Generate one cert from selfmanager's CA
+func (s *SelfManager) generateCaCert() (certPEM []byte, certPrivKeyPEM []byte, err error) {
+	// set up our server certificate
+	cert := &x509.Certificate{
+		SerialNumber: big.NewInt(2019),
+		Subject:      subject,
+		//IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},
+		NotBefore:    time.Now(),
+		NotAfter:     time.Now().AddDate(10, 0, 0),
+		SubjectKeyId: []byte{1, 2, 3, 4, 6},
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		KeyUsage:     x509.KeyUsageDigitalSignature,
+	}
+
+	certPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		return
+	}
+
+	certBytes, err := x509.CreateCertificate(rand.Reader, cert, s.caCert, &certPrivKey.PublicKey, s.caKey)
+	if err != nil {
+		return
+	}
+
+	certPEMBuffer := new(bytes.Buffer)
+	if err = pem.Encode(certPEMBuffer, &pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: certBytes,
+	}); err != nil {
+		return
+	}
+	certPEM = certPEMBuffer.Bytes()
+
+	certPrivKeyPEMBuffer := new(bytes.Buffer)
+	if err = pem.Encode(certPrivKeyPEMBuffer, &pem.Block{
+		Type:  "PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(certPrivKey),
 	}); err != nil {
 		return
@@ -183,6 +226,10 @@ func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runt
 	}
 
 	if user.Spec.IncludeJKS {
+		// TODO Generate JKS KeyStore & TrustStore
+		secret.Data[v1alpha1.TLSJKSKeyStore] = []byte("")
+		secret.Data[v1alpha1.TLSJKSTrustStore] = []byte("")
+
 		secret, err = certutil.EnsureSecretPassJKS(secret)
 		if err != nil {
 			return
