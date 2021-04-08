@@ -48,7 +48,7 @@ func (s *SelfManager) fullPKI(cluster *v1alpha1.NifiCluster, scheme *runtime.Sch
 }
 
 func (s *SelfManager) caCertForCluster(cluster *v1alpha1.NifiCluster, scheme *runtime.Scheme) (*corev1.Secret, error) {
-	certPEM, keyPEM, err := s.generateCaCert()
+	certPEM, keyPEM, err := s.generateCaCertPEM()
 	if err != nil {
 		return nil, err
 	}

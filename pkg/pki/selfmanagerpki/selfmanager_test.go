@@ -62,7 +62,7 @@ func TestGenerateUserCert(t *testing.T) {
 
 	certPEM, certKeyPEM, err := manager.generateUserCert(newMockUser())
 	if err != nil {
-		t.Error("Expected no error from generateCert, got:", err)
+		t.Error("Expected no error from generateUserCert, got:", err)
 	}
 	if certPEM == nil {
 		t.Error("Expected caCert not to be nil")

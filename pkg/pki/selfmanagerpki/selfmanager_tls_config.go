@@ -1,16 +1,11 @@
 package selfmanagerpki
 
 import (
-	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
-	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
 	"strings"
 )
 
@@ -18,20 +13,12 @@ import (
 // cruise control and manager operations
 func (s *SelfManager) GetControllerTLSConfig() (config *tls.Config, err error) {
 	config = &tls.Config{}
-	tlsKeys := &corev1.Secret{}
-	err = s.client.Get(context.TODO(),
-		types.NamespacedName{
-			Namespace: s.cluster.Namespace,
-			Name:      fmt.Sprintf(pkicommon.NodeControllerTemplate, s.cluster.Name),
-		},
-		tlsKeys,
-	)
+
+	tlsKeys, err := s.clusterSecretForController()
 	if err != nil {
-		if apierrors.IsNotFound(err) {
-			err = errorfactory.New(errorfactory.ResourceNotReady{}, err, "controller secret not found")
-		}
 		return
 	}
+
 	clientCert := tlsKeys.Data[corev1.TLSCertKey]
 	clientKey := tlsKeys.Data[corev1.TLSPrivateKeyKey]
 	caCert := tlsKeys.Data[v1alpha1.CoreCACertKey]

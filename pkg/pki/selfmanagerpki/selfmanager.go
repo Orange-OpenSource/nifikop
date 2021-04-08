@@ -162,7 +162,7 @@ func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte,
 }
 
 // Generate one cert from selfmanager's CA
-func (s *SelfManager) generateCaCert() (certPEM []byte, certPrivKeyPEM []byte, err error) {
+func (s *SelfManager) generateCaCertPEM() (certPEM []byte, certPrivKeyPEM []byte, err error) {
 	// set up our server certificate
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(2019),
@@ -237,5 +237,27 @@ func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runt
 	}
 
 	controllerutil.SetControllerReference(user, secret, scheme)
+	return
+}
+
+func (s *SelfManager) clusterSecretForController() (secret *corev1.Secret, err error) {
+
+	certPEM, keyPEM, err := s.generateCaCertPEM()
+	if err != nil {
+		return nil, err
+	}
+
+	secret = &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf(pkicommon.NodeControllerTemplate, s.cluster.Name),
+			Namespace: s.cluster.Namespace,
+		},
+		Data: map[string][]byte{
+			v1alpha1.CoreCACertKey:  s.caCertPEM,
+			corev1.TLSCertKey:       certPEM,
+			corev1.TLSPrivateKeyKey: keyPEM,
+		},
+	}
+
 	return
 }
