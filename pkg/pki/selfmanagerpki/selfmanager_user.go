@@ -24,11 +24,7 @@ func (s *SelfManager) ReconcileUserCertificate(ctx context.Context, user *v1alph
 
 	if err != nil && apierrors.IsNotFound(err) {
 		// No secret found, generate & create one
-		if user.Spec.IncludeJKS {
-			if err := s.injectJKSPassword(ctx, user); err != nil {
-				return nil, err
-			}
-		}
+
 		secret, err = s.clusterSecretForUser(user, scheme)
 		if err != nil {
 			return nil, errorfactory.New(errorfactory.APIFailure{}, err, "error while generating user secret")
