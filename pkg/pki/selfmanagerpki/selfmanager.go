@@ -215,7 +215,7 @@ func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runt
 
 	secret = &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      user.GetName(),
+			Name:      user.Spec.SecretName,
 			Namespace: user.GetNamespace(),
 		},
 		Data: map[string][]byte{
