@@ -66,8 +66,24 @@ func TestReconcileUserCertificate(t *testing.T) {
 	if err := manager.client.Create(context.TODO(), newMockUserSecret()); err != nil {
 		t.Error("could not update test secret")
 	}
-	if _, err := manager.ReconcileUserCertificate(ctx, newMockUser(), scheme.Scheme); err != nil {
-		t.Error("Expected no error, got:", err)
+
+	certificate, err := manager.ReconcileUserCertificate(ctx, newMockUser(), scheme.Scheme)
+	if err != nil {
+		t.Error("Expected no error while Reconcile, got:", err)
+	}
+
+	// Ensure data are goods
+	_, err = certutil.DecodeCertificate(certificate.CA)
+	if err != nil {
+		t.Error("Expected no error while Decoding CA, got:", err)
+	}
+	_, err = certutil.DecodeCertificate(certificate.Certificate)
+	if err != nil {
+		t.Error("Expected no error while Decoding Cert, got:", err)
+	}
+	_, err = certutil.DecodeKey(certificate.Key)
+	if err != nil {
+		t.Error("Expected no error while Decoding Key, got:", err)
 	}
 
 	// Test error conditions
