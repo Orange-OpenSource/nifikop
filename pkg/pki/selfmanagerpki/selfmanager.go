@@ -226,11 +226,15 @@ func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runt
 	}
 
 	if user.Spec.IncludeJKS {
-		keystore, truststore := s.generateJKSstores()
+		secret, err = certutil.EnsureSecretPassJKS(secret)
+
+		keystore, truststore, err := s.generateJKSstores(secret.Data[v1alpha1.PasswordKey], certPEM, keyPEM)
+		if err != nil {
+			return secret, err
+		}
+
 		secret.Data[v1alpha1.TLSJKSKeyStore] = []byte(keystore)
 		secret.Data[v1alpha1.TLSJKSTrustStore] = []byte(truststore)
-
-		secret, err = certutil.EnsureSecretPassJKS(secret)
 		if err != nil {
 			return
 		}
@@ -262,7 +266,11 @@ func (s *SelfManager) clusterSecretForController() (secret *corev1.Secret, err e
 	return
 }
 
-func (s *SelfManager) generateJKSstores() (keystore string, truststore string) {
-	// TODO create/generate JKS Stores
-	return "", ""
+func (s *SelfManager) generateJKSstores(password []byte, certPEM []byte, keyPEM []byte) (keystore []byte, truststore []byte, err error) {
+	keystore, err = certutil.EncodeJKSKeystore(password, keyPEM, certPEM, s.caCertPEM)
+	if err != nil {
+		return
+	}
+	truststore, err = certutil.EncodeJKSTruststore(password, s.caCertPEM)
+	return
 }
