@@ -227,6 +227,9 @@ func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runt
 
 	if user.Spec.IncludeJKS {
 		secret, err = certutil.EnsureSecretPassJKS(secret)
+		if err != nil {
+			return
+		}
 
 		keystore, truststore, err := s.generateJKSstores(secret.Data[v1alpha1.PasswordKey], certPEM, keyPEM)
 		if err != nil {
@@ -235,9 +238,6 @@ func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runt
 
 		secret.Data[v1alpha1.TLSJKSKeyStore] = []byte(keystore)
 		secret.Data[v1alpha1.TLSJKSTrustStore] = []byte(truststore)
-		if err != nil {
-			return
-		}
 	}
 
 	controllerutil.SetControllerReference(user, secret, scheme)
