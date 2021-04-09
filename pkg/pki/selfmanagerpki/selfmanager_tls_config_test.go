@@ -3,10 +3,8 @@ package selfmanagerpki
 import (
 	"context"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
-	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	certutil "github.com/Orange-OpenSource/nifikop/pkg/util/cert"
 	corev1 "k8s.io/api/core/v1"
-	"reflect"
 	"testing"
 )
 
@@ -40,20 +38,5 @@ func TestGetControllerTLSConfig(t *testing.T) {
 	manager, err = newMock(newMockCluster())
 	if err != nil {
 		t.Error("Expected no error from New, got:", err)
-	}
-
-	// Test non-existent controller secret
-	if _, err := manager.GetControllerTLSConfig(); err == nil {
-		t.Error("Expected error got nil")
-	} else if reflect.TypeOf(err) != reflect.TypeOf(errorfactory.ResourceNotReady{}) {
-		t.Error("Expected not ready error, got:", reflect.TypeOf(err))
-	}
-
-	// Test invalid controller secret
-	manager.client.Create(context.TODO(), newMockControllerSecret(false))
-	if _, err := manager.GetControllerTLSConfig(); err == nil {
-		t.Error("Expected error got nil")
-	} else if reflect.TypeOf(err) != reflect.TypeOf(errorfactory.InternalError{}) {
-		t.Error("Expected internal error, got:", reflect.TypeOf(err))
 	}
 }
