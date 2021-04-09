@@ -151,7 +151,7 @@ func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte,
 
 	certPrivKeyPEMBuffer := new(bytes.Buffer)
 	if err = pem.Encode(certPrivKeyPEMBuffer, &pem.Block{
-		Type:  "PRIVATE KEY",
+		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(certPrivKey),
 	}); err != nil {
 		return
