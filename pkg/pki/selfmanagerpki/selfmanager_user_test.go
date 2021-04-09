@@ -42,10 +42,6 @@ func TestFinalizeUserCertificate(t *testing.T) {
 	if err := manager.FinalizeUserCertificate(context.Background(), &v1alpha1.NifiUser{}); err != nil {
 		t.Error("Expected no error, got:", err)
 	}
-
-	// TODO check if the secret is correctly deleted ?
-	// Get...
-	// Should get error...
 }
 
 func TestReconcileUserCertificate(t *testing.T) {
@@ -85,13 +81,4 @@ func TestReconcileUserCertificate(t *testing.T) {
 	if err != nil {
 		t.Error("Expected no error while Decoding Key, got:", err)
 	}
-
-	// Test error conditions
-	// TODO error cases
-	//manager = newMock(newMockCluster())
-	//manager.client.Create(context.TODO(), newMockUser())
-	//manager.client.Create(context.TODO(), manager.clusterCertificateForUser(newMockUser(), scheme.Scheme))
-	//if _, err := manager.ReconcileUserCertificate(ctx, newMockUser(), scheme.Scheme); err == nil {
-	//	t.Error("Expected  error, got nil")
-	//}
 }

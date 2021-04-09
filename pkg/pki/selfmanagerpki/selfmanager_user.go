@@ -52,8 +52,7 @@ func (s *SelfManager) ReconcileUserCertificate(ctx context.Context, user *v1alph
 }
 
 func (s *SelfManager) FinalizeUserCertificate(ctx context.Context, user *v1alpha1.NifiUser) error {
-	// TODO delete user secret ?
-
+	// Nothing to finalize
 	return nil
 }
 
@@ -96,4 +95,14 @@ func (s *SelfManager) injectJKSPassword(ctx context.Context, user *v1alpha1.Nifi
 	}
 
 	return nil
+}
+
+// Handle the JKS Keystore / Truststore used in users' secrets
+func (s *SelfManager) generateJKSstores(password []byte, certPEM []byte, keyPEM []byte) (keystore []byte, truststore []byte, err error) {
+	keystore, err = certutil.EncodeJKSKeystore(password, keyPEM, certPEM, s.caCertPEM)
+	if err != nil {
+		return
+	}
+	truststore, err = certutil.EncodeJKSTruststore(password, s.caCertPEM)
+	return
 }
