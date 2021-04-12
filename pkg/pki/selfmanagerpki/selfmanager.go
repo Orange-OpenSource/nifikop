@@ -189,7 +189,7 @@ func (s *SelfManager) generateCaCertPEM() (certPEM []byte, certPrivKeyPEM []byte
 
 	certPrivKeyPEMBuffer := new(bytes.Buffer)
 	if err = pem.Encode(certPrivKeyPEMBuffer, &pem.Block{
-		Type:  "PRIVATE KEY",
+		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(certPrivKey),
 	}); err != nil {
 		return
