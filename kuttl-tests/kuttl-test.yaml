@@ -1,6 +1,7 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestSuite
 #crdDir: ../../../deploy/crds/
+skipDelete: true
 testDirs:
   - .
-timeout: 300
+timeout: 500
