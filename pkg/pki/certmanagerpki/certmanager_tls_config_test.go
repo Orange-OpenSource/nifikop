@@ -65,4 +65,7 @@ func TestGetControllerTLSConfig(t *testing.T) {
 	} else if reflect.TypeOf(err) != reflect.TypeOf(errorfactory.InternalError{}) {
 		t.Error("Expected internal error, got:", reflect.TypeOf(err))
 	}
+
+	// Test secret already exist
+	// TODO
 }
