@@ -137,7 +137,7 @@ kind: Secret
 metadata:
   name: sslnifi-config-2
   namespace: nifikop
-
+---
 
 # Cannot currently assert if a field is present / not empty with Kuttl => https://github.com/kudobuilder/kuttl/issues/262
 #data:
@@ -159,6 +159,28 @@ metadata:
 #  state-management.xml: ""
 #  zookeeper.properties: ""
 #type: Opaque
+
+# Assert Services
+apiVersion: v1
+kind: Service
+metadata:
+  name: sslnifi-all-node
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sslnifi-0-node
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sslnifi-1-node
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sslnifi-2-node
+---
 
 # TODO How to check if the cluster is "ok" ?
 # Test communication sucessfull
