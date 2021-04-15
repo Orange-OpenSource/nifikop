@@ -153,7 +153,7 @@ func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runt
 // Return  a special secret for the 'controller'
 func (s *SelfManager) clusterSecretForController() (secret *corev1.Secret, err error) {
 
-	certPEM, keyPEM, err := s.generateCaCertPEM()
+	certPEM, keyPEM, err := s.generateControllerCertPEM()
 	if err != nil {
 		return nil, err
 	}
