@@ -128,7 +128,7 @@ func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte,
 		return
 	}
 
-	certBytes, err := x509.CreateCertificate(rand.Reader, cert, s.caCert, &s.caKey.PublicKey, s.caKey)
+	certBytes, err := x509.CreateCertificate(rand.Reader, cert, s.caCert, &certPrivKey.PublicKey, s.caKey)
 	if err != nil {
 		return
 	}
@@ -167,7 +167,7 @@ func (s *SelfManager) generateCaCertPEM() (certPEM []byte, certPrivKeyPEM []byte
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		KeyUsage:     x509.KeyUsageDigitalSignature,
 		// Test TODO workaround
-		//IsCA: true,
+		IsCA: true,
 	}
 
 	certPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
@@ -175,7 +175,7 @@ func (s *SelfManager) generateCaCertPEM() (certPEM []byte, certPrivKeyPEM []byte
 		return
 	}
 
-	certBytes, err := x509.CreateCertificate(rand.Reader, cert, s.caCert, &s.caKey.PublicKey, s.caKey)
+	certBytes, err := x509.CreateCertificate(rand.Reader, cert, s.caCert, &certPrivKey.PublicKey, s.caKey)
 	if err != nil {
 		return
 	}
