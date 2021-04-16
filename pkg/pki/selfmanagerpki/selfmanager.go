@@ -154,52 +154,6 @@ func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte,
 	return
 }
 
-// Generate one cert from selfmanager's CA
-func (s *SelfManager) generateCaCertPEM() (certPEM []byte, certPrivKeyPEM []byte, err error) {
-	// set up our server certificate
-	cert := &x509.Certificate{
-		SerialNumber: big.NewInt(2019),
-		Subject:      subject,
-		//IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},
-		NotBefore:    time.Now(),
-		NotAfter:     time.Now().AddDate(10, 0, 0),
-		SubjectKeyId: []byte{1, 2, 3, 4, 6},
-		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-		KeyUsage:     x509.KeyUsageDigitalSignature,
-		IsCA:         true,
-	}
-
-	certPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
-	if err != nil {
-		return
-	}
-
-	certBytes, err := x509.CreateCertificate(rand.Reader, cert, s.caCert, &certPrivKey.PublicKey, s.caKey)
-	if err != nil {
-		return
-	}
-
-	certPEMBuffer := new(bytes.Buffer)
-	if err = pem.Encode(certPEMBuffer, &pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: certBytes,
-	}); err != nil {
-		return
-	}
-	certPEM = certPEMBuffer.Bytes()
-
-	certPrivKeyPEMBuffer := new(bytes.Buffer)
-	if err = pem.Encode(certPrivKeyPEMBuffer, &pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(certPrivKey),
-	}); err != nil {
-		return
-	}
-	certPrivKeyPEM = certPrivKeyPEMBuffer.Bytes()
-
-	return
-}
-
 // Generate controller CA
 func (s *SelfManager) generateControllerCertPEM() (certPEM []byte, certPrivKeyPEM []byte, err error) {
 	// set up our server certificate

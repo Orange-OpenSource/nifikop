@@ -92,11 +92,6 @@ func (s *SelfManager) fullPKI(cluster *v1alpha1.NifiCluster, scheme *runtime.Sch
 
 // Return the 'ca-certificate" secret
 func (s *SelfManager) caCertForCluster(cluster *v1alpha1.NifiCluster, scheme *runtime.Scheme) (*corev1.Secret, error) {
-	certPEM, keyPEM, err := s.generateCaCertPEM()
-	if err != nil {
-		return nil, err
-	}
-
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf(pkicommon.NodeCACertTemplate, cluster.Name),
@@ -105,9 +100,10 @@ func (s *SelfManager) caCertForCluster(cluster *v1alpha1.NifiCluster, scheme *ru
 		},
 		Data: map[string][]byte{
 			v1alpha1.CoreCACertKey:  s.caCertPEM,
-			corev1.TLSCertKey:       certPEM,
-			corev1.TLSPrivateKeyKey: keyPEM,
+			corev1.TLSCertKey:       s.caCertPEM,
+			corev1.TLSPrivateKeyKey: s.caKeyPEM,
 		},
+		Type: corev1.SecretTypeTLS,
 	}, nil
 }
 
