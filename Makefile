@@ -139,7 +139,7 @@ run-kuttl-tests:
 # Run specific kuttl test
 run-kuttl-test:
 ifeq ($(KUTTL_ARGS),)
-	@echo "args are: Selmanager-tls, Cert-manager-tls" && exit 1
+	@echo "args are: Selmanager-tls, Cert-manager-tls, Simple-nificluster" && exit 1
 endif
 	kubectl kuttl test --config ./kuttl-tests/kuttl-test.yaml ./kuttl-tests --test $(KUTTL_ARGS)
 

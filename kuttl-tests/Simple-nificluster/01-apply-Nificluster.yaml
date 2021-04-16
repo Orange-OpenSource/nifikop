@@ -54,28 +54,3 @@ spec:
       - type: "prometheus"
         name: "prometheus"
         containerPort: 9090
-  externalServices:
-    - name: "clusterip"
-      spec:
-        type: ClusterIP
-        portConfigs:
-          - port: 8080
-            internalListenerName: "http"
-      serviceAnnotations:
-        toto: tata
-    - name: "loadbalancer"
-      spec:
-        type: LoadBalancer
-        portConfigs:
-          - port: 8080
-            internalListenerName: "http"
-      serviceAnnotations:
-        toto: tata
-    - name: "nodepart"
-      spec:
-        type: NodePort
-        portConfigs:
-          - port: 8080
-            internalListenerName: "http"
-      serviceAnnotations:
-        toto: tata

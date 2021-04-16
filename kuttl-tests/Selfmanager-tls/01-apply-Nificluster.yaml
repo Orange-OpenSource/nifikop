@@ -4,7 +4,7 @@ metadata:
   name: sslnifi
 spec:
   service:
-    headlessEnabled: false
+    headlessEnabled: true
   zkAddress: "zookeeper.zookeeper:2181"
   zkPath: "/ssllnifi"
   clusterImage: "apache/nifi:1.12.1"
@@ -25,9 +25,6 @@ spec:
       #        - nifistandard2.trycatchlearn.fr:8443
       # Additionnals nifi.properties configuration that will override the one produced based
       # on template and configurations.
-      #        nifi.security.user.oidc.discovery.url=https://accounts.google.com/.well-known/openid-configuration
-      #        nifi.security.user.oidc.client.id=930711295780-i72an91pqj7rib88r23qfv5q7mth8hgv.apps.googleusercontent.com
-      #        nifi.security.user.oidc.client.secret=BvmEyr81P0YXZtIt1FIfGsRs
       overrideConfigs: |
         nifi.security.identity.mapping.pattern.dn=CN=([^,]*)(?:, (?:O|OU)=.*)?
         nifi.security.identity.mapping.value.dn=$1

@@ -1,0 +1,77 @@
+# Check Nificluster created
+apiVersion: nifi.orange.com/v1alpha1
+kind: NifiCluster
+metadata:
+  name: simplenifi
+spec:
+  nodes:
+    - id: 0
+      nodeConfigGroup: "default_group"
+    - id: 1
+      nodeConfigGroup: "default_group"
+    - id: 2
+      nodeConfigGroup: "default_group"
+    - id: 3
+      nodeConfigGroup: "default_group"
+status:
+  state: ClusterRollingUpgrading
+---
+
+# Check all nodes
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    nifi_cr: simplenifi
+    nodeId: '3'
+status:
+  phase: Running
+  initContainerStatuses:
+    - name: zookeeper
+      state:
+        terminated:
+          exitCode: 0
+          reason: Completed
+      ready: true
+  containerStatuses:
+    - name: nifi
+      ready: true
+      started: true
+---
+
+# Check secret config
+apiVersion: v1
+kind: Secret
+metadata:
+  name: simplenifi-config-3
+---
+# Cannot currently assert if a field is present / not empty with Kuttl => https://github.com/kudobuilder/kuttl/issues/262
+#data:
+#  authorizers.xml: ""
+#  bootstrap-notification-servces.xml: ""
+#  bootstrap.conf: ""
+#  logback.xml: ""
+#  login-identity-providers.xml: ""
+#  nifi.properties: ""
+#  state-management.xml: ""
+#  zookeeper.properties: ""
+#type: Opaque
+
+# Check headless service
+apiVersion: v1
+kind: Service
+metadata:
+  name: simplenifi-headless
+spec:
+  clusterIP: None
+  type: ClusterIP
+---
+
+# TODO How to check if the cluster is "ok" ?
+# Test communication sucessfull
+#---
+#apiVersion: kuttl.dev/v1beta1
+#kind: TestAssert
+#timeout: 1
+#commands:
+#  - command: thiscommanddoesnotexist
