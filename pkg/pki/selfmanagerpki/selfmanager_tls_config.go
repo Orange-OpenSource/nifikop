@@ -60,6 +60,6 @@ func (s *SelfManager) GetControllerTLSConfig() (config *tls.Config, err error) {
 
 	config.Certificates = []tls.Certificate{x509ClientCert}
 	config.RootCAs = rootCAs
-	//config.InsecureSkipVerify = true // TODO test & find workaround
+	config.InsecureSkipVerify = true // TODO test & find workaround
 	return
 }
