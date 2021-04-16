@@ -41,21 +41,25 @@ func (s SelfManager) FinalizePKI(ctx context.Context, logger logr.Logger) error 
 	}
 
 	// Names of our secrets
-	objNames := []types.NamespacedName{
-		{Name: fmt.Sprintf(pkicommon.NodeControllerTemplate, s.cluster.Name), Namespace: s.cluster.Namespace},
-	}
+	var objNames []types.NamespacedName
 
+	// Node secrets
 	for _, node := range s.cluster.Spec.Nodes {
 		objNames = append(objNames, types.NamespacedName{Name: fmt.Sprintf(pkicommon.NodeServerCertTemplate, s.cluster.Name, node.Id), Namespace: s.cluster.Namespace})
 	}
 
+	// Ca Cert
 	objNames = append(
 		objNames,
 		types.NamespacedName{Name: fmt.Sprintf(pkicommon.NodeCACertTemplate, s.cluster.Name), Namespace: s.cluster.Namespace})
 
+	// Controller cert
+	objNames = append(
+		objNames,
+		types.NamespacedName{Name: fmt.Sprintf(pkicommon.NodeControllerTemplate, s.cluster.Name), Namespace: s.cluster.Namespace})
+
 	for _, obj := range objNames {
-		// Delete the secret and leave the controller reference earlier
-		// as a safety belt
+		// Delete all secrets
 		secret := &corev1.Secret{}
 		if err := s.client.Get(ctx, obj, secret); err != nil {
 			if apierrors.IsNotFound(err) {
