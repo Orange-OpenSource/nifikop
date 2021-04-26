@@ -37,6 +37,8 @@ spec:
       nodeConfigGroup: "default_group"
     - id: 2
       nodeConfigGroup: "default_group"
+    - id: 3
+      nodeConfigGroup: "default_group"
   propagateLabels: true
   nifiClusterTaskSpec:
     retryDurationMinutes: 10
@@ -51,6 +53,3 @@ spec:
       - type: "s2s"
         name: "s2s"
         containerPort: 10000
-      - type: "prometheus"
-        name: "prometheus"
-        containerPort: 9090
