@@ -17,7 +17,7 @@ status:
   state: ClusterRollingUpgrading
 ---
 
-# Check all nodes
+# Check new node
 apiVersion: v1
 kind: Pod
 metadata:
@@ -66,12 +66,8 @@ spec:
   clusterIP: None
   type: ClusterIP
 ---
-
-# TODO How to check if the cluster is "ok" ?
-# Test communication sucessfull
-#---
-#apiVersion: kuttl.dev/v1beta1
-#kind: TestAssert
-#timeout: 1
-#commands:
-#  - command: thiscommanddoesnotexist
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  # Test correct amount of pods
+  - command: '[[ $(kubectl get pods --selector=nifi_cr=simplenifi | wc -l) -eq 5 ]] && echo "passed"'
