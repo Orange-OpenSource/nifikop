@@ -18,12 +18,16 @@ import (
 )
 
 var subject = pkix.Name{
-	Organization:  []string{"Orange"},
-	Country:       []string{"FR"},
-	Province:      []string{""},
-	Locality:      []string{"Paris"},
-	StreetAddress: []string{"78 Rue Olivier de Serres"},
-	PostalCode:    []string{"75015"},
+	Country:            []string{"FR"},
+	Organization:       []string{"Orange"},
+	Locality:           []string{"Paris"},
+	//Province:           []string{""},
+	StreetAddress:      []string{"78 Rue Olivier de Serres"},
+	PostalCode:         []string{"75015"},
+	//SerialNumber:       "",
+	//CommonName:         "",
+	//Names:              nil,
+	//ExtraNames:         nil,
 }
 
 type SelfManager struct {
@@ -62,7 +66,7 @@ func (s *SelfManager) setupCA() (err error) {
 		NotAfter:              time.Now().AddDate(10, 0, 0),
 		IsCA:                  true,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign | x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		BasicConstraintsValid: true,
 	}
 
