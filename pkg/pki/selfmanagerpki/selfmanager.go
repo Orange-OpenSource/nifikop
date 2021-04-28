@@ -67,7 +67,7 @@ func (s *SelfManager) setupCA() (err error) {
 	}
 
 	// create our private and public key
-	if s.caKey, err = rsa.GenerateKey(rand.Reader, 4096); err != nil {
+	if s.caKey, err = rsa.GenerateKey(rand.Reader, 2048); err != nil {
 		return
 	}
 
@@ -123,7 +123,7 @@ func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte,
 		cert.DNSNames = user.Spec.DNSNames
 	}
 
-	certPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	certPrivKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return
 	}
@@ -168,7 +168,7 @@ func (s *SelfManager) generateControllerCertPEM() (certPEM []byte, certPrivKeyPE
 		KeyUsage:     x509.KeyUsageDigitalSignature,
 	}
 
-	certPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	certPrivKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return
 	}
