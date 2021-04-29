@@ -18,12 +18,12 @@ import (
 )
 
 var subject = pkix.Name{
-	Country:            []string{"FR"},
-	Organization:       []string{"Orange"},
-	Locality:           []string{"Paris"},
+	Country:      []string{"FR"},
+	Organization: []string{"Orange"},
+	Locality:     []string{"Paris"},
 	//Province:           []string{""},
-	StreetAddress:      []string{"78 Rue Olivier de Serres"},
-	PostalCode:         []string{"75015"},
+	StreetAddress: []string{"78 Rue Olivier de Serres"},
+	PostalCode:    []string{"75015"},
 	//SerialNumber:       "",
 	//CommonName:         "",
 	//Names:              nil,
@@ -41,16 +41,19 @@ type SelfManager struct {
 	caKeyPEM  []byte
 }
 
+func (s *SelfManager) SetClientAndCluster(client client.Client, cluster *v1alpha1.NifiCluster) {
+	s.client = client
+	s.cluster = cluster
+}
+
 // Return a new fully instantiated SelfManager struct
-func New(client client.Client, cluster *v1alpha1.NifiCluster) (manager *SelfManager, err error) {
-	manager = &SelfManager{
-		client:  client,
-		cluster: cluster,
-	}
+func New() (manager *SelfManager) {
+	manager = &SelfManager{}
 
 	// setting up our ca and server certificate
-	if err = manager.setupCA(); err != nil {
-		return
+	if err := manager.setupCA(); err != nil {
+		// TODO what to do with the error ? (panic, retry, event, etc.)
+		fmt.Println("Error while setting up SelfManager as PKI Manager : ", err)
 	}
 
 	return

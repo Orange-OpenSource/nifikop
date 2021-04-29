@@ -17,7 +17,6 @@ package pki
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"github.com/Orange-OpenSource/nifikop/pkg/pki/selfmanagerpki"
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
@@ -30,18 +29,15 @@ import (
 
 // MockBackend is used for mocking during testing
 var MockBackend = v1alpha1.PKIBackend("mock")
+var Selfmanager = selfmanagerpki.New()
 
 // GetPKIManager returns a PKI/User manager interface for a given cluster
 func GetPKIManager(client client.Client, cluster *v1alpha1.NifiCluster) pki.Manager {
 	switch cluster.Spec.ListenersConfig.SSLSecrets.PKIBackend {
 
 	case v1alpha1.PKIBackendSelfManager:
-		selfmanager, err := selfmanagerpki.New(client, cluster)
-		if err != nil {
-			// TODO what to do with the error ? (panic, retry, event, etc.)
-			fmt.Println("Error while setting up SelfManager as PKI Manager : ", err)
-		}
-		return selfmanager
+		Selfmanager.SetClientAndCluster(client, cluster)
+		return Selfmanager
 
 	// Use cert-manager for pki backend
 	case v1alpha1.PKIBackendCertManager:
