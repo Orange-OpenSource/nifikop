@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	corev1 "k8s.io/api/core/v1"
@@ -38,7 +37,7 @@ func (s *SelfManager) GetControllerTLSConfig() (config *tls.Config, err error) {
 	}
 	clientCert := tlsKeys.Data[corev1.TLSCertKey]
 	clientKey := tlsKeys.Data[corev1.TLSPrivateKeyKey]
-	caCert := tlsKeys.Data[v1alpha1.CoreCACertKey]
+	caCert := s.caCertPEM
 
 	if len(caCert) == 0 {
 		certs := strings.SplitAfter(string(clientCert), "-----END CERTIFICATE-----")
