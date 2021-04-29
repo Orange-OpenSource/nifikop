@@ -17,17 +17,13 @@ import (
 	"time"
 )
 
-var subject = pkix.Name{
-	Country:      []string{"FR"},
-	Organization: []string{"Orange"},
-	Locality:     []string{"Paris"},
-	//Province:           []string{""},
-	StreetAddress: []string{"78 Rue Olivier de Serres"},
-	PostalCode:    []string{"75015"},
-	//SerialNumber:       "",
-	//CommonName:         "",
-	//Names:              nil,
-	//ExtraNames:         nil,
+var subjectCA = pkix.Name{
+	OrganizationalUnit: []string{"NiFi"},
+	Country:            []string{"FR"},
+	Organization:       []string{"Orange"},
+	Locality:           []string{"Paris"},
+	StreetAddress:      []string{"78 Rue Olivier de Serres"},
+	PostalCode:         []string{"75015"},
 }
 
 type SelfManager struct {
@@ -64,12 +60,12 @@ func (s *SelfManager) setupCA() (err error) {
 	// set up our CA certificate
 	s.caCert = &x509.Certificate{
 		SerialNumber:          big.NewInt(2019),
-		Subject:               subject,
+		Subject:               subjectCA,
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(10, 0, 0),
 		IsCA:                  true,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign | x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign, /* x509.KeyUsageKeyEncipherment*/
 		BasicConstraintsValid: true,
 	}
 
@@ -107,10 +103,21 @@ func (s *SelfManager) setupCA() (err error) {
 }
 
 func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte, certPrivKeyPEM []byte, err error) {
+	// Subject with user
+	subjectUser := pkix.Name{
+		Country:            []string{"FR"},
+		Organization:       []string{"Orange"},
+		OrganizationalUnit: []string{"Nifi"},
+		Locality:           []string{"Paris"},
+		StreetAddress:      []string{"78 Rue Olivier de Serres"},
+		PostalCode:         []string{"75015"},
+		CommonName:         user.GetName(),
+	}
+
 	// set up our server certificate
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(2019),
-		Subject:      subject,
+		Subject:      subjectUser,
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(10, 0, 0),
 		SubjectKeyId: []byte{1, 2, 3, 4, 6},
@@ -166,7 +173,7 @@ func (s *SelfManager) generateControllerCertPEM() (certPEM []byte, certPrivKeyPE
 	// set up our server certificate
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(2019),
-		Subject:      subject,
+		Subject:      subjectCA,
 		//IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(10, 0, 0),
