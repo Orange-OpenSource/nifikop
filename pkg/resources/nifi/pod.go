@@ -369,11 +369,13 @@ func (r *Reconciler) createNifiNodeContainer(nodeConfig *v1alpha1.NodeConfig, id
 		GetServerPort(&r.NifiCluster.Spec.ListenersConfig))
 
 	if r.NifiCluster.Spec.ListenersConfig.SSLSecrets != nil {
-		readinessCommand = fmt.Sprintf(`curl -kv --cert  %s/%s --key %s/%s https://$(hostname -f):%d/nifi`,
+		readinessCommand = fmt.Sprintf(`curl -v --cert  %s/%s --key %s/%s --cacert %s/%s https://$(hostname -f):%d/nifi`,
 			serverKeystorePath,
 			v1alpha1.TLSCert,
 			serverKeystorePath,
 			v1alpha1.TLSKey,
+			serverKeystorePath,
+			v1alpha1.CoreCACertKey,
 			GetServerPort(&r.NifiCluster.Spec.ListenersConfig))
 	}
 
