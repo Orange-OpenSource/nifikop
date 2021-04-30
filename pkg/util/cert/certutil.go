@@ -22,6 +22,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"errors"
+	"github.com/jetstack/cert-manager/pkg/util/pki"
 	"math/big"
 	mathrand "math/rand"
 	"strings"
@@ -29,6 +30,7 @@ import (
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	certv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	jks "github.com/pavel-v-chernykh/keystore-go"
 	keystore "github.com/pavel-v-chernykh/keystore-go"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -195,4 +197,87 @@ func GenerateTestCert() (cert, key []byte, expectedDn string, err error) {
 	key = keyBuf.Bytes()
 	expectedDn = "CN=test-cn,O=test-ou"
 	return
+}
+
+func EncodeJKSKeystore(password []byte, rawKey []byte, certPem []byte, caPem []byte) ([]byte, error) {
+	// encode the private key to PKCS8
+	key, err := pki.DecodePrivateKeyBytes(rawKey)
+	if err != nil {
+		return nil, err
+	}
+	keyDER, err := x509.MarshalPKCS8PrivateKey(key)
+	if err != nil {
+		return nil, err
+	}
+
+	// encode the certificate chain
+	chain, err := pki.DecodeX509CertificateChainBytes(certPem)
+	if err != nil {
+		return nil, err
+	}
+	certs := make([]jks.Certificate, len(chain))
+	for i, cert := range chain {
+		certs[i] = jks.Certificate{
+			Type:    "X509",
+			Content: cert.Raw,
+		}
+	}
+
+	ks := jks.KeyStore{
+		"certificate": &jks.PrivateKeyEntry{
+			Entry: jks.Entry{
+				CreationDate: time.Now(),
+			},
+			PrivKey:   keyDER,
+			CertChain: certs,
+		},
+	}
+	// add the CA certificate, if set
+	if len(caPem) > 0 {
+		ca, err := pki.DecodeX509CertificateBytes(caPem)
+		if err != nil {
+			return nil, err
+		}
+
+		ks["ca"] = &jks.TrustedCertificateEntry{
+			Entry: jks.Entry{
+				CreationDate: time.Now(),
+			},
+			Certificate: jks.Certificate{
+				Type:    "X509",
+				Content: ca.Raw,
+			},
+		}
+	}
+
+	buf := &bytes.Buffer{}
+	if err := jks.Encode(buf, ks, password); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func EncodeJKSTruststore(password []byte, caPem []byte) ([]byte, error) {
+	ca, err := pki.DecodeX509CertificateBytes(caPem)
+	if err != nil {
+		return nil, err
+	}
+
+	ks := jks.KeyStore{
+		"ca": &jks.TrustedCertificateEntry{
+			Entry: jks.Entry{
+				CreationDate: time.Now(),
+			},
+			Certificate: jks.Certificate{
+				Type:    "X509",
+				Content: ca.Raw,
+			},
+		},
+	}
+
+	buf := &bytes.Buffer{}
+	if err := jks.Encode(buf, ks, password); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }

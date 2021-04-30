@@ -149,9 +149,43 @@ kubectl get secret example-client-secret -o jsonpath="{['data']['tls\.crt']}" | 
 kubectl get secret example-client-secret -o jsonpath="{['data']['tls\.key']}" | base64 -d > tls.key
 ```
 
-The operator can also include a Java keystore format (JKS) with your user secret if you'd like. Add `includeJKS`: `true` to the `spec` like shown above, and then the user-secret will gain these additional fields :
+The operator can also include a Java keystore format (JKS) with your user secret if you'd like. Add `includeJKS`: `true`
+to the `spec` like shown above, and then the user-secret will gain these additional fields :
 
 | key | value |
 |-----|-------|
 | tls.jks | The java keystore containing both the user keys and the CA (use this for your keystore AND truststore) |
 | pass.txt | The password to decrypt the JKS (this will be randomly generated) |
+
+## Using Selfmanager
+
+If you choose to disable cert manager during helm installation - or also if you cannot deploy cert manager on your
+cluster - you can use the `NiFi operator` as a self signed CA with ther `Selfmanager` feature.
+
+To do so, set the `pkiBackend` option to `selfmanager` under the `sslSecrets` attribute of `Nificluster` yaml
+definition.
+
+```yaml 
+apiVersion: nifi.orange.com/v1alpha1
+kind: NifiCluster
+...
+spec:
+  ...
+    sslSecrets:
+      tlsSecretName: "test-nifikop"
+      create: true
+      pkiBackend: "selfmanager"
+```
+
+:::tip You can use the sample `Nificluster` YAML definition provided
+in `config/samples/tls_secured_nificluster_with_selfmanager.yaml`
+:::
+
+This will make the operator handle all certs generation, creation and deletion process without having to manually deploy
+anything.
+
+:::warning
+`create` and `issuerRef` will - logically - no longer have an impact on the behavior of the operator. Also, please be
+aware the current version of the operator do not handle the certs renewal and so all certs emitted will have a 10 years
+expiration delay avoiding expired certs issues.
+:::

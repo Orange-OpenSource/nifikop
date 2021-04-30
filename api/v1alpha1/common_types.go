@@ -239,6 +239,7 @@ const (
 const (
 	// PKIBackendCertManager invokes cert-manager for user certificate management
 	PKIBackendCertManager PKIBackend = "cert-manager"
+	PKIBackendSelfManager PKIBackend = "selfmanager"
 	// TODO : Add vault
 	//PKIBackendVault invokes vault PKI for user certificate management
 	//PKIBackendVault PKIBackend = "vault"
