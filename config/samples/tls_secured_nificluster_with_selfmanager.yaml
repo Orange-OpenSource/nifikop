@@ -10,28 +10,11 @@ spec:
   clusterImage: "apache/nifi:1.12.1"
   oneNifiNodePerNode: false
   managedAdminUsers:
-    - identity: "alexandre.guitton@orange.com"
-      name: "aguitton"
-  managedReaderUsers:
-    - identity: "toton@orange.com"
-      name: "toto"
+    - identity: "richard.peres@orange.com"
+      name: "rperes"
   propagateLabels: true
   nifiClusterTaskSpec:
     retryDurationMinutes: 10
-  readOnlyConfig:
-    # NifiProperties configuration that will be applied to the node.
-    nifiProperties:
-      webProxyHosts:
-        - nifistandard2.trycatchlearn.fr:8443
-      # Additionnals nifi.properties configuration that will override the one produced based
-      # on template and configurations.
-      overrideConfigs: |
-        nifi.security.user.oidc.discovery.url=https://accounts.google.com/.well-known/openid-configuration
-        nifi.security.user.oidc.client.id=930711295780-i72an91pqj7rib88r23qfv5q7mth8hgv.apps.googleusercontent.com
-        nifi.security.user.oidc.client.secret=BvmEyr81P0YXZtIt1FIfGsRs
-        nifi.security.identity.mapping.pattern.dn=CN=([^,]*)(?:, (?:O|OU)=.*)?
-        nifi.security.identity.mapping.value.dn=$1
-        nifi.security.identity.mapping.transform.dn=NONE
   nodeConfigGroups:
     default_group:
       isNode: true
@@ -105,6 +88,28 @@ spec:
       nodeConfigGroup: "default_group"
     - id: 2
       nodeConfigGroup: "default_group"
+  externalServices:
+    - name: "loadbalancer"
+      spec:
+        type: LoadBalancer
+        portConfigs:
+          - port: 8443
+            internalListenerName: "https"
+  readOnlyConfig:
+    # NifiProperties configuration that will be applied to the node.
+    nifiProperties:
+      webProxyHosts:
+        - 34.78.118.77.xip.io:8443
+        - nifi.richard-peres.com:8443
+      # Additionnals nifi.properties configuration that will override the one produced based
+      # on template and configurations.
+      overrideConfigs: |
+        nifi.security.user.oidc.discovery.url=https://accounts.google.com/.well-known/openid-configuration
+        nifi.security.user.oidc.client.id=266273228251-s2lsee1lft5pq98t8n2urcu5uosfnjpo.apps.googleusercontent.com
+        nifi.security.user.oidc.client.secret=BciwdDJBTP8AFvDk4JjcYD43
+        nifi.security.identity.mapping.pattern.dn=CN=([^,]*)(?:, (?:O|OU)=.*)?
+        nifi.security.identity.mapping.value.dn=$1
+        nifi.security.identity.mapping.transform.dn=NONE
   listenersConfig:
     internalListeners:
       - type: "https"
@@ -117,6 +122,6 @@ spec:
         name: "s2s"
         containerPort: 10000
     sslSecrets:
-      tlsSecretName: "test-nifikop-selfmanager"
-      create: true
-      pkiBackend: "selfmanager"
+      tlsSecretName: "selfmanager-secret"
+      create: true # required since its autopiloted
+      pkiBackend: "selfmanager" # specifiy that we want to use selfmanager for SSL
