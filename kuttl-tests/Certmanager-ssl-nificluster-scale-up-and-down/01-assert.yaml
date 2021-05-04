@@ -3,29 +3,8 @@ apiVersion: nifi.orange.com/v1alpha1
 kind: NifiCluster
 metadata:
   name: sslnifi
-status:
-  #  nodesState: # TODO needed ?
-  #    '0':
-  #      configurationState: ConfigInSync
-  #      gracefulActionState:
-  #        actionState: GracefulUpscaleRunning
-  #        actionStep: CONNECTING
-  #        errorMessage: ''
-  #      initClusterNode: true
-  #    '1':
-  #      configurationState: ConfigInSync
-  #      gracefulActionState:
-  #        actionState: GracefulUpscaleRequired
-  #        errorMessage: ''
-  #      initClusterNode: true
-  #    '2':
-  #      configurationState: ConfigInSync
-  #      gracefulActionState:
-  #        actionState: GracefulUpscaleRunning
-  #        actionStep: CONNECTING
-  #        errorMessage: ''
-  #      initClusterNode: true
-  state: ClusterReconciling # TODO correct ?
+#status:
+#  state: ClusterRunning TODO Find out why it always switch between ClusterRunning & Reconciling
 ---
 
 # Check all nodes
@@ -45,7 +24,7 @@ status:
           reason: Completed
       ready: true
   containerStatuses:
-    - name: nifi
+    - name: nifikop
       ready: true
       started: true
 ---
@@ -65,7 +44,7 @@ status:
           reason: Completed
       ready: true
   containerStatuses:
-    - name: nifi
+    - name: nifikop
       ready: true
       started: true
 ---
@@ -85,21 +64,29 @@ status:
           reason: Completed
       ready: true
   containerStatuses:
-    - name: nifi
+    - name: nifikop
       ready: true
       started: true
 ---
+
 # Check secrets
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-ca-certificate
+  name: sslnifi-config-0
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-controller
+  name: sslnifi-config-1
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sslnifi-config-2
+---
+
+# SSL Secrets
 apiVersion: v1
 kind: Secret
 metadata:
@@ -118,17 +105,23 @@ metadata:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-config-0
+  name: sslnifi-ca-certificate
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-config-1
+  name: sslnifi-controller
 ---
+
+
+# Check headless service
 apiVersion: v1
-kind: Secret
+kind: Service
 metadata:
-  name: sslnifi-config-2
+  name: sslnifi-headless
+spec:
+  clusterIP: None
+  type: ClusterIP
 ---
 
 # Cannot currently assert if a field is present / not empty with Kuttl => https://github.com/kudobuilder/kuttl/issues/262
@@ -152,21 +145,10 @@ metadata:
 #  zookeeper.properties: ""
 #type: Opaque
 
-# Check headless service
-apiVersion: v1
-kind: Service
-metadata:
-  name: simplenifi-headless
-spec:
-  clusterIP: None
-  type: ClusterIP
----
-
 # TODO How to check if the cluster is "ok" ?
-# Test communication sucessfull
-#---
-#apiVersion: kuttl.dev/v1beta1
-#kind: TestAssert
-#timeout: 1
-#commands:
-#  - command: thiscommanddoesnotexist
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  # Test correct amount of pods
+  - command: '[[ $(kubectl get pods --selector=nifi_cr=sslnifi | wc -l) -eq 4 ]] && echo "passed"'

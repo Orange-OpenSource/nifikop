@@ -1,0 +1,78 @@
+# Check Nificluster created
+apiVersion: nifi.orange.com/v1alpha1
+kind: NifiCluster
+metadata:
+  name: sslnifi
+spec:
+  nodes:
+    - id: 0
+      nodeConfigGroup: "default_group"
+    - id: 1
+      nodeConfigGroup: "default_group"
+    - id: 2
+      nodeConfigGroup: "default_group"
+    - id: 3
+      nodeConfigGroup: "default_group"
+status:
+  state: ClusterRollingUpgrading
+---
+
+# Check new node
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    nifi_cr: sslnifi
+    nodeId: '3'
+status:
+  phase: Running
+  initContainerStatuses:
+    - name: zookeeper
+      state:
+        terminated:
+          exitCode: 0
+          reason: Completed
+      ready: true
+  containerStatuses:
+    - name: nifikop
+      ready: true
+      started: true
+---
+
+# Check secret config
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sslnifi-config-3
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sslnifi-3-server-certificate
+---
+# Cannot currently assert if a field is present / not empty with Kuttl => https://github.com/kudobuilder/kuttl/issues/262
+#data:
+#  authorizers.xml: ""
+#  bootstrap-notification-servces.xml: ""
+#  bootstrap.conf: ""
+#  logback.xml: ""
+#  login-identity-providers.xml: ""
+#  nifi.properties: ""
+#  state-management.xml: ""
+#  zookeeper.properties: ""
+#type: Opaque
+
+# Check headless service
+apiVersion: v1
+kind: Service
+metadata:
+  name: sslnifi-headless
+spec:
+  clusterIP: None
+  type: ClusterIP
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  # Test correct amount of pods
+  - command: '[[ $(kubectl get pods --selector=nifi_cr=sslnifi | wc -l) -eq 5 ]] && echo "passed"'

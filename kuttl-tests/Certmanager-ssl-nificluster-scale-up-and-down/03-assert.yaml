@@ -1,0 +1,31 @@
+# Check deleted node
+#apiVersion: v1
+#kind: Pod
+#metadata:
+#  labels:
+#    nifi_cr: sslnifi
+#    nodeId: '3'
+#status:
+#  phase: Terminating
+#---
+# Check Nificluster created
+apiVersion: nifi.orange.com/v1alpha1
+kind: NifiCluster
+metadata:
+  name: sslnifi
+spec:
+  nodes:
+    - id: 0
+      nodeConfigGroup: "default_group"
+    - id: 1
+      nodeConfigGroup: "default_group"
+    - id: 2
+      nodeConfigGroup: "default_group"
+status:
+  state: ClusterRollingUpgrading
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  # Test correct amount of pods
+  - command: '[[ $(kubectl get pods --selector=nifi_cr=sslnifi | wc -l) -eq 4 ]] && echo "passed"'
