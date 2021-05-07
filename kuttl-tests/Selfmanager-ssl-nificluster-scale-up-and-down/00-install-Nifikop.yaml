@@ -9,6 +9,10 @@ commands:
   - command: helm install zookeeper bitnami/zookeeper --namespace=zookeeper --set resources.requests.memory=256Mi --set resources.requests.cpu=250m --set resources.limits.memory=256Mi --set resources.limits.cpu=250m --set global.storageClass=standard --set networkPolicy.enabled=true --set replicaCount=3
     ignoreFailure: true
 
+# Install selfmanager CRD (TODO remove later)
+  - command: kubectl apply -f selfmanager-crd.yaml
+    ignoreFailure: true
+
     # Install the operator
   #  TODO How to select correct image tag & version ?
   #    --version 0.6.0 \
