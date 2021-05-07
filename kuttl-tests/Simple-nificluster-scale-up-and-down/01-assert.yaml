@@ -118,9 +118,9 @@ spec:
 #type: Opaque
 
 # TODO How to check if the cluster is "ok" ?
----
-apiVersion: kuttl.dev/v1beta1
-kind: TestAssert
-commands:
-  # Test correct amount of pods
-  - command: '[[ $(kubectl get pods --selector=nifi_cr=simplenifi | wc -l) -eq 4 ]] && echo "passed"'
+#---
+#apiVersion: kuttl.dev/v1beta1
+#kind: TestAssert
+#commands:
+#  # Test correct amount of pods
+#  - command: '[[ $(kubectl get pods --selector=nifi_cr=simplenifi -n $NAMESPACE | wc -l) -eq 4 ]]'

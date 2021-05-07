@@ -23,9 +23,9 @@ spec:
       nodeConfigGroup: "default_group"
 status:
   state: ClusterRollingUpgrading
----
-apiVersion: kuttl.dev/v1beta1
-kind: TestAssert
-commands:
-  # Test correct amount of pods
-  - command: '[[ $(kubectl get pods --selector=nifi_cr=sslnifi | wc -l) -eq 4 ]] && echo "passed"'
+#---
+#apiVersion: kuttl.dev/v1beta1
+#kind: TestAssert
+#commands:
+#  # Test correct amount of pods
+#  - command: '[[ $(kubectl get pods --selector=nifi_cr=sslnifi | wc -l) -eq 4 ]] && echo "passed"'
