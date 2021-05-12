@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
+	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	certutil "github.com/Orange-OpenSource/nifikop/pkg/util/cert"
 	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	"github.com/go-logr/logr"
@@ -12,6 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
@@ -47,11 +49,6 @@ func (s SelfManager) FinalizePKI(ctx context.Context, logger logr.Logger) error 
 	for _, node := range s.cluster.Spec.Nodes {
 		objNames = append(objNames, types.NamespacedName{Name: fmt.Sprintf(pkicommon.NodeServerCertTemplate, s.cluster.Name, node.Id), Namespace: s.cluster.Namespace})
 	}
-
-	// Ca Cert
-	objNames = append(
-		objNames,
-		types.NamespacedName{Name: fmt.Sprintf(pkicommon.NodeCACertTemplate, s.cluster.Name), Namespace: s.cluster.Namespace})
 
 	// Controller cert
 	objNames = append(
@@ -171,4 +168,35 @@ func (s *SelfManager) clusterSecretForController() (secret *corev1.Secret, err e
 	}
 
 	return
+}
+
+func caSecretCert(ctx context.Context, client client.Client, cluster *v1alpha1.NifiCluster) (*corev1.Secret, error) {
+	secret := &corev1.Secret{}
+	var name = fmt.Sprintf(pkicommon.NodeCACertTemplate, cluster.Name)
+	err := client.Get(ctx, types.NamespacedName{Namespace: cluster.Namespace, Name: name}, secret)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			err = errorfactory.New(errorfactory.ResourceNotReady{}, err, "could not find provided tls secret")
+		} else {
+			err = errorfactory.New(errorfactory.APIFailure{}, err, "could not lookup provided tls secret")
+		}
+		return nil, err
+	}
+
+	caKey := secret.Data[v1alpha1.CAPrivateKeyKey]
+	caCert := secret.Data[v1alpha1.CACertKey]
+
+	caSecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf(pkicommon.NodeCACertTemplate, cluster.Name),
+			Namespace: cluster.Namespace,
+			Labels:    pkicommon.LabelsForNifiPKI(cluster.Name),
+		},
+		Data: map[string][]byte{
+			v1alpha1.CoreCACertKey:  caCert,
+			corev1.TLSCertKey:       caCert,
+			corev1.TLSPrivateKeyKey: caKey,
+		},
+	}
+	return caSecret, nil
 }

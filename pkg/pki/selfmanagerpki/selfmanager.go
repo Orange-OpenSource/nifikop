@@ -2,6 +2,7 @@ package selfmanagerpki
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -9,8 +10,10 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
+	"github.com/Orange-OpenSource/nifikop/pkg/util/cert"
 	"github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
+	corev1 "k8s.io/api/core/v1"
 	"math/big"
 	"net/url"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -37,19 +40,38 @@ type SelfManager struct {
 	caKeyPEM  []byte
 }
 
-func (s *SelfManager) SetClientAndCluster(client client.Client, cluster *v1alpha1.NifiCluster) {
-	s.client = client
-	s.cluster = cluster
-}
-
 // Return a new fully instantiated SelfManager struct
-func New() (manager *SelfManager) {
+func New(client client.Client, cluster *v1alpha1.NifiCluster) (manager *SelfManager) {
 	manager = &SelfManager{}
+	manager.client = client
+	manager.cluster = cluster
 
-	// setting up our ca and server certificate
-	if err := manager.setupCA(); err != nil {
-		// TODO what to do with the error ? (panic, retry, event, etc.)
-		fmt.Println("Error while setting up SelfManager as PKI Manager : ", err)
+	secret, err := caSecretCert(context.Background(), client, cluster)
+	if err == nil {
+		// get CA values from secret
+		manager.caCertPEM = secret.Data[v1alpha1.CoreCACertKey]
+		manager.caKeyPEM = secret.Data[corev1.TLSPrivateKeyKey]
+
+		cert, err := cert.DecodeCertificate(secret.Data[v1alpha1.CoreCACertKey])
+		if err != nil {
+			// TODO what to do with the error ? (panic, retry, event, etc.)
+			fmt.Println("Error while decoding previous SelManager cacert from secret : ", err)
+		}
+
+		key, err := x509.ParsePKCS1PrivateKey(secret.Data[corev1.TLSPrivateKeyKey])
+		if err != nil {
+			// TODO what to do with the error ? (panic, retry, event, etc.)
+			fmt.Println("Error while decoding previous SelManager cakey from secret : ", err)
+		}
+
+		manager.caCert = cert
+		manager.caKey = key
+	} else {
+		// setting up our new ca and server certificate
+		if err := manager.setupCA(); err != nil {
+			// TODO what to do with the error ? (panic, retry, event, etc.)
+			fmt.Println("Error while setting up SelfManager as PKI Manager : ", err)
+		}
 	}
 
 	return
