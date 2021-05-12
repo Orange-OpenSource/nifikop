@@ -58,7 +58,7 @@ func New(client client.Client, cluster *v1alpha1.NifiCluster) (manager *SelfMana
 			fmt.Println("Error while decoding previous SelManager cacert from secret : ", err)
 		}
 
-		decodedKey, err := x509.ParsePKCS1PrivateKey(caKey)
+		decodedKey, err := cert.DecodePrivateKey(caKey)
 		if err != nil {
 			// TODO what to do with the error ? (panic, retry, event, etc.)
 			fmt.Println("Error while decoding previous SelManager cakey from secret : ", err)

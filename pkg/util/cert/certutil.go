@@ -23,6 +23,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"github.com/jetstack/cert-manager/pkg/util/pki"
+	"log"
 	"math/big"
 	mathrand "math/rand"
 	"strings"
@@ -62,6 +63,25 @@ func DecodeKey(raw []byte) (parsedKey []byte, err error) {
 		parsedKey = x509.MarshalPKCS1PrivateKey(rsaKey)
 	} else {
 		parsedKey, _ = x509.MarshalPKCS8PrivateKey(rsaKey)
+	}
+	return
+}
+
+// DecodePrivateKey will take a PEM encoded Private Key and decode it
+func DecodePrivateKey(raw []byte) (key *rsa.PrivateKey, err error) {
+	block, _ := pem.Decode(raw)
+	enc := x509.IsEncryptedPEMBlock(block)
+	b := block.Bytes
+	if enc {
+		log.Println("is encrypted pem block")
+		b, err = x509.DecryptPEMBlock(block, nil)
+		if err != nil {
+			return
+		}
+	}
+	key, err = x509.ParsePKCS1PrivateKey(b)
+	if err != nil {
+		return
 	}
 	return
 }

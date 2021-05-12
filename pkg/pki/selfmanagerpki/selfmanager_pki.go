@@ -183,7 +183,7 @@ func caValuesFromSecretCert(ctx context.Context, client client.Client, cluster *
 		return
 	}
 
-	caKey = secret.Data[v1alpha1.CoreCACertKey]
-	caCert = secret.Data[v1alpha1.TLSKey]
+	caCert = secret.Data[v1alpha1.CoreCACertKey]
+	caKey = secret.Data[v1alpha1.TLSKey]
 	return
 }
