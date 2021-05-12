@@ -17,8 +17,7 @@ type mockClient struct {
 func newMock(cluster *v1alpha1.NifiCluster) (manager *SelfManager, err error) {
 	certv1.AddToScheme(scheme.Scheme)
 	v1alpha1.SchemeBuilder.AddToScheme(scheme.Scheme)
-	manager = New()
-	manager.SetClientAndCluster(fake.NewFakeClientWithScheme(scheme.Scheme), cluster)
+	manager = New(fake.NewFakeClientWithScheme(scheme.Scheme), cluster)
 	return
 }
 
@@ -46,8 +45,7 @@ func newMockCluster() *v1alpha1.NifiCluster {
 }
 
 func TestNew(t *testing.T) {
-	pkiManager := New()
-	pkiManager.SetClientAndCluster(&mockClient{}, newMockCluster())
+	pkiManager := New(&mockClient{}, newMockCluster())
 
 	if reflect.TypeOf(pkiManager) != reflect.TypeOf(&SelfManager{}) {
 		t.Error("Expected new selfmanager from New, got:", reflect.TypeOf(pkiManager))
@@ -55,8 +53,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestGenerateUserCert(t *testing.T) {
-	manager := New()
-	manager.SetClientAndCluster(&mockClient{}, newMockCluster())
+	manager := New(&mockClient{}, newMockCluster())
 
 	certPEM, certKeyPEM, err := manager.generateUserCert(newMockUser())
 	if err != nil {
