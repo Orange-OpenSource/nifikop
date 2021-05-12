@@ -13,7 +13,6 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/util/cert"
 	"github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
-	corev1 "k8s.io/api/core/v1"
 	"math/big"
 	"net/url"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -46,27 +45,29 @@ func New(client client.Client, cluster *v1alpha1.NifiCluster) (manager *SelfMana
 	manager.client = client
 	manager.cluster = cluster
 
-	secret, err := caSecretCert(context.Background(), client, cluster)
+	caCert, caKey, err := caValuesFromSecretCert(context.Background(), client, cluster)
 	if err == nil {
+		fmt.Println("Found previous cacert secret. Use it to build SelfManager pkiBackend config.")
 		// get CA values from secret
-		manager.caCertPEM = secret.Data[v1alpha1.CoreCACertKey]
-		manager.caKeyPEM = secret.Data[corev1.TLSPrivateKeyKey]
+		manager.caCertPEM = caCert
+		manager.caKeyPEM = caKey
 
-		cert, err := cert.DecodeCertificate(secret.Data[v1alpha1.CoreCACertKey])
+		decodedCert, err := cert.DecodeCertificate(caCert)
 		if err != nil {
 			// TODO what to do with the error ? (panic, retry, event, etc.)
 			fmt.Println("Error while decoding previous SelManager cacert from secret : ", err)
 		}
 
-		key, err := x509.ParsePKCS1PrivateKey(secret.Data[corev1.TLSPrivateKeyKey])
+		decodedKey, err := x509.ParsePKCS1PrivateKey(caKey)
 		if err != nil {
 			// TODO what to do with the error ? (panic, retry, event, etc.)
 			fmt.Println("Error while decoding previous SelManager cakey from secret : ", err)
 		}
 
-		manager.caCert = cert
-		manager.caKey = key
+		manager.caCert = decodedCert
+		manager.caKey = decodedKey
 	} else {
+		fmt.Println("Create a new SelfManager pkiBackend cacert config.")
 		// setting up our new ca and server certificate
 		if err := manager.setupCA(); err != nil {
 			// TODO what to do with the error ? (panic, retry, event, etc.)

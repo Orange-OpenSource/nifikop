@@ -170,33 +170,20 @@ func (s *SelfManager) clusterSecretForController() (secret *corev1.Secret, err e
 	return
 }
 
-func caSecretCert(ctx context.Context, client client.Client, cluster *v1alpha1.NifiCluster) (*corev1.Secret, error) {
+func caValuesFromSecretCert(ctx context.Context, client client.Client, cluster *v1alpha1.NifiCluster) (caCert []byte, caKey []byte, err error) {
 	secret := &corev1.Secret{}
 	var name = fmt.Sprintf(pkicommon.NodeCACertTemplate, cluster.Name)
-	err := client.Get(ctx, types.NamespacedName{Namespace: cluster.Namespace, Name: name}, secret)
+	err = client.Get(ctx, types.NamespacedName{Namespace: cluster.Namespace, Name: name}, secret)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			err = errorfactory.New(errorfactory.ResourceNotReady{}, err, "could not find provided tls secret")
 		} else {
 			err = errorfactory.New(errorfactory.APIFailure{}, err, "could not lookup provided tls secret")
 		}
-		return nil, err
+		return
 	}
 
-	caKey := secret.Data[v1alpha1.CAPrivateKeyKey]
-	caCert := secret.Data[v1alpha1.CACertKey]
-
-	caSecret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf(pkicommon.NodeCACertTemplate, cluster.Name),
-			Namespace: cluster.Namespace,
-			Labels:    pkicommon.LabelsForNifiPKI(cluster.Name),
-		},
-		Data: map[string][]byte{
-			v1alpha1.CoreCACertKey:  caCert,
-			corev1.TLSCertKey:       caCert,
-			corev1.TLSPrivateKeyKey: caKey,
-		},
-	}
-	return caSecret, nil
+	caKey = secret.Data[v1alpha1.CoreCACertKey]
+	caCert = secret.Data[v1alpha1.TLSKey]
+	return
 }
