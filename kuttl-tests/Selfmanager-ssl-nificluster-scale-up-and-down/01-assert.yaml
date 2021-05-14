@@ -2,7 +2,7 @@
 apiVersion: nifi.orange.com/v1alpha1
 kind: NifiCluster
 metadata:
-  name: sslnifi
+  name: selfmanagednifi
 #status:
 #  state: ClusterRunning TODO Find out why it always switch between ClusterRunning & Reconciling
 ---
@@ -12,7 +12,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    nifi_cr: sslnifi
+    nifi_cr: selfmanagednifi
     nodeId: '0'
 status:
   phase: Running
@@ -32,7 +32,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    nifi_cr: sslnifi
+    nifi_cr: selfmanagednifi
     nodeId: '1'
 status:
   phase: Running
@@ -52,7 +52,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    nifi_cr: sslnifi
+    nifi_cr: selfmanagednifi
     nodeId: '2'
 status:
   phase: Running
@@ -73,44 +73,44 @@ status:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-config-0
+  name: selfmanagednifi-config-0
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-config-1
+  name: selfmanagednifi-config-1
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-config-2
+  name: selfmanagednifi-config-2
 ---
 
 # SSL Secrets
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-0-server-certificate
+  name: selfmanagednifi-0-server-certificate
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-1-server-certificate
+  name: selfmanagednifi-1-server-certificate
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-2-server-certificate
+  name: selfmanagednifi-2-server-certificate
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-ca-certificate
+  name: selfmanagednifi-ca-certificate
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-controller
+  name: selfmanagednifi-controller
 ---
 
 
@@ -118,7 +118,7 @@ metadata:
 apiVersion: v1
 kind: Service
 metadata:
-  name: sslnifi-headless
+  name: selfmanagednifi-headless
 spec:
   clusterIP: None
   type: ClusterIP
@@ -151,4 +151,4 @@ spec:
 #kind: TestAssert
 #commands:
 #  # Test correct amount of pods
-#  - command: '[[ $(kubectl get pods --selector=nifi_cr=sslnifi | wc -l) -eq 4 ]] && echo "passed"'
+#  - command: '[[ $(kubectl get pods --selector=nifi_cr=selfmanagednifi | wc -l) -eq 4 ]] && echo "passed"'

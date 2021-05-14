@@ -3,7 +3,7 @@
 #kind: Pod
 #metadata:
 #  labels:
-#    nifi_cr: sslnifi
+#    nifi_cr: selfmanagednifi
 #    nodeId: '3'
 #status:
 #  phase: Terminating
@@ -12,7 +12,7 @@
 apiVersion: nifi.orange.com/v1alpha1
 kind: NifiCluster
 metadata:
-  name: sslnifi
+  name: selfmanagednifi
 spec:
   nodes:
     - id: 0
@@ -28,4 +28,4 @@ status:
 #kind: TestAssert
 #commands:
 #  # Test correct amount of pods
-#  - command: '[[ $(kubectl get pods --selector=nifi_cr=sslnifi | wc -l) -eq 4 ]] && echo "passed"'
+#  - command: '[[ $(kubectl get pods --selector=nifi_cr=selfmanagednifi | wc -l) -eq 4 ]] && echo "passed"'

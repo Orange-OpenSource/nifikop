@@ -38,6 +38,6 @@ metadata:
     app: nifikop
 status:
   phase: Running
-  containerStatuses: # Needed ?
+  containerStatuses:
     - name: nifikop
       ready: true

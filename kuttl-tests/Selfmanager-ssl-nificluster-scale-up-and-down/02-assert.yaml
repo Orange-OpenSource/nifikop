@@ -2,7 +2,7 @@
 apiVersion: nifi.orange.com/v1alpha1
 kind: NifiCluster
 metadata:
-  name: sslnifi
+  name: selfmanagednifi
 spec:
   nodes:
     - id: 0
@@ -22,7 +22,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    nifi_cr: sslnifi
+    nifi_cr: selfmanagednifi
     nodeId: '3'
 status:
   phase: Running
@@ -43,12 +43,12 @@ status:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-config-3
+  name: selfmanagednifi-config-3
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: sslnifi-3-server-certificate
+  name: selfmanagednifi-3-server-certificate
 ---
 # Cannot currently assert if a field is present / not empty with Kuttl => https://github.com/kudobuilder/kuttl/issues/262
 #data:
@@ -66,7 +66,7 @@ metadata:
 apiVersion: v1
 kind: Service
 metadata:
-  name: sslnifi-headless
+  name: selfmanagednifi-headless
 spec:
   clusterIP: None
   type: ClusterIP
@@ -75,4 +75,4 @@ spec:
 #kind: TestAssert
 #commands:
 #  # Test correct amount of pods
-#  - command: '[[ $(kubectl get pods --selector=nifi_cr=sslnifi | wc -l) -eq 5 ]] && echo "passed"'
+#  - command: '[[ $(kubectl get pods --selector=nifi_cr=selfmanagednifi | wc -l) -eq 5 ]] && echo "passed"'
