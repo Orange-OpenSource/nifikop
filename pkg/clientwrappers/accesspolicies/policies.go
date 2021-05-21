@@ -1,6 +1,8 @@
 package accesspolicies
 
 import (
+	"strings"
+
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers"
 	"github.com/Orange-OpenSource/nifikop/pkg/common"
@@ -26,6 +28,18 @@ func ExistAccessPolicies(client client.Client, accessPolicy *v1alpha1.AccessPoli
 			return false, nil
 		}
 		return false, err
+	}
+
+	//special case: if the entity is not the same but e.g. the parent
+	//entity.Component.Resource = "/data/process-groups/d474577c-0178-1000-ffff-ffffeef1d529"
+	//accessPolicy.Resource = "/data"
+	//accessPolicy.ComponentType = "process-groups"
+	var gottenComponentId = strings.Replace(entity.Component.Resource, "/"+accessPolicy.ComponentType+"/", "", -1)
+	if string(accessPolicy.Resource) != "/" {
+		strings.Replace(entity.Component.Resource, string(accessPolicy.Resource), "", -1)
+	}
+	if accessPolicy.ComponentId != "" && gottenComponentId != accessPolicy.ComponentId {
+		return false, nil
 	}
 
 	return entity != nil, nil
