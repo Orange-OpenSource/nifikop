@@ -18,8 +18,10 @@ package controllers
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+	"time"
+
+	"emperror.dev/errors"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
 	"github.com/Orange-OpenSource/nifikop/pkg/pki"
@@ -31,7 +33,6 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -205,7 +206,7 @@ func (r *NifiClusterReconciler) checkFinalizers(ctx context.Context,
 	var err error
 
 	var namespaces []string
-	if r.Namespaces == nil || len(r.Namespaces) == 0 {
+	if len(cluster.ObjectMeta.Namespace) == 0 {
 		// Fetch a list of all namespaces for DeleteAllOf requests
 		namespaces = make([]string, 0)
 		var namespaceList corev1.NamespaceList
@@ -216,8 +217,8 @@ func (r *NifiClusterReconciler) checkFinalizers(ctx context.Context,
 			namespaces = append(namespaces, ns.Name)
 		}
 	} else {
-		// use configured namespaces
-		namespaces = r.Namespaces
+		// use configured namespace
+		namespaces = append(namespaces, cluster.ObjectMeta.Namespace)
 	}
 
 	if cluster.Spec.ListenersConfig.SSLSecrets != nil {
