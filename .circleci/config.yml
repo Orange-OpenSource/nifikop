@@ -128,27 +128,6 @@ orbs:
               root: /home/circleci
               paths:
                 - << parameters.operatorDir >>/cover.out
-
-      # Run all kuttl tests
-      kuttl-tests:
-        <<: *params_operator
-        <<: *job_operator
-        steps:
-          - checkout:
-              path: /home/circleci/nifikop
-          - attach_workspace: # Attach artifact from workdir
-              at: /home/circleci
-          - run:
-              name: Setup kuttl
-              command: |
-                set -x
-                sudo chmod o+w /usr/local/bin/
-                curl -L https://github.com/kudobuilder/kuttl/releases/download/v0.10.0/kubectl-kuttl_0.10.0_linux_x86_64 -o /usr/local/bin/kubectl-kuttl
-                chmod +x /usr/local/bin/kubectl-kuttl
-          # Start all kuttl tests
-          - run:
-              name: Kuttl Tests
-              command: make run-kuttl-tests
 #      report-sonar:
 #        description: Detect bugs and vulnerabilities
 #        parameters:
@@ -233,6 +212,66 @@ orbs:
                 else
                   CHART_VERSION=$(cat helm/nifikop/Chart.yaml| grep version | awk -F"version: " '{print $2}') GCP_SA_CREDS=${GCP_POC_RTC_SA_KEY} /home/circleci/nifikop/tools/publish_helm_gcs.sh
                 fi
+  k3d:
+    # Setting up VM executor to run k3d.
+    executors:
+      vm:
+        machine:
+          image: ubuntu-2004:202010-01
+        resource_class: large
+    jobs:
+      e2e-orb:
+        operatorDir:
+          type: string
+          description: relative path where the build must be run
+          default: nifikop
+        executor: vm
+        working_directory: /home/circleci/<< parameters.operatorDir >>
+        environment:
+          K3S_IMAGE: rancher/k3s:v1.20.6-k3s1
+          K8S_VERSION: v1.20.6
+          GOPATH: /go
+          GO111MODULE: on
+          DOCKER_LATEST: 1
+          GIN_MODE: release
+        steps:
+          - run:
+              name: Set up K3d
+              command: |
+                wget -q -O - https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
+                k3d cluster create --image ${K3S_IMAGE} --wait
+                mkdir -p ${HOME}/.kube
+          - checkout:
+              path: /home/circleci/casskop
+          - run:
+              name: Load Nifikop build image into k3d
+              command: |
+                k3d image import orangeopensource/nifikop-build:1.15
+          - run:
+              name: Setup kubectl
+              command: |
+                set -x
+                sudo chmod o+w /usr/local/bin/
+                wget -P /usr/local/bin/ https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
+                chmod +x /usr/local/bin/kubectl
+          - run:
+              name: Setup helm
+              command: curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+          - run:
+              name: Setup kuttl
+              command: |
+                set -x
+                sudo chmod o+w /usr/local/bin/
+                curl -L https://github.com/kudobuilder/kuttl/releases/download/v0.10.0/kubectl-kuttl_0.10.0_linux_x86_64 -o /usr/local/bin/kubectl-kuttl
+                chmod +x /usr/local/bin/kubectl-kuttl
+          - attach_workspace: # Attach artifact from workdir
+              at: /home/circleci
+          - run:
+              name: Kuttl tests
+              no_output_timeout: 1200
+              command: |
+                make run-kuttl-tests
+
 jobs:
   deploy-website:
     working_directory: /home/circleci/nifikop/site
