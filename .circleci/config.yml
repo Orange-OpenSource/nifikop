@@ -142,7 +142,6 @@ orbs:
           - run:
               name: Kuttl Tests
               command: make run-kuttl-tests
-  unit-test-nifikop
 #      report-sonar:
 #        description: Detect bugs and vulnerabilities
 #        parameters:
