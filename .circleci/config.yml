@@ -221,12 +221,8 @@ orbs:
         resource_class: large
     jobs:
       e2e-orb:
-        operatorDir:
-          type: string
-          description: relative path where the build must be run
-          default: nifikop
         executor: vm
-        working_directory: /home/circleci/<< parameters.operatorDir >>
+        working_directory: /home/circleci/nifikop
         environment:
           K3S_IMAGE: rancher/k3s:v1.20.6-k3s1
           K8S_VERSION: v1.20.6
