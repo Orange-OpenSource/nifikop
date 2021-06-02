@@ -242,7 +242,8 @@ orbs:
           - run:
               name: Load Nifikop build image into k3d
               command: |
-                k3d image import orangeopensource/nifikop-build:1.15
+                docker save orangeopensource/nifikop-build:1.15 > nifikop-build.tar
+                k3d image import nifikop-build.tar
           - run:
               name: Setup kubectl
               command: |
