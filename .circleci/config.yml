@@ -143,7 +143,7 @@ orbs:
               command: |
                 set -x
                 sudo chmod o+w /usr/local/bin/
-                curl -L https://github.com/kudobuilder/kuttl/releases/download/v0.1.0/kubectl-kuttl_0.1.0_linux_x86_64 -o /usr/local/bin/kubectl-kuttl
+                curl -L https://github.com/kudobuilder/kuttl/releases/download/v0.10.0/kubectl-kuttl_0.10.0_linux_x86_64 -o /usr/local/bin/kubectl-kuttl
                 chmod +x /usr/local/bin/kubectl-kuttl
           # Start all kuttl tests
           - run:
