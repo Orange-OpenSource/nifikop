@@ -128,6 +128,21 @@ orbs:
               root: /home/circleci
               paths:
                 - << parameters.operatorDir >>/cover.out
+
+      # Run all kuttl tests
+      kuttl-tests:
+        <<: *params_operator
+        <<: *job_operator
+        steps:
+          - checkout:
+              path: /home/circleci/nifikop
+          - attach_workspace:  # Attach artifact from workdir
+              at: /home/circleci
+          # Unit tests steps
+          - run:
+              name: Kuttl Tests
+              command: make run-kuttl-tests
+  unit-test-nifikop
 #      report-sonar:
 #        description: Detect bugs and vulnerabilities
 #        parameters:
@@ -281,10 +296,16 @@ workflows:
             - generate-nifikop
           <<: *everytime_filter
 
+      - operator/kuttl-tests:
+          name: kuttl-tests-nifikop
+          requires:
+            - unit-test-nifikop
+          <<: *everytime_filter
+
       - operator/build-operator:
           name: build-nifikop
           requires:
-            - unit-test-nifikop
+            - kuttl-tests-nifikop
           <<: *everytime_filter
 
 #      - operator/report-sonar:
