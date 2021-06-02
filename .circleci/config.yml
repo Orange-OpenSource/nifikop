@@ -337,7 +337,7 @@ workflows:
             - generate-nifikop
           <<: *everytime_filter
 
-      - operator/kuttl-tests:
+      - k3d/e2e-orb:
           name: kuttl-tests-nifikop
           requires:
             - unit-test-nifikop
