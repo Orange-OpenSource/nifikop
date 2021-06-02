@@ -136,9 +136,16 @@ orbs:
         steps:
           - checkout:
               path: /home/circleci/nifikop
-          - attach_workspace:  # Attach artifact from workdir
+          - attach_workspace: # Attach artifact from workdir
               at: /home/circleci
-          # Unit tests steps
+          - run:
+              name: Setup kuttl
+              command: |
+                set -x
+                sudo chmod o+w /usr/local/bin/
+                curl -L https://github.com/kudobuilder/kuttl/releases/download/v0.1.0/kubectl-kuttl_0.1.0_linux_x86_64 -o /usr/local/bin/kuttl
+                chmod +x /usr/local/bin/kuttl
+          # Start all kuttl tests
           - run:
               name: Kuttl Tests
               command: make run-kuttl-tests
