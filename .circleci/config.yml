@@ -240,10 +240,6 @@ orbs:
           - checkout:
               path: /home/circleci/casskop
           - run:
-              name: Load Nifikop build image into k3d
-              command: |
-                k3d image import nifikop-build 1.15
-          - run:
               name: Setup kubectl
               command: |
                 set -x
