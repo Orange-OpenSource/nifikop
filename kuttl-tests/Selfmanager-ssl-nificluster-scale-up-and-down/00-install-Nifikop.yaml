@@ -14,7 +14,7 @@ commands:
   #    --version 0.6.0 \
   #    --set image.tag=0.6.0-selfmanager-implem \
   # TODO remove image tag
-  - command: helm install nifikop ../../helm/nifikop --version 0.6.0 --set image.tag=0.6.0-selfmanager-implem --set resources.requests.memory=1Gi --set resources.requests.cpu=500m --set resources.limits.memory=1Gi --set resources.limits.cpu=1 --set debug.enabled=true --set certManager.enabled=false --set namespaces={"$NAMESPACE"}
+  - command: helm install nifikop ../../helm/nifikop --set image.tag=0.6.0-selfmanager-implem --set resources.requests.memory=1Gi --set resources.requests.cpu=500m --set resources.limits.memory=1Gi --set resources.limits.cpu=1 --set debug.enabled=true --set certManager.enabled=false --set namespaces={"$NAMESPACE"}
     namespaced: true
 
     # Install selfmanager CRD (TODO remove later)

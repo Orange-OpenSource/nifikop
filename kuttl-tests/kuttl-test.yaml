@@ -4,4 +4,4 @@ kind: TestSuite
 #startKIND: true
 testDirs:
   - .
-timeout: 500
+timeout: 900
