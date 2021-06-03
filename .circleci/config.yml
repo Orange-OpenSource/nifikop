@@ -238,7 +238,7 @@ orbs:
                 k3d cluster create --image ${K3S_IMAGE} --wait
                 mkdir -p ${HOME}/.kube
           - checkout:
-              path: /home/circleci/casskop
+              path: /home/circleci/nifikop
           - run:
               name: Setup kubectl
               command: |
