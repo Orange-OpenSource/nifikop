@@ -257,12 +257,12 @@ orbs:
                 curl -L https://github.com/kudobuilder/kuttl/releases/download/v0.10.0/kubectl-kuttl_0.10.0_linux_x86_64 -o /usr/local/bin/kubectl-kuttl
                 chmod +x /usr/local/bin/kubectl-kuttl
           - attach_workspace: # Attach artifact from workdir
-              at: /home/circleci
+              at: /home/circleci/nifikop
           - run:
               name: Kuttl tests
               no_output_timeout: 1200
               command: |
-                cd nifikop
+                pwd
                 make run-kuttl-tests
 
 jobs:
