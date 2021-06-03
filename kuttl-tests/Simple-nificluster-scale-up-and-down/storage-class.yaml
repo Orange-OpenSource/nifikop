@@ -1,7 +1,7 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: exampleStorageclass
+  name: example-storageclass
 parameters:
   type: pd-standard
 provisioner: kubernetes.io/gce-pd
