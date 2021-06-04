@@ -84,10 +84,7 @@ spec:
   nodes:
     - id: 0
       nodeConfigGroup: "default_group"
-    - id: 1
-      nodeConfigGroup: "default_group"
-    - id: 2
-      nodeConfigGroup: "default_group"
+
       #### SCALE DOWN ####
 #    - id: 3
 #        nodeConfigGroup: "default_group"
