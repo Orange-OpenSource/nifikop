@@ -27,7 +27,7 @@ spec:
             storageClassName: "local-path"
             resources:
               requests:
-                storage: 10Gi
+                storage: 1Gi
         - mountPath: "/opt/nifi/data"
           name: data
           pvcSpec:
@@ -36,7 +36,7 @@ spec:
             storageClassName: "local-path"
             resources:
               requests:
-                storage: 10Gi
+                storage: 1Gi
         - mountPath: "/opt/nifi/flowfile_repository"
           name: flowfile-repository
           pvcSpec:
@@ -45,7 +45,7 @@ spec:
             storageClassName: "local-path"
             resources:
               requests:
-                storage: 10Gi
+                storage: 1Gi
         - mountPath: "/opt/nifi/nifi-current/conf"
           name: conf
           pvcSpec:
@@ -54,7 +54,7 @@ spec:
             storageClassName: "local-path"
             resources:
               requests:
-                storage: 10Gi
+                storage: 1Gi
         - mountPath: "/opt/nifi/content_repository"
           name: content-repository
           pvcSpec:
@@ -63,7 +63,7 @@ spec:
             storageClassName: "local-path"
             resources:
               requests:
-                storage: 10Gi
+                storage: 1Gi
         - mountPath: "/opt/nifi/provenance_repository"
           name: provenance-repository
           pvcSpec:
@@ -72,14 +72,14 @@ spec:
             storageClassName: "local-path"
             resources:
               requests:
-                storage: 10Gi
+                storage: 1Gi
       serviceAccountName: "default"
       resourcesRequirements:
         limits:
-          cpu: "2"
+          cpu: 250m
           memory: 3Gi
         requests:
-          cpu: "1"
+          cpu: 250m
           memory: 1Gi
   nodes:
     - id: 0
