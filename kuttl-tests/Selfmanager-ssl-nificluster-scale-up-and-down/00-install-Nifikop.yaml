@@ -6,9 +6,7 @@ commands:
     ignoreFailure: true
   - command: helm repo add bitnami https://charts.bitnami.com/bitnami
     ignoreFailure: true
-  - command: kubectl apply -f storage-class.yaml
-    ignoreFailure: true
-  - command: helm install zookeeper bitnami/zookeeper --namespace=zookeeper --set resources.requests.memory=256Mi --set resources.requests.cpu=250m --set resources.limits.memory=256Mi --set resources.limits.cpu=250m --set global.storageClass=example-storageclass --set networkPolicy.enabled=true --set replicaCount=3
+  - command: helm install zookeeper bitnami/zookeeper --namespace=zookeeper --set resources.requests.memory=256Mi --set resources.requests.cpu=250m --set resources.limits.memory=256Mi --set resources.limits.cpu=250m --set global.storageClass=local-path --set networkPolicy.enabled=true --set replicaCount=3
     ignoreFailure: true
 
     # Install the operator
