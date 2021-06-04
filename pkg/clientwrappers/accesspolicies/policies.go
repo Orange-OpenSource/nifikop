@@ -36,7 +36,7 @@ func ExistAccessPolicies(client client.Client, accessPolicy *v1alpha1.AccessPoli
 	//accessPolicy.ComponentType = "process-groups"
 	var gottenComponentId = strings.Replace(entity.Component.Resource, "/"+accessPolicy.ComponentType+"/", "", -1)
 	if string(accessPolicy.Resource) != "/" {
-		strings.Replace(entity.Component.Resource, string(accessPolicy.Resource), "", -1)
+		gottenComponentId = strings.Replace(gottenComponentId, string(accessPolicy.Resource), "", -1)
 	}
 	if accessPolicy.ComponentId != "" && gottenComponentId != accessPolicy.ComponentId {
 		return false, nil
