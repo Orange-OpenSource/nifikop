@@ -48,7 +48,7 @@ func New(client client.Client, cluster *v1alpha1.NifiCluster) (manager *SelfMana
 	caCert, caKey, err := caValuesFromSecretCert(context.Background(), client, cluster)
 	if err == nil {
 		fmt.Println("Found previous cacert secret. Use it to build SelfManager pkiBackend config.")
-		// get CA values from secret
+		// get & set CA values from secret
 		manager.caCertPEM = caCert
 		manager.caKeyPEM = caKey
 
@@ -64,6 +64,7 @@ func New(client client.Client, cluster *v1alpha1.NifiCluster) (manager *SelfMana
 			fmt.Println("Error while decoding previous SelManager cakey from secret : ", err)
 		}
 
+		// Set 'raw' cert & key values
 		manager.caCert = decodedCert
 		manager.caKey = decodedKey
 	} else {

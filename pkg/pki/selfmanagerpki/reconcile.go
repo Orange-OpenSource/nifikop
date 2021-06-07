@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"time"
 )
 
 // reconcile ensures the given kubernetes object
@@ -37,7 +38,28 @@ func reconcileSecret(ctx context.Context, log logr.Logger, client client.Client,
 		}
 		return client.Create(ctx, secret)
 	}
+	log.Info("Checking vality of %s", secret.Name)
+	if checkCertValidity(obj) != true {
+		// Update this cert...
+		// TODO
+	}
 	return nil
+}
+
+func checkCertValidity(obj *corev1.Secret) bool {
+	// Parse date from validity data
+	validty, err := time.Parse(time.UnixDate, string(obj.Data[v1alpha1.CertValidity]))
+
+	if err != nil {
+		return false
+	}
+
+	// Check if the cert is outdated
+	if time.Now().After(validty) {
+		return false
+	}
+
+	return true
 }
 
 // reconcileUser ensures a v1alpha1.NifiUser
