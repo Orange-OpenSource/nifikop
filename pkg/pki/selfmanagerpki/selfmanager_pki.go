@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"time"
 )
 
 func (s *SelfManager) ReconcilePKI(ctx context.Context, logger logr.Logger, scheme *runtime.Scheme, externalHostnames []string) error {
@@ -103,6 +104,7 @@ func (s *SelfManager) caCertForCluster(cluster *v1alpha1.NifiCluster, scheme *ru
 			v1alpha1.CoreCACertKey:  s.caCertPEM,
 			corev1.TLSCertKey:       s.caCertPEM,
 			corev1.TLSPrivateKeyKey: s.caKeyPEM,
+			v1alpha1.CertValidity:   []byte(s.caCert.NotAfter.Format(time.UnixDate)),
 		},
 		Type: corev1.SecretTypeTLS,
 	}, nil
@@ -111,7 +113,7 @@ func (s *SelfManager) caCertForCluster(cluster *v1alpha1.NifiCluster, scheme *ru
 // Return a secret for specified User
 func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runtime.Scheme) (secret *corev1.Secret, err error) {
 
-	certPEM, keyPEM, err := s.generateUserCert(user)
+	cert, certPEM, keyPEM, err := s.generateUserCert(user)
 	if err != nil {
 		return nil, err
 	}
@@ -125,6 +127,7 @@ func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runt
 			v1alpha1.CoreCACertKey:  s.caCertPEM,
 			corev1.TLSCertKey:       certPEM,
 			corev1.TLSPrivateKeyKey: keyPEM,
+			v1alpha1.CertValidity:   []byte(cert.NotAfter.Format(time.UnixDate)),
 		},
 	}
 
@@ -150,7 +153,7 @@ func (s *SelfManager) clusterSecretForUser(user *v1alpha1.NifiUser, scheme *runt
 // Return  a special secret for the 'controller'
 func (s *SelfManager) clusterSecretForController() (secret *corev1.Secret, err error) {
 
-	certPEM, keyPEM, err := s.generateControllerCertPEM()
+	cert, certPEM, keyPEM, err := s.generateControllerCertPEM()
 	if err != nil {
 		return nil, err
 	}
@@ -164,6 +167,7 @@ func (s *SelfManager) clusterSecretForController() (secret *corev1.Secret, err e
 			v1alpha1.CoreCACertKey:  s.caCertPEM,
 			corev1.TLSCertKey:       certPEM,
 			corev1.TLSPrivateKeyKey: keyPEM,
+			v1alpha1.CertValidity:   []byte(cert.NotAfter.Format(time.UnixDate)),
 		},
 	}
 

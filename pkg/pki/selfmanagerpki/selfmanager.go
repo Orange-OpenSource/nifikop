@@ -125,7 +125,7 @@ func (s *SelfManager) setupCA() (err error) {
 	return
 }
 
-func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte, certPrivKeyPEM []byte, err error) {
+func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (cert *x509.Certificate, certPEM []byte, certPrivKeyPEM []byte, err error) {
 	// Subject with user
 	subjectUser := pkix.Name{
 		Country:            []string{"FR"},
@@ -138,7 +138,7 @@ func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte,
 	}
 
 	// set up our server certificate
-	cert := &x509.Certificate{
+	cert = &x509.Certificate{
 		SerialNumber: big.NewInt(2019),
 		Subject:      subjectUser,
 		NotBefore:    time.Now(),
@@ -192,9 +192,9 @@ func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (certPEM []byte,
 }
 
 // Generate controller CA
-func (s *SelfManager) generateControllerCertPEM() (certPEM []byte, certPrivKeyPEM []byte, err error) {
+func (s *SelfManager) generateControllerCertPEM() (cert *x509.Certificate, certPEM []byte, certPrivKeyPEM []byte, err error) {
 	// set up our server certificate
-	cert := &x509.Certificate{
+	cert = &x509.Certificate{
 		SerialNumber: big.NewInt(2019),
 		Subject:      subjectCA,
 		//IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},

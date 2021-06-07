@@ -294,6 +294,9 @@ const (
 	PeerPrivateKeyKey string = "peerKey"
 	// PasswordKey stores the JKS password
 	PasswordKey string = "password"
+
+	// CertValidity stores the validity (not after) of the SSL certificat
+	CertValidity string = "validity"
 )
 
 // GracefulActionState holds information about GracefulAction State

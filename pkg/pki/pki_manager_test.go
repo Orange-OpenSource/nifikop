@@ -17,6 +17,7 @@ package pki
 import (
 	"context"
 	"reflect"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"testing"
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
@@ -96,7 +97,7 @@ func TestGetPKIManager(t *testing.T) {
 
 	// Test selfmanager
 	cluster.Spec.ListenersConfig.SSLSecrets.PKIBackend = v1alpha1.PKIBackend("selfmanager")
-	certmanager = GetPKIManager(&mockClient{}, cluster)
+	certmanager = GetPKIManager(fake.NewFakeClientWithScheme(scheme.Scheme), cluster)
 	pkiType = reflect.TypeOf(certmanager).String()
 	expected = "*selfmanagerpki.SelfManager"
 	if pkiType != expected {

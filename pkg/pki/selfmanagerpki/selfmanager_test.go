@@ -45,7 +45,7 @@ func newMockCluster() *v1alpha1.NifiCluster {
 }
 
 func TestNew(t *testing.T) {
-	pkiManager := New(&mockClient{}, newMockCluster())
+	pkiManager := New(fake.NewFakeClientWithScheme(scheme.Scheme), newMockCluster())
 
 	if reflect.TypeOf(pkiManager) != reflect.TypeOf(&SelfManager{}) {
 		t.Error("Expected new selfmanager from New, got:", reflect.TypeOf(pkiManager))
@@ -53,23 +53,26 @@ func TestNew(t *testing.T) {
 }
 
 func TestGenerateUserCert(t *testing.T) {
-	manager := New(&mockClient{}, newMockCluster())
+	manager := New(fake.NewFakeClientWithScheme(scheme.Scheme), newMockCluster())
 
-	certPEM, certKeyPEM, err := manager.generateUserCert(newMockUser())
+	cert, certPEM, certKeyPEM, err := manager.generateUserCert(newMockUser())
 	if err != nil {
 		t.Error("Expected no error from generateUserCert, got:", err)
 	}
+	if cert == nil {
+		t.Error("Expected cert not to be nil")
+	}
 	if certPEM == nil {
-		t.Error("Expected caCert not to be nil")
+		t.Error("Expected certPEM not to be nil")
 	}
 	if certKeyPEM == nil {
-		t.Error("Expected cakey not to be nil")
+		t.Error("Expected certKeyPEM not to be nil")
 	}
 }
 
 func TestSetupCA(t *testing.T) {
 	manager := SelfManager{
-		client:  &mockClient{},
+		client:  fake.NewFakeClientWithScheme(scheme.Scheme),
 		cluster: newMockCluster(),
 	}
 
