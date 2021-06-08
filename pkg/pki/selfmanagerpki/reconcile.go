@@ -41,21 +41,21 @@ func reconcileSecret(ctx context.Context, log logr.Logger, client client.Client,
 	fmt.Printf("Checking vality of %s\n", secret.Name)
 	if checkCertValidity(obj) != true {
 		// Update this cert...
-		// TODO
+		fmt.Printf("Cert %s is expiring in less than 1 hour. Starting renewal of this cert\n", secret.Name)
+		// TODO CA Cert renewal
 	}
 	return nil
 }
 
 func checkCertValidity(obj *corev1.Secret) bool {
 	// Parse date from validity data
-	validty, err := time.Parse(time.UnixDate, string(obj.Data[v1alpha1.CertValidity]))
-
+	validity, err := time.Parse(time.UnixDate, string(obj.Data[v1alpha1.CertValidity]))
 	if err != nil {
 		return false
 	}
 
-	// Check if the cert is outdated
-	if time.Now().After(validty) {
+	// Check if the cert will be outdated in 1 hour
+	if time.Now().Add(time.Hour * -1).Before(validity) {
 		return false
 	}
 
