@@ -38,7 +38,7 @@ func reconcileSecret(ctx context.Context, log logr.Logger, client client.Client,
 		}
 		return client.Create(ctx, secret)
 	}
-	log.Info("Checking vality of %s", secret.Name)
+	fmt.Printf("Checking vality of %s\n", secret.Name)
 	if checkCertValidity(obj) != true {
 		// Update this cert...
 		// TODO
