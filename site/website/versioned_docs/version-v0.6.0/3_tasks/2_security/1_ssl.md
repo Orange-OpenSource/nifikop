@@ -159,10 +159,10 @@ to the `spec` like shown above, and then the user-secret will gain these additio
 
 ## Using Selfmanager
 
-If you choose to disable cert manager during helm installation - or also if you cannot deploy cert manager on your
-cluster - you can use the `NiFi operator` as a self signed CA with ther `Selfmanager` feature.
+If you choose to disable cert manager during helm installation - or simply if you cannot deploy cert manager on your
+cluster - you can use the `NiFi operator` as a self signed CA with the `Selfmanager` feature.
 
-To do so, set the `pkiBackend` option to `selfmanager` under the `sslSecrets` attribute of `Nificluster` yaml
+To do so, simply set the `pkiBackend` option to `selfmanager` under the `sslSecrets` attribute of `Nificluster` yaml
 definition.
 
 ```yaml 
@@ -177,15 +177,13 @@ spec:
       pkiBackend: "selfmanager"
 ```
 
-:::tip You can use the sample `Nificluster` YAML definition provided
-in `config/samples/tls_secured_nificluster_with_selfmanager.yaml`
+:::tip 
+You can use the sample `Nificluster` YAML definition provided in `config/samples/tls_secured_nificluster_with_selfmanager.yaml`
 :::
 
-This will make the operator handle all certs generation, creation and deletion process without having to manually deploy
+This will make the operator handle all required certs generation, creation and deletion process without having to manually deploy
 anything.
 
 :::warning
-`create` and `issuerRef` will - logically - no longer have an impact on the behavior of the operator. Also, please be
-aware the current version of the operator do not handle the certs renewal and so all certs emitted will have a 10 years
-expiration delay avoiding expired certs issues.
+`create` and `issuerRef` will - logically - no longer have an impact on the behavior of the operator.
 :::
