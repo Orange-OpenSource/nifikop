@@ -10,6 +10,12 @@
 
 ### Fixed Bugs
 
+## v0.6.2
+
+### Fixed Bugs
+
+- [PR #107](https://github.com/Orange-OpenSource/nifikop/pull/107) - **[Operator/NiFiCluster]** Correct the way to path PVCs.
+
 ## v0.6.1
 
 ### Added
