@@ -78,16 +78,32 @@ func (s SelfManager) FinalizePKI(ctx context.Context, logger logr.Logger) error 
 func (s *SelfManager) fullPKI(cluster *v1alpha1.NifiCluster, scheme *runtime.Scheme, externalHostnames []string) ([]runtime.Object, error) {
 	var objects []runtime.Object
 
+	// Ca cert
 	caSecret, err := s.caCertForCluster(cluster, scheme)
 	if err != nil {
 		return objects, err
 	}
 	objects = append(objects, caSecret)
 
+	// Controller cert
+	controllerSecret, err := s.clusterSecretForController()
+	if err != nil {
+		return objects, err
+	}
+	objects = append(objects, controllerSecret)
+
 	objects = append(objects, pkicommon.ControllerUserForCluster(cluster))
 	// Node "users"
 	for _, user := range pkicommon.NodeUsersForCluster(cluster, externalHostnames) {
+		// User
 		objects = append(objects, user)
+
+		// User's cert
+		userSecret, err := s.clusterSecretForUser(user, scheme)
+		if err != nil {
+			return objects, err
+		}
+		objects = append(objects, userSecret)
 	}
 	return objects, nil
 }
