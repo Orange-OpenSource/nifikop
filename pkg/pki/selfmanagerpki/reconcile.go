@@ -2,8 +2,10 @@ package selfmanagerpki
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
+	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -41,8 +43,17 @@ func reconcileSecret(ctx context.Context, log logr.Logger, client client.Client,
 	fmt.Printf("Checking validity of %s\n", secret.Name)
 	if checkCertValidity(obj) != true {
 		// Update this cert...
-		fmt.Printf("Cert %s is expiring in less than 1 hour. Starting renewal of this cert\n", secret.Name)
-		// TODO CA Cert renewal
+		fmt.Printf("Cert %s is expiring in less than 1 hour. Starting renewal of this cert.\n", secret.Name)
+
+		// Delete the secret to be recreated
+		if err = client.Delete(ctx, secret); err != nil {
+			return err
+		}
+
+		// If the secret is the CA Cert, return "renewal" error for a complete recreation
+		if secret.Name == fmt.Sprint(pkicommon.NodeCACertTemplate, cluster.Name) {
+			return errors.New("renewal")
+		}
 	}
 	return nil
 }
