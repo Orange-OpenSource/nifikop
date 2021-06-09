@@ -38,7 +38,7 @@ func reconcileSecret(ctx context.Context, log logr.Logger, client client.Client,
 		}
 		return client.Create(ctx, secret)
 	}
-	fmt.Printf("Checking vality of %s\n", secret.Name)
+	fmt.Printf("Checking validity of %s\n", secret.Name)
 	if checkCertValidity(obj) != true {
 		// Update this cert...
 		fmt.Printf("Cert %s is expiring in less than 1 hour. Starting renewal of this cert\n", secret.Name)
@@ -55,7 +55,7 @@ func checkCertValidity(obj *corev1.Secret) bool {
 	}
 
 	// Check if the cert will be outdated in 1 hour
-	if time.Now().Add(time.Hour * -1).Before(validity) {
+	if time.Now().Add(time.Hour * -1).After(validity) {
 		return false
 	}
 
