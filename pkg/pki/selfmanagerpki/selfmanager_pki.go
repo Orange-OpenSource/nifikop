@@ -50,9 +50,12 @@ func (s *SelfManager) CARenewal(ctx context.Context, logger logr.Logger, scheme 
 	for _, o := range resources {
 		switch o.(type) {
 		case *corev1.Secret:
-			// Delete all certs to be reconciled and recreated
-			if err = s.client.Delete(ctx, o.(*corev1.Secret)); err != nil {
-				return err
+			// If its not the CA Cert (already deleted) ...
+			if o.(*corev1.Secret).ObjectMeta.Name != fmt.Sprintf(pkicommon.NodeCACertTemplate, s.cluster.Name) {
+				// ... Then its a user / cert so delete it to be recreated
+				if err = s.client.Delete(ctx, o.(*corev1.Secret)); err != nil {
+					return err
+				}
 			}
 		case *v1alpha1.NifiUser:
 		default:

@@ -53,7 +53,7 @@ func reconcileSecret(ctx context.Context, log logr.Logger, client client.Client,
 		}
 
 		// If the secret is the CA Cert, return "renewal" error for a complete recreation
-		if secret.Name == fmt.Sprint(pkicommon.NodeCACertTemplate, cluster.Name) {
+		if secret.ObjectMeta.Name == fmt.Sprintf(pkicommon.NodeCACertTemplate, cluster.Name) {
 			return RenewalError
 		}
 	}
