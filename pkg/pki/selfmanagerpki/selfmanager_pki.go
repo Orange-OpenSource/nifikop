@@ -2,7 +2,6 @@ package selfmanagerpki
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
@@ -30,7 +29,7 @@ func (s *SelfManager) ReconcilePKI(ctx context.Context, logger logr.Logger, sche
 	for _, o := range resources {
 		if err := reconcile(ctx, logger, s.client, o, s.cluster); err != nil {
 			// If a renewal is required
-			if err == errors.New("renewal") {
+			if err == RenewalError {
 				logger.Info("CA Cert renewal detected. Recreate all certs")
 				return s.ReconcilePKI(ctx, logger, scheme, externalHostnames)
 			}
