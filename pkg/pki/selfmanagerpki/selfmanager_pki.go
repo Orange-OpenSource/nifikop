@@ -13,6 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"time"
@@ -31,9 +32,31 @@ func (s *SelfManager) ReconcilePKI(ctx context.Context, logger logr.Logger, sche
 			// If a renewal is required
 			if err == RenewalError {
 				logger.Info("CA Cert renewal detected. Recreate all certs")
-				return s.ReconcilePKI(ctx, logger, scheme, externalHostnames)
+				return s.CARenewal(ctx, logger, scheme, externalHostnames)
 			}
 			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *SelfManager) CARenewal(ctx context.Context, logger logr.Logger, scheme *runtime.Scheme, externalHostnames []string) error {
+	resources, err := s.fullPKI(s.cluster, scheme, externalHostnames)
+	if err != nil {
+		return err
+	}
+
+	for _, o := range resources {
+		switch o.(type) {
+		case *corev1.Secret:
+			// Delete all certs to be reconciled and recreated
+			if err = s.client.Delete(ctx, o.(*corev1.Secret)); err != nil {
+				return err
+			}
+		case *v1alpha1.NifiUser:
+		default:
+			panic(fmt.Sprintf("Invalid object type: %v", reflect.TypeOf(o)))
 		}
 	}
 
