@@ -19,15 +19,6 @@ import (
 	"time"
 )
 
-var subjectCA = pkix.Name{
-	OrganizationalUnit: []string{"NiFi"},
-	Country:            []string{"FR"},
-	Organization:       []string{"Orange"},
-	Locality:           []string{"Paris"},
-	StreetAddress:      []string{"78 Rue Olivier de Serres"},
-	PostalCode:         []string{"75015"},
-}
-
 type SelfManager struct {
 	pki.Manager
 	client  client.Client
@@ -81,6 +72,16 @@ func New(client client.Client, cluster *v1alpha1.NifiCluster) (manager *SelfMana
 
 // Sets up the caCert & caKey variables by setting up a new self signed CA
 func (s *SelfManager) setupCA() (err error) {
+	var subjectCA = pkix.Name{
+		OrganizationalUnit: []string{"NiFi"},
+		Country:            []string{"FR"},
+		Organization:       []string{"Orange"},
+		Locality:           []string{"Paris"},
+		StreetAddress:      []string{"78 Rue Olivier de Serres"},
+		PostalCode:         []string{"75015"},
+		CommonName:         "Nifikop Operator",
+	}
+
 	// set up our CA certificate
 	s.caCert = &x509.Certificate{
 		SerialNumber:          big.NewInt(2019),
@@ -195,10 +196,18 @@ func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (cert *x509.Cert
 // Generate controller CA
 func (s *SelfManager) generateControllerCertPEM() (cert *x509.Certificate, certPEM []byte, certPrivKeyPEM []byte, err error) {
 	// set up our server certificate
+	var subjectCA = pkix.Name{
+		OrganizationalUnit: []string{"NiFi"},
+		Country:            []string{"FR"},
+		Organization:       []string{"Orange"},
+		Locality:           []string{"Paris"},
+		StreetAddress:      []string{"78 Rue Olivier de Serres"},
+		PostalCode:         []string{"75015"},
+		CommonName:         "Nifikop Controller",
+	}
 	cert = &x509.Certificate{
 		SerialNumber: big.NewInt(2019),
 		Subject:      subjectCA,
-		//IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(0, 0, 397),
 		SubjectKeyId: []byte{1, 2, 3, 4, 6},
