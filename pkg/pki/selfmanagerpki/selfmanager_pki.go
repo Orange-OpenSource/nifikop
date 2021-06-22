@@ -116,6 +116,8 @@ func (s *SelfManager) fullPKI(cluster *v1alpha1.NifiCluster, scheme *runtime.Sch
 	}
 	objects = append(objects, caSecret)
 
+	objects = append(objects, pkicommon.ControllerUserForCluster(cluster))
+
 	// Controller cert
 	controllerSecret, err := s.clusterSecretForController()
 	if err != nil {
@@ -123,7 +125,6 @@ func (s *SelfManager) fullPKI(cluster *v1alpha1.NifiCluster, scheme *runtime.Sch
 	}
 	objects = append(objects, controllerSecret)
 
-	objects = append(objects, pkicommon.ControllerUserForCluster(cluster))
 	// Node "users"
 	for _, user := range pkicommon.NodeUsersForCluster(cluster, externalHostnames) {
 		// User

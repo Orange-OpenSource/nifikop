@@ -145,7 +145,6 @@ func (s *SelfManager) generateUserCert(user *v1alpha1.NifiUser) (cert *x509.Cert
 		Subject:      subjectUser,
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(0, 0, 397),
-		SubjectKeyId: []byte{1, 2, 3, 4, 6},
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		KeyUsage:     x509.KeyUsageDigitalSignature,
 	}
@@ -210,7 +209,6 @@ func (s *SelfManager) generateControllerCertPEM() (cert *x509.Certificate, certP
 		Subject:      subjectCA,
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(0, 0, 397),
-		SubjectKeyId: []byte{1, 2, 3, 4, 6},
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		KeyUsage:     x509.KeyUsageDigitalSignature,
 	}
