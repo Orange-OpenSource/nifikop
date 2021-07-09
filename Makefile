@@ -68,6 +68,13 @@ endif
 BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
 
+# Handle kuttl tests args
+ifeq (run-kuttl-test,$(firstword $(MAKECMDGOALS)))
+  KUTTL_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  $(eval $(KUTTL_ARGS):;@:)
+endif
+
+
 # ----
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
@@ -123,9 +130,23 @@ test-with-vendor: generate fmt vet manifests
 	test -f ${ENVTEST_ASSETS_DIR}/setup-envtest.sh || curl -sSLo ${ENVTEST_ASSETS_DIR}/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.7.0/hack/setup-envtest.sh
 	source ${ENVTEST_ASSETS_DIR}/setup-envtest.sh; fetch_envtest_tools $(ENVTEST_ASSETS_DIR); setup_envtest_env $(ENVTEST_ASSETS_DIR); go test -mod=vendor ./... -coverprofile cover.out; go tool cover -html=cover.out -o coverage.html
 
+# Run all kuttl tests
+run-kuttl-tests:
+# TODO Maybe test in KIND ? => 'startKIND: true', 'kindContainers: ...',
+# or maybe in K3D directly in CCI ?
+	kubectl kuttl test --config ./kuttl-tests/kuttl-test.yaml ./kuttl-tests
+
+# Run specific kuttl test
+run-kuttl-test:
+ifeq ($(KUTTL_ARGS),)
+	@echo "args are: Selfmanager-ssl-nificluster-scale-up-and-down, Certmanager-ssl-nificluster-scale-up-and-down, Simple-nificluster-scale-up-and-down" && exit 1
+endif
+	kubectl kuttl test --config ./kuttl-tests/kuttl-test.yaml ./kuttl-tests --test $(KUTTL_ARGS)
+
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet manifests
 	go run ./main.go
+
 
 # Install CRDs into a cluster
 install: manifests kustomize

@@ -1,0 +1,43 @@
+# Check Zookeeper
+apiVersion: v1
+kind: Pod
+metadata:
+  name: zookeeper-0
+  namespace: zookeeper
+status:
+  phase: Running
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: zookeeper-1
+  namespace: zookeeper
+status:
+  phase: Running
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: zookeeper-2
+  namespace: zookeeper
+status:
+  phase: Running
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+  namespace: zookeeper
+
+---
+# Check Nifikop operator Pod
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: nifikop
+status:
+  phase: Running
+  containerStatuses: # Needed ?
+    - name: nifikop
+      ready: true
