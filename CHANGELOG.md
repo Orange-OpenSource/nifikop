@@ -10,6 +10,9 @@
 
 ### Fixed Bugs
 
+- [PR #113](https://github.com/Orange-OpenSource/nifikop/pull/113) - **[Fix/NiFiDataflow]** Simple work around to avoid null pointer dereferencing on nifi side.
+
+
 ## v0.6.2
 
 ### Fixed Bugs
