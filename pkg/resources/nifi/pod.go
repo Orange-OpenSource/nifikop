@@ -520,8 +520,7 @@ exec bin/nifi.sh run`, resolveIp, removesFileAction)}
 	}
 }
 
-
-func (r *Reconciler) injectAdditionalEnvVars(containers []corev1.Container)  (injectedContainers []corev1.Container) {
+func (r *Reconciler) injectAdditionalEnvVars(containers []corev1.Container) (injectedContainers []corev1.Container) {
 
 	for _, container := range containers {
 		container.Env = append(container.Env, r.NifiCluster.Spec.ReadOnlyConfig.AdditionalSharedEnvs...)
