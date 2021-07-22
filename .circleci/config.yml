@@ -367,7 +367,7 @@ workflows:
       - operator/build-operator:
           name: build-nifikop
           requires:
-            - kuttl-tests-nifikop
+            - unit-test-nifikop
           <<: *everytime_filter
 
 #      - operator/report-sonar:
