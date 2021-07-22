@@ -221,8 +221,17 @@ orbs:
         resource_class: large
     jobs:
       e2e-orb:
+        parameters:
+          test_name:
+            description: name of the kuttl test to run
+            type: string
+            default: Simple-nificluster-scale-up-and-down
+          operatorDir:
+            type: string
+            description: relative path where the build must be run
+            default: nifikop
         executor: vm
-        working_directory: /home/circleci/nifikop
+        working_directory: /home/circleci/<< parameters.operatorDir >>
         environment:
           K3S_IMAGE: rancher/k3s:v1.21.1-k3s1
           K8S_VERSION: v1.20.6
@@ -258,12 +267,12 @@ orbs:
                 chmod +x /usr/local/bin/kubectl-kuttl
           - attach_workspace: # Attach artifact from workdir
               at: /home/circleci/nifikop
+          # Acceptance test
           - run:
-              name: Kuttl tests
+              name: Operator acceptance test
               no_output_timeout: 1200
               command: |
-                pwd
-                make run-kuttl-tests
+                make run-kuttl-test << parameters.test_name >>
 
 jobs:
   deploy-website:
@@ -335,10 +344,25 @@ workflows:
           <<: *everytime_filter
 
       - k3d/e2e-orb:
-          name: kuttl-tests-nifikop
+          name: Simple NiFicluster Scale Up & Down
+          test_name: Simple-nificluster-scale-up-and-down
           requires:
             - unit-test-nifikop
           <<: *everytime_filter
+          
+      - k3d/e2e-orb:
+          name: SSL SelfManager Scale Up & Down
+          test_name: Selfmanager-ssl-nificluster-scale-up-and-down
+          requires:
+            - unit-test-nifikop
+          <<: *everytime_filter
+
+#      - k3d/e2e-orb:
+#          name: SSL CertManager Scale Up & Down
+#          test_name: Certmanager-ssl-nificluster-scale-up-and-down
+#          requires:
+#            - unit-test-nifikop
+#          <<: *everytime_filter
 
       - operator/build-operator:
           name: build-nifikop
