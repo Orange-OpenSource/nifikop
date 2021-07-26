@@ -273,9 +273,13 @@ const (
 	TLSCert string = "tls.crt"
 	// TLSCert is where a private key is stored in a user secret when requested
 	TLSKey string = "tls.key"
-	// TLSJKSKeyStore is where a JKS keystore is stored in a user secret when requested
+	// TLSP12KeyStore is where a PKCS12 or JKS keystore is stored without the extension in a secret
+	TLSKeyStore string = "keystore"
+	// TLSP12TrustStore is where a PKCS12 or JKS truststore is stored without the extension in a secret
+	TLSTrustStore string = "truststore"
+	// TLSJKSKeyStore is where a JKS keystore is stored in a secret
 	TLSJKSKeyStore string = "keystore.jks"
-	// TLSJKSTrustStore is where a JKS truststore is stored in a user secret when requested
+	// TLSJKSTrustStore is where a JKS truststore is stored in a secret
 	TLSJKSTrustStore string = "truststore.jks"
 	// CoreCACertKey is where ca ceritificates are stored in user certificates
 	CoreCACertKey string = "ca.crt"

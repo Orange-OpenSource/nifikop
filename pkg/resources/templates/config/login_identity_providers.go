@@ -78,33 +78,45 @@ var LoginIdentityProvidersTemplate = `<?xml version="1.0" encoding="UTF-8" stand
             for. If the user never logs out, they will be required to log back in following
             this duration.
     -->
-    {{if .LdapConfiguration.Enabled}}
+    {{ if .LdapConfiguration.Enabled }}
     <provider>
         <identifier>ldap-provider</identifier>
         <class>org.apache.nifi.ldap.LdapProvider</class>
-        <property name="Authentication Strategy">START_TLS</property>
-        <property name="Manager DN"></property>
-        <property name="Manager Password"></property>
+        <property name="Authentication Strategy">{{ or .LdapConfiguration.AuthStrategy "START_TLS" }}</property>
+        <property name="Manager DN">{{ .LdapConfiguration.ManagerDN }}</property>
+        <property name="Manager Password">{{ .LdapConfiguration.ManagerPassword }}</property>
+        {{ if and .LdapConfiguration.Tls.ClientAuth (ne .LdapConfiguration.Tls.ClientAuth "NONE") }}
+        <property name="TLS - Keystore">{{ .LdapKeystorePath }}/{{ .LdapKeystoreFile }}</property>
+        <property name="TLS - Keystore Password">{{ .LdapConfiguration.Tls.Keystore.Password }}</property>
+        <property name="TLS - Keystore Type">{{ or .LdapConfiguration.Tls.Keystore.Type "JKS" }}</property>
+        {{- else }}
         <property name="TLS - Keystore"></property>
         <property name="TLS - Keystore Password"></property>
         <property name="TLS - Keystore Type"></property>
+        {{- end }}
+        {{- if .LdapConfiguration.Tls.Keystore }}
+        <property name="TLS - Truststore">{{ .LdapKeystorePath }}/{{ .LdapTruststoreFile }}</property>
+        <property name="TLS - Truststore Password">{{ .LdapConfiguration.Tls.Keystore.Password }}</property>
+        <property name="TLS - Truststore Type">{{ or .LdapConfiguration.Tls.Keystore.Type "JKS" }}</property>
+        {{- else }}
         <property name="TLS - Truststore"></property>
         <property name="TLS - Truststore Password"></property>
         <property name="TLS - Truststore Type"></property>
-        <property name="TLS - Client Auth"></property>
-        <property name="TLS - Protocol"></property>
-        <property name="TLS - Shutdown Gracefully"></property>
+        {{- end }}
+        <property name="TLS - Client Auth">{{ .LdapConfiguration.Tls.ClientAuth }}</property>
+        <property name="TLS - Protocol">{{ .LdapConfiguration.Tls.Protocol }}</property>
+        <property name="TLS - Shutdown Gracefully">{{ .LdapConfiguration.Tls.ShutdownGracefully }}</property>
         
-        <property name="Referral Strategy">FOLLOW</property>
-        <property name="Connect Timeout">10 secs</property>
-        <property name="Read Timeout">10 secs</property>
-        <property name="Url">{{.LdapConfiguration.Url}}</property>
-        <property name="User Search Base">{{.LdapConfiguration.SearchBase}}</property>
-        <property name="User Search Filter">{{.LdapConfiguration.SearchFilter}}</property>
-        <property name="Identity Strategy">USE_DN</property>
+        <property name="Referral Strategy">{{ or .LdapConfiguration.ReferralStrategy "FOLLOW" }}</property>
+        <property name="Connect Timeout">{{ or .LdapConfiguration.ConnectTimeout "10" }} secs</property>
+        <property name="Read Timeout">{{ or .LdapConfiguration.ReadTimeout "10" }} secs</property>
+        <property name="Url">{{ .LdapConfiguration.Url }}</property>
+        <property name="User Search Base">{{ .LdapConfiguration.SearchBase }}</property>
+        <property name="User Search Filter">{{ or .LdapConfiguration.SearchFilter "cn={0}" }}</property>
+        <property name="Identity Strategy">{{ or .LdapConfiguration.IdentityStrategy "USE_DN" }}</property>
         <property name="Authentication Expiration">12 hours</property>
     </provider>
-    {{end}}
+    {{ end }}
     <!--
         Identity Provider for users logging in with username/password against a Kerberos KDC server.
         'Default Realm' - Default realm to provide when user enters incomplete user principal (i.e. NIFI.APACHE.ORG).

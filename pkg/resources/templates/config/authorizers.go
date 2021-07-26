@@ -29,10 +29,75 @@ var AuthorizersTemplate = `{{- $nodeList := .NodeList }}
         <property name="Initial User Identity {{ $i }}">{{ $host }}</property>
 {{- end }}
     </userGroupProvider>
+{{ if .LdapConfiguration.LdapSync }}
+    <userGroupProvider>
+        <identifier>ldap-user-group-provider</identifier>
+        <class>org.apache.nifi.ldap.tenants.LdapUserGroupProvider</class>
+        <property name="Authentication Strategy">{{ or .LdapConfiguration.AuthStrategy "START_TLS"}}</property>
+        <property name="Manager DN">{{ .LdapConfiguration.ManagerDN}}</property>
+        <property name="Manager Password">{{ .LdapConfiguration.ManagerPassword }}</property>
+        {{ if and .LdapConfiguration.Tls.ClientAuth (ne .LdapConfiguration.Tls.ClientAuth "NONE")}}
+        <property name="TLS - Keystore">{{ .LdapKeystorePath }}/{{ .LdapKeystoreFile }}</property>
+        <property name="TLS - Keystore Password">{{ .LdapConfiguration.Tls.Keystore.Password }}</property>
+        <property name="TLS - Keystore Type">{{ or .LdapConfiguration.Tls.Keystore.Type "JKS" }}</property>
+        {{- else }}
+        <property name="TLS - Keystore"></property>
+        <property name="TLS - Keystore Password"></property>
+        <property name="TLS - Keystore Type"></property>
+        {{- end }}
+        {{- if .LdapConfiguration.Tls.Keystore }}
+        <property name="TLS - Truststore">{{ .LdapKeystorePath }}/{{ .LdapTruststoreFile }}</property>
+        <property name="TLS - Truststore Password">{{ .LdapConfiguration.Tls.Keystore.Password }}</property>
+        <property name="TLS - Truststore Type">{{ or .LdapConfiguration.Tls.Keystore.Type "JKS" }}</property>
+        {{- else }}
+        <property name="TLS - Truststore"></property>
+        <property name="TLS - Truststore Password"></property>
+        <property name="TLS - Truststore Type"></property>
+        {{- end }}
+        <property name="TLS - Client Auth">{{ .LdapConfiguration.Tls.ClientAuth }}</property>
+        <property name="TLS - Protocol">{{ .LdapConfiguration.Tls.Protocol }}</property>
+        <property name="TLS - Shutdown Gracefully">{{ .LdapConfiguration.Tls.ShutdownGracefully }}</property>
+
+        <property name="Referral Strategy">{{ or .LdapConfiguration.ReferralStrategy "FOLLOW" }}</property>
+        <property name="Connect Timeout">{{ or .LdapConfiguration.ConnectTimeout "10" }} secs</property>
+        <property name="Read Timeout">{{ or .LdapConfiguration.ReadTimeout "10" }} secs</property>
+
+        <property name="Url">{{ .LdapConfiguration.Url }}</property>
+        <property name="Page Size">{{ .LdapConfiguration.PageSize }}</property>
+        <property name="Sync Interval">{{ or .LdapConfiguration.SyncInterval "30" }} mins</property>
+
+        <property name="User Search Base">{{ .LdapConfiguration.User.SearchBase }}</property>
+        <property name="User Object Class">{{ or .LdapConfiguration.User.ObjectClass "person" }}</property>
+        <property name="User Search Scope">{{ or .LdapConfiguration.User.SearchScope "ONE_LEVEL" }}</property>
+        <property name="User Search Filter">{{ .LdapConfiguration.User.SearchFilter }}</property>
+        <property name="User Identity Attribute">{{ .LdapConfiguration.User.NameAttr }}</property>
+        <property name="User Group Name Attribute">{{ .LdapConfiguration.User.GroupAttr }}</property>
+        <property name="User Group Name Attribute - Referenced Group Attribute">{{ .LdapConfiguration.User.ReferencedAttr }}</property>
+
+        <property name="Group Search Base">{{ .LdapConfiguration.Group.SearchBase }}</property>
+        <property name="Group Object Class">{{ or .LdapConfiguration.Group.ObjectClass "group" }}</property>
+        <property name="Group Search Scope">{{ or .LdapConfiguration.Group.SearchScope "ONE_LEVEL" }}</property>
+        <property name="Group Search Filter">{{ .LdapConfiguration.Group.SearchFilter }}</property>
+        <property name="Group Name Attribute">{{ .LdapConfiguration.Group.NameAttr }}</property>
+        <property name="Group Member Attribute">{{ .LdapConfiguration.Group.GroupAttr }}</property>
+        <property name="Group Member Attribute - Referenced Group Attribute">{{ .LdapConfiguration.Group.ReferencedAttr }}</property>
+    </userGroupProvider>
+
+    <userGroupProvider>
+       <identifier>composite-configurable-user-group-provider</identifier>
+       <class>org.apache.nifi.authorization.CompositeConfigurableUserGroupProvider</class>
+       <property name="Configurable User Group Provider">file-user-group-provider</property>
+       <property name="User Group Provider 1">ldap-user-group-provider</property>
+    </userGroupProvider>
+{{ end }}
     <accessPolicyProvider>
         <identifier>file-access-policy-provider</identifier>
         <class>org.apache.nifi.authorization.FileAccessPolicyProvider</class>
+{{ if .LdapConfiguration.LdapSync }}
+        <property name="User Group Provider">composite-configurable-user-group-provider</property>
+{{ else }}
         <property name="User Group Provider">file-user-group-provider</property>
+{{ end }}
         <property name="Authorizations File">../data/authorizations.xml</property>
         <property name="Initial Admin Identity">{{ .ControllerUser }}</property>
         <property name="Legacy Authorized Users File"></property>
