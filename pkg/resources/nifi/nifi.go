@@ -58,6 +58,8 @@ const (
 	serverKeystorePath   = "/var/run/secrets/java.io/keystores/server"
 	clientKeystoreVolume = "client-ks-files"
 	clientKeystorePath   = "/var/run/secrets/java.io/keystores/client"
+	ldapKeystoreVolume   = "ldap-ks-files"
+	ldapKeystorePath     = "/var/run/secrets/java.io/keystores/ldap"
 )
 
 // Reconciler implements the Component Reconciler
