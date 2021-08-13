@@ -103,9 +103,9 @@ var LoginIdentityProvidersTemplate = `<?xml version="1.0" encoding="UTF-8" stand
         <property name="TLS - Truststore Password"></property>
         <property name="TLS - Truststore Type"></property>
         {{- end }}
-        <property name="TLS - Client Auth">{{ or .LdapConfiguration.Tls.ClientAuth "NONE" }}</property>
-        <property name="TLS - Protocol">{{ or .LdapConfiguration.Tls.Protocol "TLS" }}</property>
-        <property name="TLS - Shutdown Gracefully">{{ or .LdapConfiguration.Tls.ShutdownGracefully "false" }}</property>
+        <property name="TLS - Client Auth">{{ .LdapConfiguration.Tls.ClientAuth }}</property>
+        <property name="TLS - Protocol">{{ .LdapConfiguration.Tls.Protocol }}</property>
+        <property name="TLS - Shutdown Gracefully">{{ .LdapConfiguration.Tls.ShutdownGracefully }}</property>
         
         <property name="Referral Strategy">{{ or .LdapConfiguration.ReferralStrategy "FOLLOW" }}</property>
         <property name="Connect Timeout">{{ or .LdapConfiguration.ConnectTimeout "10" }} secs</property>
@@ -114,7 +114,7 @@ var LoginIdentityProvidersTemplate = `<?xml version="1.0" encoding="UTF-8" stand
         <property name="User Search Base">{{ .LdapConfiguration.SearchBase }}</property>
         <property name="User Search Filter">{{ or .LdapConfiguration.SearchFilter "cn={0}" }}</property>
         <property name="Identity Strategy">{{ or .LdapConfiguration.IdentityStrategy "USE_DN" }}</property>
-        <property name="Authentication Expiration">{{ or .LdapConfiguration.AuthExpiration "12"}} hours</property>
+        <property name="Authentication Expiration">12 hours</property>
     </provider>
     {{ end }}
     <!--

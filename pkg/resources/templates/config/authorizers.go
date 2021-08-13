@@ -54,9 +54,9 @@ var AuthorizersTemplate = `{{- $nodeList := .NodeList }}
         <property name="TLS - Truststore Password"></property>
         <property name="TLS - Truststore Type"></property>
         {{- end }}
-        <property name="TLS - Client Auth">{{ or .LdapConfiguration.Tls.ClientAuth "NONE" }}</property>
-        <property name="TLS - Protocol">{{ or .LdapConfiguration.Tls.Protocol "TLS" }}</property>
-        <property name="TLS - Shutdown Gracefully">{{ or .LdapConfiguration.Tls.ShutdownGracefully "false" }}</property>
+        <property name="TLS - Client Auth">{{ .LdapConfiguration.Tls.ClientAuth }}</property>
+        <property name="TLS - Protocol">{{ .LdapConfiguration.Tls.Protocol }}</property>
+        <property name="TLS - Shutdown Gracefully">{{ .LdapConfiguration.Tls.ShutdownGracefully }}</property>
 
         <property name="Referral Strategy">{{ or .LdapConfiguration.ReferralStrategy "FOLLOW" }}</property>
         <property name="Connect Timeout">{{ or .LdapConfiguration.ConnectTimeout "10" }} secs</property>
@@ -66,21 +66,21 @@ var AuthorizersTemplate = `{{- $nodeList := .NodeList }}
         <property name="Page Size">{{ .LdapConfiguration.PageSize }}</property>
         <property name="Sync Interval">{{ or .LdapConfiguration.SyncInterval "30" }} mins</property>
 
-        <property name="User Search Base">{{ .LdapConfiguration.UserSync.SearchBase }}</property>
-        <property name="User Object Class">{{ or .LdapConfiguration.UserSync.ObjectClass "person" }}</property>
-        <property name="User Search Scope">{{ or .LdapConfiguration.UserSync.SearchScope "ONE_LEVEL" }}</property>
-        <property name="User Search Filter">{{ .LdapConfiguration.UserSync.SearchFilter }}</property>
-        <property name="User Identity Attribute">{{ .LdapConfiguration.UserSync.NameAttr }}</property>
-        <property name="User Group Name Attribute">{{ .LdapConfiguration.UserSync.GroupAttr }}</property>
-        <property name="User Group Name Attribute - Referenced Group Attribute">{{ .LdapConfiguration.UserSync.ReferencedAttr }}</property>
+        <property name="User Search Base">{{ .LdapConfiguration.User.SearchBase }}</property>
+        <property name="User Object Class">{{ or .LdapConfiguration.User.ObjectClass "person" }}</property>
+        <property name="User Search Scope">{{ or .LdapConfiguration.User.SearchScope "ONE_LEVEL" }}</property>
+        <property name="User Search Filter">{{ .LdapConfiguration.User.SearchFilter }}</property>
+        <property name="User Identity Attribute">{{ .LdapConfiguration.User.NameAttr }}</property>
+        <property name="User Group Name Attribute">{{ .LdapConfiguration.User.GroupAttr }}</property>
+        <property name="User Group Name Attribute - Referenced Group Attribute">{{ .LdapConfiguration.User.ReferencedAttr }}</property>
 
-        <property name="Group Search Base">{{ .LdapConfiguration.GroupSync.SearchBase }}</property>
-        <property name="Group Object Class">{{ or .LdapConfiguration.GroupSync.ObjectClass "group" }}</property>
-        <property name="Group Search Scope">{{ or .LdapConfiguration.GroupSync.SearchScope "ONE_LEVEL" }}</property>
-        <property name="Group Search Filter">{{ .LdapConfiguration.GroupSync.SearchFilter }}</property>
-        <property name="Group Name Attribute">{{ .LdapConfiguration.GroupSync.NameAttr }}</property>
-        <property name="Group Member Attribute">{{ .LdapConfiguration.GroupSync.GroupAttr }}</property>
-        <property name="Group Member Attribute - Referenced Group Attribute">{{ .LdapConfiguration.GroupSync.ReferencedAttr }}</property>
+        <property name="Group Search Base">{{ .LdapConfiguration.Group.SearchBase }}</property>
+        <property name="Group Object Class">{{ or .LdapConfiguration.Group.ObjectClass "group" }}</property>
+        <property name="Group Search Scope">{{ or .LdapConfiguration.Group.SearchScope "ONE_LEVEL" }}</property>
+        <property name="Group Search Filter">{{ .LdapConfiguration.Group.SearchFilter }}</property>
+        <property name="Group Name Attribute">{{ .LdapConfiguration.Group.NameAttr }}</property>
+        <property name="Group Member Attribute">{{ .LdapConfiguration.Group.GroupAttr }}</property>
+        <property name="Group Member Attribute - Referenced Group Attribute">{{ .LdapConfiguration.Group.ReferencedAttr }}</property>
     </userGroupProvider>
 
     <userGroupProvider>
