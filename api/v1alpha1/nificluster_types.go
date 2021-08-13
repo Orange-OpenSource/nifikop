@@ -456,16 +456,15 @@ type LdapConfiguration struct {
 	// If set to true, nifi will sync users and group from ldap database
 	LdapSync bool `json:"ldapSync,omitempty"`
 	// Ldap User Spec
-	User LdapSyncSpec `json:"user,omitempty"`
+	UserSync LdapSyncSpec `json:"user,omitempty"`
 	// Ldap Group Spec
-	Group LdapSyncSpec `json:"group,omitempty"`
+	GroupSync LdapSyncSpec `json:"group,omitempty"`
 }
 
 type LdapSyncSpec struct {
 	// Base DN for searching for users or groups (i.e. ou=users,o=nifi ; ou=groups,o=nifi). Required to search users or groups.
 	SearchBase string `json:"searchBase,omitempty"`
-	// Filter for searching for users or groups against the 'User/Group Search Base'.
-	// The user specified name is inserted into '{0}' (sAMAccountName={0}).
+	// Filter for searching for users or groups against the 'User/Group Search Base'. Optional.
 	SearchFilter string `json:"searchFilter,omitempty"`
 	// Search scope for searching users or groups (ONE_LEVEL, OBJECT, or SUBTREE). Required if searching users or groups.
 	SearchScope string `json:"searchScope,omitempty"`

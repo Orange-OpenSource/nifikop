@@ -142,9 +142,63 @@ spec:
 |Field|Type|Description|Required|Default|
 |-----|----|-----------|--------|--------|
 |enabled|boolean| if set to true, we will enable ldap usage into nifi.properties configuration.|No| false |
+|managerDN|string| The DN of the manager that is used to bind to the LDAP server to search for users|No| "" |
+[managerPassword|string| The password of the manager that is used to bind to the LDAP server to search for users|No| "" |
+|authStrategy|string|How the connection to the LDAP server is authenticated. Possible values are ANONYMOUS, SIMPLE, LDAPS, or START_TLS.|No|"START_TLS"|
+|tls|LdapTlsConfig(#TlsLdapConfig)|TLS Configuration|No| nil |
+|referralStrategy|string|Strategy for handling referrals. Possible values are FOLLOW, IGNORE, THROW.|No|"FOLLOW"|
+|connectTimeout|int|Duration of connect timeout (secs).|No|10|
+|readTimeout|int|Duration of read timeout (secs).|No|10|
 |url|string| space-separated list of URLs of the LDAP servers (i.e. ldap://${hostname}:${port}).|No| "" |
+|identityStrategy|String|Strategy to identify users. Possible values are USE_DN and USE_USERNAME. USE_DN will use the full DN of the user entry if possible. USE_USERNAME will use the username the user logged in with.|No|"USE_DN"|
+|authExpiration|int|The duration of how long the user authentication is valid for. If the user never logs out, they will be required to log back in following this duration (hours)|No|12|
+|pageSize|int|The page size when retrieving users and groups. If not specified, no paging is performed.|No|""|
 |searchBase|string| base DN for searching for users (i.e. CN=Users,DC=example,DC=com).|No| "" |
 |searchFilter|string| Filter for searching for users against the 'User Search Base'. (i.e. sAMAccountName={0}). The user specified name is inserted into '{0}'.|No| "" |
+|ldapSync|bool|If set to true, nifi will sync users and group from ldap database|No| false |
+|userSync|LdapSyncSpec(#LdapSyncSpec User)|Ldap User Sync Spec|Yes| nil |
+|groupSync|LdapSyncSpec(#LdapSyncSpec Group)|Ldap Group Sync Spec|Yes| nil |
+
+## LdapTlsConfig
+
+|Field|Type|Description|Required|Default|
+|-----|----|-----------|--------|--------|
+|keystore|LdapKeystore(#LdapKeystore)|TLS LDAP Keystore|No| nil |
+|clientAuth|string|Client authentication policy when connecting to LDAP using LDAPS or START_TLS. Possible values are REQUIRED, WANT, NONE|No|NONE|
+|protocol|string|Protocol to use when connecting to LDAP using LDAPS or START_TLS. (i.e. TLS, TLSv1.1, TLSv1.2, etc).|No| "TLS" |
+|shutdownGracefully|bool|Specifies whether the TLS should be shut down gracefully before the target context is closed. Defaults to false.|No|false|
+
+## LdapKeystore
+
+|Field|Type|Description|Required|Default|
+|-----|----|-----------|--------|--------|
+|secretName|string|SecretName should contain ca certs|Yes| "" |
+|password|string|Password for the Keystore and Truststore that is used when connecting to LDAP using LDAPS or START_TLS.|Yes| "" |
+|type|string|Type of the Keystore and Truststore that is used when connecting to LDAP using LDAPS or START_TLS (i.e. JKS or PKCS12).|No| "JKS" |
+
+## LdapSyncSpec User
+
+|Field|Type|Description|Required|Default|
+|-----|----|-----------|--------|--------|
+|searchBase|string|Base DN for searching for users (i.e. ou=users,o=nifi). Required to search users.|Yes| "" |
+|searchFilter|string|Filter for searching for users against the 'User Search Base'.|No| "" |
+|searchScope|string|Search scope for searching users (ONE_LEVEL, OBJECT, or SUBTREE). Required if searching users.|No|"ONE_LEVEL"|
+|objectClass|string|Object class for identifying users (i.e. person). Required if searching users.|No| "person" |
+|nameAttr|string|Attribute to use to extract user identity (i.e. cn). Optional. If not set, the entire DN is used.|No|""|
+|groupAttr|string|Attribute to use to define group membership (i.e. memberof). Optional. If not set group membership will not be calculated through the users. Will rely on group membership being defined through Group Member Attribute if set. The value of this property is the name of the attribute in the user ldap entry that associates them with a group. The value of that user attribute could bea dn or group name for instance. What value is expected is configured in the User Group Name Attribute - Referenced Group Attribute. |No| "" |
+|referencedAttr|string|If blank, the value of the attribute defined in User Group Name Attribute is expected to be the full dn of the group. If not blank, this property will define the attribute of the group ldap entry that the value of the attribute defined in User Group Name Attribute is referencing (i.e. name). Use of this property requires that Group Search Base is also configured.|No| "" |
+
+## LdapSyncSpec Group
+
+|Field|Type|Description|Required|Default|
+|-----|----|-----------|--------|--------|
+|searchBase|string|Base DN for searching for groups (i.e. ou=groups,o=nifi). Required to search groups.|Yes| "" |
+|searchFilter|string|Filter for searching for groups against the 'Group Search Base'.|No| "" |
+|searchScope|string|Search scope for searching groups (ONE_LEVEL, OBJECT, or SUBTREE). Required if searching groups.||"ONE_LEVEL"|
+|objectClass|string|Object class for identifying groups (i.e. groupOfNames). Required if searching groups.|No|"group"|
+|nameAttr|string|Attribute to use to extract group name (i.e. cn). Optional. If not set, the entire DN is used.|No| |
+|groupAttr|string|Attribute to use to define group membership (i.e. member). Optional. If not set group membership will not be calculated through the groups. Will rely on group membership being defined through 'User Group Name Attribute' if set. The value of this property is the name of the attribute in the group ldap entry that associates them with a user. The value of that group attribute could be a dn or memberUid for instance. What value is expected is configured in the 'Group Member Attribute - Referenced User Attribute'. (i.e. member: cn=User 1,ou=users,o=nifi vs. memberUid: user1)|No| "" |
+|referencedAttr|string|If blank, the value of the attribute defined in 'Group Member Attribute' is expected to be the full dn of the user. If not blank, this property will define the attribute of the user ldap entry that the value of the attribute defined in 'Group Member Attribute' is referencing (i.e. uid). Use of this property requires that 'User Search Base' is also configured. (i.e. member: cn=User 1,ou=users,o=nifi vs. memberUid: user1)|No| "" |
 
 ## NifiClusterTaskSpec
 
