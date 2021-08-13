@@ -93,11 +93,11 @@ var AuthorizersTemplate = `{{- $nodeList := .NodeList }}
     <accessPolicyProvider>
         <identifier>file-access-policy-provider</identifier>
         <class>org.apache.nifi.authorization.FileAccessPolicyProvider</class>
-{{ if .LdapConfiguration.LdapSync }}
+{{- if .LdapConfiguration.LdapSync }}
         <property name="User Group Provider">composite-configurable-user-group-provider</property>
-{{ else }}
+{{- else }}
         <property name="User Group Provider">file-user-group-provider</property>
-{{ end }}
+{{- end }}
         <property name="Authorizations File">../data/authorizations.xml</property>
         <property name="Initial Admin Identity">{{ .ControllerUser }}</property>
         <property name="Legacy Authorized Users File"></property>
