@@ -1265,6 +1265,11 @@ spec:
                   authStrategy:
                     description: How the connection to the LDAP server is authenticated.
                       Possible values are ANONYMOUS, SIMPLE, LDAPS, or START_TLS.
+                    enum:
+                    - ANONYMOUS
+                    - SIMPLE
+                    - LDAPS
+                    - START_TLS
                     type: string
                   connectTimeout:
                     description: Duration of connect timeout (secs).
@@ -1273,7 +1278,7 @@ spec:
                     description: If set to true, we will enable ldap usage into nifi.properties
                       configuration.
                     type: boolean
-                  group:
+                  groupSync:
                     description: Ldap Group Spec
                     properties:
                       groupAttr:
@@ -1299,14 +1304,13 @@ spec:
                           1,ou=users,o=nifi vs. memberUid: user1)'
                         type: string
                       nameAttr:
-                        description: Attribute to use to extract user identity or
+                        description: Attribute to use to extract 
                           group name (i.e. cn). Optional. If not set, the entire DN
                           is used.
                         type: string
                       objectClass:
-                        description: Object class for identifying users or groups
-                          (i.e. person ; groupOfNames). Required if searching users
-                          or groups.
+                        description: Object class for identifying groups 
+                          (i.e. groupOfNames). Required if searching groups.
                         type: string
                       referencedAttr:
                         description: 'User Group Name Attribute - Referenced Group
@@ -1327,19 +1331,24 @@ spec:
                           memberUid: user1)'
                         type: string
                       searchBase:
-                        description: Base DN for searching for users or groups (i.e.
-                          ou=users,o=nifi ; ou=groups,o=nifi). Required to search
-                          users or groups.
+                        description: Base DN for searching for groups (i.e.
+                          ou=users,o=nifi ; ou=groups,o=nifi). Required to search 
+                          groups.
                         type: string
                       searchFilter:
-                        description: Filter for searching for users or groups against
-                          the 'User/Group Search Base'. The user specified name is
-                          inserted into '{0}' (sAMAccountName={0}).
+                        description: Filter for searching for groups against the 'Group Search Base'. Optional.
                         type: string
                       searchScope:
-                        description: Search scope for searching users or groups (ONE_LEVEL,
-                          OBJECT, or SUBTREE). Required if searching users or groups.
+                        description: Search scope for searching groups (ONE_LEVEL,
+                          OBJECT, or SUBTREE). Required if searching groups.
+                        enum:
+                        - ONE_LEVEL
+                        - OBJECT
+                        - SUBTREE
                         type: string
+                    required:
+                    - searchBase
+                    - searchFilter
                     type: object
                   identityStrategy:
                     description: Strategy to identify users. Possible values are USE_DN
@@ -1393,6 +1402,10 @@ spec:
                         description: Client authentication policy when connecting
                           to LDAP using LDAPS or START_TLS. Possible values are REQUIRED,
                           WANT, NONE
+                        enum:
+                        - REQUIRED
+                        - WANT
+                        - NONE
                         type: string
                       keystore:
                         description: TLS LDAP Keystore
@@ -1412,17 +1425,23 @@ spec:
                             type: string
                         required:
                         - secretName
+                        - password
                         type: object
                       protocol:
                         description: Protocol to use when connecting to LDAP using
                           LDAPS or START_TLS. (i.e. TLS, TLSv1.1, TLSv1.2, etc).
+                        enum:
+                        - TLS
+                        - TLSv1.1
+                        - TLSv1.2
+                        - TLSv1.3
                         type: string
                     type: object
                   url:
                     description: Space-separated list of URLs of the LDAP servers
                       (i.e. ldap://<hostname>:<port>).
                     type: string
-                  user:
+                  userSync:
                     description: Ldap User Spec
                     properties:
                       groupAttr:
@@ -1448,14 +1467,12 @@ spec:
                           1,ou=users,o=nifi vs. memberUid: user1)'
                         type: string
                       nameAttr:
-                        description: Attribute to use to extract user identity or
-                          group name (i.e. cn). Optional. If not set, the entire DN
-                          is used.
+                        description: Attribute to use to extract user identity (i.e. cn).
+                          Optional. If not set, the entire DN is used.
                         type: string
                       objectClass:
-                        description: Object class for identifying users or groups
-                          (i.e. person ; groupOfNames). Required if searching users
-                          or groups.
+                        description: Object class for identifying users (i.e. person). 
+                          Required if searching users.
                         type: string
                       referencedAttr:
                         description: 'User Group Name Attribute - Referenced Group
@@ -1476,19 +1493,23 @@ spec:
                           memberUid: user1)'
                         type: string
                       searchBase:
-                        description: Base DN for searching for users or groups (i.e.
-                          ou=users,o=nifi ; ou=groups,o=nifi). Required to search
-                          users or groups.
+                        description: Base DN for searching for users (i.e. ou=users,o=nifi). 
+                          Required to search users.
                         type: string
                       searchFilter:
-                        description: Filter for searching for users or groups against
-                          the 'User/Group Search Base'. The user specified name is
-                          inserted into '{0}' (sAMAccountName={0}).
+                        description: Filter for searching for users against the 'User Search Base' (i.e. (memberof=cn=team1,ou=groups,o=nifi) ). Optional.
                         type: string
                       searchScope:
-                        description: Search scope for searching users or groups (ONE_LEVEL,
-                          OBJECT, or SUBTREE). Required if searching users or groups.
+                        description: Search scope for searching users (ONE_LEVEL, OBJECT, or SUBTREE). 
+                           Required if searching users.
+                        enum:
+                        - ONE_LEVEL
+                        - OBJECT
+                        - SUBTREE
                         type: string
+                    required:
+                    - searchBase
+                    - searchFilter
                     type: object
                 type: object
               listenersConfig:
