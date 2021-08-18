@@ -19,12 +19,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/Orange-OpenSource/nifikop/version"
-	certv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	"os"
-	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"strings"
 
+	// Import all Kubernetes clie
+
+	"github.com/Orange-OpenSource/nifikop/version"
+	certv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -38,6 +40,7 @@ import (
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/controllers"
+	"github.com/Orange-OpenSource/nifikop/pkg/common"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -123,73 +126,89 @@ func main() {
 		os.Exit(1)
 	}
 
+	multipliers := *common.NewRequeueConfig()
+
 	if err = (&controllers.NifiClusterReconciler{
-		Client:       mgr.GetClient(),
-		DirectClient: mgr.GetAPIReader(),
-		Log:          ctrl.Log.WithName("controllers").WithName("NifiCluster"),
-		Scheme:       mgr.GetScheme(),
-		Namespaces:   namespaceList,
-		Recorder:     mgr.GetEventRecorderFor("nifi-cluster"),
+		Client:           mgr.GetClient(),
+		DirectClient:     mgr.GetAPIReader(),
+		Log:              ctrl.Log.WithName("controllers").WithName("NifiCluster"),
+		Scheme:           mgr.GetScheme(),
+		Namespaces:       namespaceList,
+		Recorder:         mgr.GetEventRecorderFor("nifi-cluster"),
+		RequeueIntervals: multipliers.ClusterTaskRequeueIntervals,
+		RequeueOffset:    multipliers.RequeueOffset,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NifiCluster")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.NifiClusterTaskReconciler{
-		Client:   mgr.GetClient(),
-		Log:      ctrl.Log.WithName("controllers").WithName("NifiClusterTask"),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("nifi-cluster-task"),
+		Client:           mgr.GetClient(),
+		Log:              ctrl.Log.WithName("controllers").WithName("NifiClusterTask"),
+		Scheme:           mgr.GetScheme(),
+		Recorder:         mgr.GetEventRecorderFor("nifi-cluster-task"),
+		RequeueIntervals: multipliers.ClusterTaskRequeueIntervals,
+		RequeueOffset:    multipliers.RequeueOffset,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NifiClusterTask")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.NifiUserReconciler{
-		Client:   mgr.GetClient(),
-		Log:      ctrl.Log.WithName("controllers").WithName("NifiUser"),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("nifi-user"),
+		Client:          mgr.GetClient(),
+		Log:             ctrl.Log.WithName("controllers").WithName("NifiUser"),
+		Scheme:          mgr.GetScheme(),
+		Recorder:        mgr.GetEventRecorderFor("nifi-user"),
+		RequeueInterval: multipliers.UserRequeueInterval,
+		RequeueOffset:   multipliers.RequeueOffset,
 	}).SetupWithManager(mgr, certManagerEnabled); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NifiUser")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.NifiUserGroupReconciler{
-		Client:   mgr.GetClient(),
-		Log:      ctrl.Log.WithName("controllers").WithName("NifiUserGroup"),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("nifi-user-group"),
+		Client:          mgr.GetClient(),
+		Log:             ctrl.Log.WithName("controllers").WithName("NifiUserGroup"),
+		Scheme:          mgr.GetScheme(),
+		Recorder:        mgr.GetEventRecorderFor("nifi-user-group"),
+		RequeueInterval: multipliers.UserGroupRequeueInterval,
+		RequeueOffset:   multipliers.RequeueOffset,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NifiUserGroup")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.NifiDataflowReconciler{
-		Client:   mgr.GetClient(),
-		Log:      ctrl.Log.WithName("controllers").WithName("NifiDataflow"),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("nifi-dataflow"),
+		Client:          mgr.GetClient(),
+		Log:             ctrl.Log.WithName("controllers").WithName("NifiDataflow"),
+		Scheme:          mgr.GetScheme(),
+		Recorder:        mgr.GetEventRecorderFor("nifi-dataflow"),
+		RequeueInterval: multipliers.DataFlowRequeueInterval,
+		RequeueOffset:   multipliers.RequeueOffset,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NifiDataflow")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.NifiParameterContextReconciler{
-		Client:   mgr.GetClient(),
-		Log:      ctrl.Log.WithName("controllers").WithName("NifiParameterContext"),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("nifi-parameter-context"),
+		Client:          mgr.GetClient(),
+		Log:             ctrl.Log.WithName("controllers").WithName("NifiParameterContext"),
+		Scheme:          mgr.GetScheme(),
+		Recorder:        mgr.GetEventRecorderFor("nifi-parameter-context"),
+		RequeueInterval: multipliers.ParameterContextRequeueInterval,
+		RequeueOffset:   multipliers.RequeueOffset,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NifiParameterContext")
 		os.Exit(1)
 	}
 
 	if err = (&controllers.NifiRegistryClientReconciler{
-		Client:   mgr.GetClient(),
-		Log:      ctrl.Log.WithName("controllers").WithName("NifiRegistryClient"),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("nifi-registry-client"),
+		Client:          mgr.GetClient(),
+		Log:             ctrl.Log.WithName("controllers").WithName("NifiRegistryClient"),
+		Scheme:          mgr.GetScheme(),
+		Recorder:        mgr.GetEventRecorderFor("nifi-registry-client"),
+		RequeueInterval: multipliers.RegistryClientRequeueInterval,
+		RequeueOffset:   multipliers.RequeueOffset,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NifiRegistryClient")
 		os.Exit(1)

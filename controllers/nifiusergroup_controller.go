@@ -18,24 +18,22 @@ package controllers
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+	"reflect"
+
+	"emperror.dev/errors"
+	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/usergroup"
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
+	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/client-go/tools/record"
-	"reflect"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
-
-	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 var userGroupFinalizer = "nifiusergroups.nifi.orange.com/finalizer"
@@ -43,9 +41,11 @@ var userGroupFinalizer = "nifiusergroups.nifi.orange.com/finalizer"
 // NifiUserGroupReconciler reconciles a NifiUserGroup object
 type NifiUserGroupReconciler struct {
 	client.Client
-	Log      logr.Logger
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Log             logr.Logger
+	Scheme          *runtime.Scheme
+	Recorder        record.EventRecorder
+	RequeueInterval int
+	RequeueOffset   int
 }
 
 // +kubebuilder:rbac:groups=nifi.orange.com,resources=nifiusergroups,verbs=get;list;watch;create;update;patch;delete
@@ -210,7 +210,9 @@ func (r *NifiUserGroupReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	r.Log.Info("Ensured User Group")
 
-	return RequeueAfter(time.Duration(15) * time.Second)
+	interval := util.GetRequeueInterval(r.RequeueInterval, r.RequeueOffset)
+	r.Log.Info(fmt.Sprintf("Will requeue user group task after %v", interval))
+	return RequeueAfter(interval)
 }
 
 // SetupWithManager sets up the controller with the Manager.

@@ -18,27 +18,26 @@ package controllers
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+	"time"
+
+	"emperror.dev/errors"
+	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
 	"github.com/Orange-OpenSource/nifikop/pkg/pki"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/nifi"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
+	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/client-go/tools/record"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
-
-	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 var clusterFinalizer = "nificlusters.nifi.orange.com/finalizer"
@@ -47,11 +46,13 @@ var clusterUsersFinalizer = "nificlusters.nifi.orange.com/users"
 // NifiClusterReconciler reconciles a NifiCluster object
 type NifiClusterReconciler struct {
 	client.Client
-	DirectClient client.Reader
-	Log          logr.Logger
-	Scheme       *runtime.Scheme
-	Namespaces   []string
-	Recorder     record.EventRecorder
+	DirectClient     client.Reader
+	Log              logr.Logger
+	Scheme           *runtime.Scheme
+	Namespaces       []string
+	Recorder         record.EventRecorder
+	RequeueIntervals map[string]int
+	RequeueOffset    int
 }
 
 // +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
@@ -127,33 +128,41 @@ func (r *NifiClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		if err != nil {
 			switch errors.Cause(err).(type) {
 			case errorfactory.NodesUnreachable:
-				r.Log.Info("Nodes unreachable, may still be starting up")
+				interval := util.GetRequeueInterval(r.RequeueIntervals["CLUSTER_TASK_NOT_READY_REQUEUE_INTERVAL"], r.RequeueOffset)
+				r.Log.Info(fmt.Sprintf("Nodes unreachable, may still be starting up. Will requeue task after %v.", interval))
 				return reconcile.Result{
-					RequeueAfter: time.Duration(15) * time.Second,
+					RequeueAfter: interval,
 				}, nil
 			case errorfactory.NodesNotReady:
-				r.Log.Info("Nodes not ready, may still be starting up")
+				interval := util.GetRequeueInterval(r.RequeueIntervals["CLUSTER_TASK_NOT_READY_REQUEUE_INTERVAL"], r.RequeueOffset)
+				r.Log.Info(fmt.Sprintf("Nodes not ready, may still be starting up. Will requeue task after %v", interval))
 				return reconcile.Result{
-					RequeueAfter: time.Duration(15) * time.Second,
+					RequeueAfter: interval,
 				}, nil
 			case errorfactory.ResourceNotReady:
-				r.Log.Info("A new resource was not found or may not be ready")
+				interval := util.GetRequeueInterval(r.RequeueIntervals["CLUSTER_TASK_NOT_READY_REQUEUE_INTERVAL"]/2, r.RequeueOffset)
+				r.Log.Info(fmt.Sprintf("A new resource was not found or may not be ready. Will requeue task after %v", interval))
 				r.Log.Info(err.Error())
 				return reconcile.Result{
-					RequeueAfter: time.Duration(7) * time.Second,
+					RequeueAfter: interval,
 				}, nil
 			case errorfactory.ReconcileRollingUpgrade:
-				r.Log.Info("Rolling Upgrade in Progress")
+				interval := util.GetRequeueInterval(r.RequeueIntervals["CLUSTER_TASK_NOT_READY_REQUEUE_INTERVAL"], r.RequeueOffset)
+				r.Log.Info(fmt.Sprintf("Rolling Upgrade in Progress. Will requeue after task %v", interval))
 				return reconcile.Result{
-					RequeueAfter: time.Duration(15) * time.Second,
+					RequeueAfter: interval,
 				}, nil
 			case errorfactory.NifiClusterNotReady:
+				interval := util.GetRequeueInterval(r.RequeueIntervals["CLUSTER_TASK_NOT_READY_REQUEUE_INTERVAL"], r.RequeueOffset)
+				r.Log.Info(fmt.Sprintf("Nifi cluster is not ready. Will requeue task after %v", interval))
 				return reconcile.Result{
-					RequeueAfter: time.Duration(15) * time.Second,
+					RequeueAfter: interval,
 				}, nil
 			case errorfactory.NifiClusterTaskRunning:
+				interval := util.GetRequeueInterval(r.RequeueIntervals["CLUSTER_TASK_RUNNING_REQUEUE_INTERVAL"], r.RequeueOffset)
+				r.Log.Info(fmt.Sprintf("Nifi cluster is running. Will requeue task after %v", interval))
 				return reconcile.Result{
-					RequeueAfter: time.Duration(20) * time.Second,
+					RequeueAfter: interval,
 				}, nil
 			default:
 				return RequeueWithError(r.Log, err.Error(), err)
@@ -249,10 +258,11 @@ func (r *NifiClusterReconciler) checkFinalizers(ctx context.Context,
 		if err = pki.GetPKIManager(r.Client, cluster).FinalizePKI(ctx, r.Log); err != nil {
 			switch err.(type) {
 			case errorfactory.ResourceNotReady:
-				r.Log.Info("The PKI is not ready to be torn down")
+				interval := util.GetRequeueInterval(r.RequeueIntervals["CLUSTER_TASK_NOT_READY_REQUEUE_INTERVAL"]/3, r.RequeueOffset)
+				r.Log.Info(fmt.Sprintf("The PKI is not ready to be torn down. Will requeue task after %v.", interval))
 				return ctrl.Result{
 					Requeue:      true,
-					RequeueAfter: time.Duration(5) * time.Second,
+					RequeueAfter: interval,
 				}, nil
 			default:
 				return RequeueWithError(r.Log, "failed to finalize PKI", err)

@@ -19,22 +19,20 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"reflect"
+
+	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/registryclient"
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
+	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/client-go/tools/record"
-	"reflect"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
-
-	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 var registryClientFinalizer = "nifiregistryclients.nifi.orange.com/finalizer"
@@ -42,9 +40,11 @@ var registryClientFinalizer = "nifiregistryclients.nifi.orange.com/finalizer"
 // NifiRegistryClientReconciler reconciles a NifiRegistryClient object
 type NifiRegistryClientReconciler struct {
 	client.Client
-	Log      logr.Logger
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Log             logr.Logger
+	Scheme          *runtime.Scheme
+	Recorder        record.EventRecorder
+	RequeueInterval int
+	RequeueOffset   int
 }
 
 // +kubebuilder:rbac:groups=nifi.orange.com,resources=nifiregistryclients,verbs=get;list;watch;create;update;patch;delete
@@ -166,7 +166,9 @@ func (r *NifiRegistryClientReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	r.Log.Info("Ensured Registry Client")
 
-	return RequeueAfter(time.Duration(15) * time.Second)
+	interval := util.GetRequeueInterval(r.RequeueInterval, r.RequeueOffset)
+	r.Log.Info(fmt.Sprintf("Will requeue registry client task after %v", interval))
+	return RequeueAfter(interval)
 }
 
 // SetupWithManager sets up the controller with the Manager.

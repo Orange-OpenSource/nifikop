@@ -18,8 +18,11 @@ package controllers
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+	"reflect"
+
+	"emperror.dev/errors"
+	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	usercli "github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/user"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
@@ -31,13 +34,9 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
-	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
-
-	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 )
 
 var userFinalizer = "nifiusers.nifi.orange.com/finalizer"
@@ -45,9 +44,11 @@ var userFinalizer = "nifiusers.nifi.orange.com/finalizer"
 // NifiUserReconciler reconciles a NifiUser object
 type NifiUserReconciler struct {
 	client.Client
-	Log      logr.Logger
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Log             logr.Logger
+	Scheme          *runtime.Scheme
+	Recorder        record.EventRecorder
+	RequeueInterval int
+	RequeueOffset   int
 }
 
 // +kubebuilder:rbac:groups=nifi.orange.com,resources=nifiusers,verbs=get;list;watch;create;update;patch;delete
@@ -122,26 +123,29 @@ func (r *NifiUserReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		if err != nil {
 			switch errors.Cause(err).(type) {
 			case errorfactory.ResourceNotReady:
-				r.Log.Info("generated secret not found, may not be ready")
+				interval := util.GetRequeueInterval(r.RequeueInterval/3, r.RequeueOffset)
+				r.Log.Info(fmt.Sprintf("generated secret not found, may not be ready, will requeue task after %v", interval))
 				return ctrl.Result{
 					Requeue:      true,
-					RequeueAfter: time.Duration(5) * time.Second,
+					RequeueAfter: interval,
 				}, nil
 			case errorfactory.FatalReconcileError:
 				// TODO: (tinyzimmer) - Sleep for longer for now to give user time to see the error
 				// But really we should catch these kinds of issues in a pre-admission hook in a future PR
 				// The user can fix while this is looping and it will pick it up next reconcile attempt
-				r.Log.Error(err, "Fatal error attempting to reconcile the user certificate. If using vault perhaps a permissions issue or improperly configured PKI?")
+				interval := util.GetRequeueInterval(r.RequeueInterval, r.RequeueOffset)
+				r.Log.Error(err, fmt.Sprintf("Fatal error attempting to reconcile the user certificate. If using vault perhaps a permissions issue or improperly configured PKI? Will requeue task after %v", interval))
 				return ctrl.Result{
 					Requeue:      true,
-					RequeueAfter: time.Duration(15) * time.Second,
+					RequeueAfter: interval,
 				}, nil
 			case errorfactory.VaultAPIFailure:
 				// Same as above in terms of things that could be checked pre-flight on the cluster
-				r.Log.Error(err, "Vault API error attempting to reconcile the user certificate. If using vault perhaps a permissions issue or improperly configured PKI?")
+				interval := util.GetRequeueInterval(r.RequeueInterval, r.RequeueOffset)
+				r.Log.Error(err, fmt.Sprintf("Vault API error attempting to reconcile the user certificate. If using vault perhaps a permissions issue or improperly configured PKI? Will requeue task after %v", interval))
 				return ctrl.Result{
 					Requeue:      true,
-					RequeueAfter: time.Duration(15) * time.Second,
+					RequeueAfter: interval,
 				}, nil
 			default:
 				return RequeueWithError(r.Log, "failed to reconcile user secret", err)
@@ -242,7 +246,9 @@ func (r *NifiUserReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	r.Log.Info("Ensured user")
 
-	return RequeueAfter(time.Duration(15) * time.Second)
+	interval := util.GetRequeueInterval(r.RequeueInterval, r.RequeueOffset)
+	r.Log.Info(fmt.Sprintf("Will requeue nifi user task after %v", interval))
+	return RequeueAfter(interval)
 
 	// set user status
 	//instance.Status = v1alpha1.NifiUserStatus{

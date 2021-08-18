@@ -16,13 +16,16 @@ package util
 
 import (
 	"crypto/sha1"
+	"fmt"
+	"math/rand"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
-
-	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
+	"time"
 
 	"emperror.dev/errors"
+	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/imdario/mergo"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -217,4 +220,26 @@ func Hash(s string) string {
 	h := sha1.New()
 	h.Write([]byte(s))
 	return string(h.Sum(nil))
+}
+
+func GetEnvWithDefault(key string, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
+
+func MustConvertToInt(str string, name string) int {
+	i, err := strconv.Atoi(str)
+	if err != nil {
+		fmt.Printf("%s", fmt.Errorf("%w problem converting string to integer (%s)", err, name))
+		os.Exit(1)
+	}
+	return i
+}
+
+func GetRequeueInterval(interval int, offset int) time.Duration {
+	duration := interval + rand.Intn(offset+1) - (offset / 2)
+	duration = Max(duration, rand.Intn(5)+1) // make sure duration does not go zero for very large offsets
+	return time.Duration(duration) * time.Second
 }
