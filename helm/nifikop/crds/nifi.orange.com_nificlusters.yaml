@@ -1377,6 +1377,10 @@ spec:
                   referralStrategy:
                     description: Strategy for handling referrals. Possible values
                       are FOLLOW, IGNORE, THROW.
+                    enum:
+                    - FOLLOW
+                    - IGNORE
+                    - THROW
                     type: string
                   searchBase:
                     description: Base DN for searching for users (i.e. CN=Users,DC=example,DC=com).
@@ -1422,6 +1426,9 @@ spec:
                             description: Type of the Keystore and Truststore that
                               is used when connecting to LDAP using LDAPS or START_TLS
                               (i.e. JKS or PKCS12).
+                            enum:
+                            - JKS
+                            - PKCS12
                             type: string
                         required:
                         - secretName

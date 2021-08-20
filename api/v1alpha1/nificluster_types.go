@@ -427,10 +427,12 @@ type LdapConfiguration struct {
 	ManagerDN       string `json:"managerDN,omitempty"`
 	ManagerPassword string `json:"managerPassword,omitempty"`
 	// How the connection to the LDAP server is authenticated. Possible values are ANONYMOUS, SIMPLE, LDAPS, or START_TLS.
+	// +kubebuilder:validation:Enum=ANONYMOUS;SIMPLE;LDAPS;START_TLS
 	AuthStrategy string `json:"authStrategy,omitempty"`
 	// TLS Configuration
 	Tls TlsLdapConfig `json:"tls,omitempty"`
 	// Strategy for handling referrals. Possible values are FOLLOW, IGNORE, THROW.
+	// +kubebuilder:validation:Enum=FOLLOW;IGNORE;THROW
 	ReferralStrategy string `json:"referralStrategy,omitempty"`
 	// Duration of connect timeout (secs).
 	ConnectTimeout int `json:"connectTimeout,omitempty"`
@@ -463,10 +465,11 @@ type LdapConfiguration struct {
 
 type LdapSyncSpec struct {
 	// Base DN for searching for users or groups (i.e. ou=users,o=nifi ; ou=groups,o=nifi). Required to search users or groups.
-	SearchBase string `json:"searchBase,omitempty"`
+	SearchBase string `json:"searchBase"`
 	// Filter for searching for users or groups against the 'User/Group Search Base'. Optional.
-	SearchFilter string `json:"searchFilter,omitempty"`
+	SearchFilter string `json:"searchFilter"`
 	// Search scope for searching users or groups (ONE_LEVEL, OBJECT, or SUBTREE). Required if searching users or groups.
+	// +kubebuilder:validation:Enum=ONE_LEVEL;OBJECT;SUBTREE
 	SearchScope string `json:"searchScope,omitempty"`
 	// Object class for identifying users or groups (i.e. person ; groupOfNames). Required if searching users or groups.
 	ObjectClass string `json:"objectClass,omitempty"`
@@ -500,8 +503,10 @@ type TlsLdapConfig struct {
 	// TLS LDAP Keystore
 	Keystore *LdapKeystore `json:"keystore,omitempty"`
 	// Client authentication policy when connecting to LDAP using LDAPS or START_TLS. Possible values are REQUIRED, WANT, NONE
+	// +kubebuilder:validation:Enum=REQUIRED;WANT;NONE
 	ClientAuth string `json:"clientAuth,omitempty"`
 	// Protocol to use when connecting to LDAP using LDAPS or START_TLS. (i.e. TLS, TLSv1.1, TLSv1.2, etc).
+	// +kubebuilder:validation:Enum=TLS;TLSv1.1;TLSv1.2;TLSv1.3
 	Protocol string `json:"protocol,omitempty"`
 	// Specifies whether the TLS should be shut down gracefully before the target context is closed. Defaults to false.
 	ShutdownGracefully bool `json:"ShutdownGracefully,omitempty"`
@@ -512,8 +517,9 @@ type LdapKeystore struct {
 	// SecretName should contain ca certs
 	SecretName string `json:"secretName"`
 	// Password for the Keystore and Truststore that is used when connecting to LDAP using LDAPS or START_TLS.
-	Password string `json:"password,omitempty"`
+	Password string `json:"password"`
 	// Type of the Keystore and Truststore that is used when connecting to LDAP using LDAPS or START_TLS (i.e. JKS or PKCS12).
+	// +kubebuilder:validation:Enum=JKS;PKCS12
 	Type string `json:"type,omitempty"`
 }
 
