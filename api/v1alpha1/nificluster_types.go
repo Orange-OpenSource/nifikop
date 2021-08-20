@@ -457,9 +457,9 @@ type LdapConfiguration struct {
 	SearchFilter string `json:"searchFilter,omitempty"`
 	// If set to true, nifi will sync users and group from ldap database
 	LdapSync bool `json:"ldapSync,omitempty"`
-	// Ldap User Spec
+	// Ldap User Synchronization Spec
 	UserSync LdapSyncSpec `json:"userSync,omitempty"`
-	// Ldap Group Spec
+	// Ldap Group Synchronization Spec
 	GroupSync LdapSyncSpec `json:"groupSync,omitempty"`
 }
 

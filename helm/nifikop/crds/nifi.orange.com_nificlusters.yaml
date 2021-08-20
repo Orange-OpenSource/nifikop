@@ -1279,7 +1279,7 @@ spec:
                       configuration.
                     type: boolean
                   groupSync:
-                    description: Ldap Group Spec
+                    description: Ldap Group Synchronization Spec
                     properties:
                       groupAttr:
                         description: 'User Group Name Attribute Attribute to use to
@@ -1304,13 +1304,14 @@ spec:
                           1,ou=users,o=nifi vs. memberUid: user1)'
                         type: string
                       nameAttr:
-                        description: Attribute to use to extract 
+                        description: Attribute to use to extract user identity or
                           group name (i.e. cn). Optional. If not set, the entire DN
                           is used.
                         type: string
                       objectClass:
-                        description: Object class for identifying groups 
-                          (i.e. groupOfNames). Required if searching groups.
+                        description: Object class for identifying users or groups
+                          (i.e. person ; groupOfNames). Required if searching users
+                          or groups.
                         type: string
                       referencedAttr:
                         description: 'User Group Name Attribute - Referenced Group
@@ -1331,16 +1332,17 @@ spec:
                           memberUid: user1)'
                         type: string
                       searchBase:
-                        description: Base DN for searching for groups (i.e.
-                          ou=users,o=nifi ; ou=groups,o=nifi). Required to search 
-                          groups.
+                        description: Base DN for searching for users or groups (i.e.
+                          ou=users,o=nifi ; ou=groups,o=nifi). Required to search
+                          users or groups.
                         type: string
                       searchFilter:
-                        description: Filter for searching for groups against the 'Group Search Base'. Optional.
+                        description: Filter for searching for users or groups against
+                          the 'User/Group Search Base'. Optional.
                         type: string
                       searchScope:
-                        description: Search scope for searching groups (ONE_LEVEL,
-                          OBJECT, or SUBTREE). Required if searching groups.
+                        description: Search scope for searching users or groups (ONE_LEVEL,
+                          OBJECT, or SUBTREE). Required if searching users or groups.
                         enum:
                         - ONE_LEVEL
                         - OBJECT
@@ -1431,8 +1433,8 @@ spec:
                             - PKCS12
                             type: string
                         required:
-                        - secretName
                         - password
+                        - secretName
                         type: object
                       protocol:
                         description: Protocol to use when connecting to LDAP using
@@ -1449,7 +1451,7 @@ spec:
                       (i.e. ldap://<hostname>:<port>).
                     type: string
                   userSync:
-                    description: Ldap User Spec
+                    description: Ldap User Synchronization Spec
                     properties:
                       groupAttr:
                         description: 'User Group Name Attribute Attribute to use to
@@ -1474,12 +1476,14 @@ spec:
                           1,ou=users,o=nifi vs. memberUid: user1)'
                         type: string
                       nameAttr:
-                        description: Attribute to use to extract user identity (i.e. cn).
-                          Optional. If not set, the entire DN is used.
+                        description: Attribute to use to extract user identity or
+                          group name (i.e. cn). Optional. If not set, the entire DN
+                          is used.
                         type: string
                       objectClass:
-                        description: Object class for identifying users (i.e. person). 
-                          Required if searching users.
+                        description: Object class for identifying users or groups
+                          (i.e. person ; groupOfNames). Required if searching users
+                          or groups.
                         type: string
                       referencedAttr:
                         description: 'User Group Name Attribute - Referenced Group
@@ -1500,15 +1504,17 @@ spec:
                           memberUid: user1)'
                         type: string
                       searchBase:
-                        description: Base DN for searching for users (i.e. ou=users,o=nifi). 
-                          Required to search users.
+                        description: Base DN for searching for users or groups (i.e.
+                          ou=users,o=nifi ; ou=groups,o=nifi). Required to search
+                          users or groups.
                         type: string
                       searchFilter:
-                        description: Filter for searching for users against the 'User Search Base' (i.e. (memberof=cn=team1,ou=groups,o=nifi) ). Optional.
+                        description: Filter for searching for users or groups against
+                          the 'User/Group Search Base'. Optional.
                         type: string
                       searchScope:
-                        description: Search scope for searching users (ONE_LEVEL, OBJECT, or SUBTREE). 
-                           Required if searching users.
+                        description: Search scope for searching users or groups (ONE_LEVEL,
+                          OBJECT, or SUBTREE). Required if searching users or groups.
                         enum:
                         - ONE_LEVEL
                         - OBJECT

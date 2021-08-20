@@ -1279,7 +1279,7 @@ spec:
                       configuration.
                     type: boolean
                   groupSync:
-                    description: Ldap Group Spec
+                    description: Ldap Group Synchronization Spec
                     properties:
                       groupAttr:
                         description: 'User Group Name Attribute Attribute to use to
@@ -1451,7 +1451,7 @@ spec:
                       (i.e. ldap://<hostname>:<port>).
                     type: string
                   userSync:
-                    description: Ldap User Spec
+                    description: Ldap User Synchronization Spec
                     properties:
                       groupAttr:
                         description: 'User Group Name Attribute Attribute to use to
