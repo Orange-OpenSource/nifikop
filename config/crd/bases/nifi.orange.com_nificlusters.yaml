@@ -1278,7 +1278,7 @@ spec:
                     description: If set to true, we will enable ldap usage into nifi.properties
                       configuration.
                     type: boolean
-                  group:
+                  groupSync:
                     description: Ldap Group Spec
                     properties:
                       groupAttr:
@@ -1379,6 +1379,10 @@ spec:
                   referralStrategy:
                     description: Strategy for handling referrals. Possible values
                       are FOLLOW, IGNORE, THROW.
+                    enum:
+                    - FOLLOW
+                    - IGNORE
+                    - THROW
                     type: string
                   searchBase:
                     description: Base DN for searching for users (i.e. CN=Users,DC=example,DC=com).
@@ -1446,7 +1450,7 @@ spec:
                     description: Space-separated list of URLs of the LDAP servers
                       (i.e. ldap://<hostname>:<port>).
                     type: string
-                  user:
+                  userSync:
                     description: Ldap User Spec
                     properties:
                       groupAttr:
