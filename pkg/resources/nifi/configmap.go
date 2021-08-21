@@ -288,9 +288,12 @@ func (r *Reconciler) getLoginIdentityProvidersConfigString(nConfig *v1alpha1.Nod
 	var out bytes.Buffer
 	t := template.Must(template.New("nConfig-config").Parse(config.LoginIdentityProvidersTemplate))
 	if err := t.Execute(&out, map[string]interface{}{
-		"NifiCluster":       r.NifiCluster,
-		"Id":                id,
-		"LdapConfiguration": r.NifiCluster.Spec.LdapConfiguration,
+		"NifiCluster":        r.NifiCluster,
+		"Id":                 id,
+		"LdapConfiguration":  r.NifiCluster.Spec.LdapConfiguration,
+		"LdapKeystorePath":   ldapKeystorePath,
+		"LdapKeystoreFile":   fmt.Sprintf("%s.%s", v1alpha1.TLSKeyStore, r.NifiCluster.Spec.GetLdapKeystoreType()),
+		"LdapTruststoreFile": fmt.Sprintf("%s.%s", v1alpha1.TLSTrustStore, r.NifiCluster.Spec.GetLdapKeystoreType()),
 	}); err != nil {
 		log.Error(err, "error occurred during parsing the config template")
 	}
@@ -439,6 +442,10 @@ func (r *Reconciler) getAuthorizersConfigString(nConfig *v1alpha1.NodeConfig, id
 			fmt.Sprintf(pkicommon.NodeControllerTemplate, r.NifiCluster.Name),
 			r.NifiCluster.Namespace,
 			r.NifiCluster.Spec.ListenersConfig.GetClusterDomain()),
+		"LdapConfiguration":  r.NifiCluster.Spec.LdapConfiguration,
+		"LdapKeystorePath":   ldapKeystorePath,
+		"LdapKeystoreFile":   fmt.Sprintf("%s.%s", v1alpha1.TLSKeyStore, r.NifiCluster.Spec.GetLdapKeystoreType()),
+		"LdapTruststoreFile": fmt.Sprintf("%s.%s", v1alpha1.TLSTrustStore, r.NifiCluster.Spec.GetLdapKeystoreType()),
 	}); err != nil {
 		log.Error(err, "error occurred during parsing the config template")
 	}

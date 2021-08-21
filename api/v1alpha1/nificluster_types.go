@@ -423,13 +423,104 @@ type PortConfig struct {
 type LdapConfiguration struct {
 	// If set to true, we will enable ldap usage into nifi.properties configuration.
 	Enabled bool `json:"enabled,omitempty"`
+	// Indirect binding. The DN and password of the manager that is used to bind to the LDAP server to search for users.
+	ManagerDN       string `json:"managerDN,omitempty"`
+	ManagerPassword string `json:"managerPassword,omitempty"`
+	// How the connection to the LDAP server is authenticated. Possible values are ANONYMOUS, SIMPLE, LDAPS, or START_TLS.
+	// +kubebuilder:validation:Enum=ANONYMOUS;SIMPLE;LDAPS;START_TLS
+	AuthStrategy string `json:"authStrategy,omitempty"`
+	// TLS Configuration
+	Tls TlsLdapConfig `json:"tls,omitempty"`
+	// Strategy for handling referrals. Possible values are FOLLOW, IGNORE, THROW.
+	// +kubebuilder:validation:Enum=FOLLOW;IGNORE;THROW
+	ReferralStrategy string `json:"referralStrategy,omitempty"`
+	// Duration of connect timeout (secs).
+	ConnectTimeout int `json:"connectTimeout,omitempty"`
+	// Duration of read timeout (secs).
+	ReadTimeout int `json:"readTimeout,omitempty"`
 	// Space-separated list of URLs of the LDAP servers (i.e. ldap://<hostname>:<port>).
 	Url string `json:"url,omitempty"`
+	// Strategy to identify users. Possible values are USE_DN and USE_USERNAME.
+	// The default functionality if this property is missing is USE_DN in order to retain backward compatibility.
+	// USE_DN will use the full DN of the user entry if possible. USE_USERNAME will use the username the user logged in with.
+	IdentityStrategy string `json:"identityStrategy,omitempty"`
+	// The duration of how long the user authentication is valid for. If the user never logs out, they will be required to log back in following this duration.
+	AuthExpiration int `json:"authExpiration,omitempty"`
+	// The page size when retrieving users and groups. If not specified, no paging is performed.
+	PageSize string `json:"pageSize,omitempty"`
+	// Duration of time between syncing users and groups (mins)
+	SyncInterval int `json:"syncInterval,omitempty"`
 	// Base DN for searching for users (i.e. CN=Users,DC=example,DC=com).
 	SearchBase string `json:"searchBase,omitempty"`
 	// Filter for searching for users against the 'User Search Base'.
 	// (i.e. sAMAccountName={0}). The user specified name is inserted into '{0}'.
 	SearchFilter string `json:"searchFilter,omitempty"`
+	// If set to true, nifi will sync users and group from ldap database
+	LdapSync bool `json:"ldapSync,omitempty"`
+	// Ldap User Synchronization Spec
+	UserSync LdapSyncSpec `json:"userSync,omitempty"`
+	// Ldap Group Synchronization Spec
+	GroupSync LdapSyncSpec `json:"groupSync,omitempty"`
+}
+
+type LdapSyncSpec struct {
+	// Base DN for searching for users or groups (i.e. ou=users,o=nifi ; ou=groups,o=nifi). Required to search users or groups.
+	SearchBase string `json:"searchBase"`
+	// Filter for searching for users or groups against the 'User/Group Search Base'. Optional.
+	SearchFilter string `json:"searchFilter"`
+	// Search scope for searching users or groups (ONE_LEVEL, OBJECT, or SUBTREE). Required if searching users or groups.
+	// +kubebuilder:validation:Enum=ONE_LEVEL;OBJECT;SUBTREE
+	SearchScope string `json:"searchScope,omitempty"`
+	// Object class for identifying users or groups (i.e. person ; groupOfNames). Required if searching users or groups.
+	ObjectClass string `json:"objectClass,omitempty"`
+	// Attribute to use to extract user identity or group name (i.e. cn). Optional. If not set, the entire DN is used.
+	NameAttr string `json:"nameAttr,omitempty"`
+	// User Group Name Attribute
+	// Attribute to use to define group membership (i.e. memberof). Optional.
+	// If not set group membership will not be calculated through the users. Will rely on group membership being defined through Group Member Attribute if set.
+	// The value of this property is the name of the attribute in the user ldap entry that associates them with a group. The value of that user attribute could be
+	// a dn or group name for instance. What value is expected is configured in the User Group Name Attribute - Referenced Group Attribute.
+	// Group Member Attribute
+	// Attribute to use to define group membership (i.e. member). Optional.
+	// If not set group membership will not be calculated through the groups. Will rely on group membership being defined through User Group Name Attribute if set.
+	// The value of this property is the name of the attribute in the group ldap entry that associates them with a user. The value of that group attribute could be
+	// a dn or memberUid for instance. What value is expected is configured in the Group Member Attribute - Referenced User Attribute.
+	// (i.e. member: cn=User 1,ou=users,o=nifi vs. memberUid: user1)
+	GroupAttr string `json:"groupAttr,omitempty"`
+	// User Group Name Attribute - Referenced Group Attribute
+	// If blank, the value of the attribute defined in User Group Name Attribute is expected to be the full dn of the group.
+	// If not blank, this property will define the attribute of the group ldap entry that the value of the attribute defined in User Group Name Attribute
+	// is referencing (i.e. name). Use of this property requires that Group Search Base is also configured.
+	// Group Member Attribute - Referenced User Attribute
+	// If blank, the value of the attribute defined in Group Member Attribute is expected to be the full dn of the user.
+	// If not blank, this property will define the attribute of the user ldap entry that the value of the attribute defined in Group Member Attribute
+	// is referencing (i.e. uid). Use of this property requires that User Search Base is also configured. (i.e. member: cn=User 1,ou=users,o=nifi vs. memberUid: user1)
+	ReferencedAttr string `json:"referencedAttr,omitempty"`
+}
+
+//
+type TlsLdapConfig struct {
+	// TLS LDAP Keystore
+	Keystore *LdapKeystore `json:"keystore,omitempty"`
+	// Client authentication policy when connecting to LDAP using LDAPS or START_TLS. Possible values are REQUIRED, WANT, NONE
+	// +kubebuilder:validation:Enum=REQUIRED;WANT;NONE
+	ClientAuth string `json:"clientAuth,omitempty"`
+	// Protocol to use when connecting to LDAP using LDAPS or START_TLS. (i.e. TLS, TLSv1.1, TLSv1.2, etc).
+	// +kubebuilder:validation:Enum=TLS;TLSv1.1;TLSv1.2;TLSv1.3
+	Protocol string `json:"protocol,omitempty"`
+	// Specifies whether the TLS should be shut down gracefully before the target context is closed. Defaults to false.
+	ShutdownGracefully bool `json:"ShutdownGracefully,omitempty"`
+}
+
+//
+type LdapKeystore struct {
+	// SecretName should contain ca certs
+	SecretName string `json:"secretName"`
+	// Password for the Keystore and Truststore that is used when connecting to LDAP using LDAPS or START_TLS.
+	Password string `json:"password"`
+	// Type of the Keystore and Truststore that is used when connecting to LDAP using LDAPS or START_TLS (i.e. JKS or PKCS12).
+	// +kubebuilder:validation:Enum=JKS;PKCS12
+	Type string `json:"type,omitempty"`
 }
 
 // NifiClusterTaskSpec specifies the configuration of the nifi cluster Tasks
@@ -653,4 +744,14 @@ func (nSpec *NifiClusterSpec) GetMetricPort() *int {
 	}
 
 	return nil
+}
+
+//
+func (nSpec *NifiClusterSpec) GetLdapKeystoreType() string {
+	if (TlsLdapConfig{} != nSpec.LdapConfiguration.Tls) {
+		if nSpec.LdapConfiguration.Tls.Keystore.Type == "PKCS12" {
+			return "p12"
+		}
+	}
+	return "jks"
 }

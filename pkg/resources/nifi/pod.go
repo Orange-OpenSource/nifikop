@@ -68,9 +68,18 @@ func (r *Reconciler) pod(id int32, nodeConfig *v1alpha1.NodeConfig, pvcs []corev
 	volume = append(volume, dataVolume...)
 	volumeMount = append(volumeMount, dataVolumeMount...)
 
+	// Server and Client Keystores
 	if r.NifiCluster.Spec.ListenersConfig.SSLSecrets != nil {
-		volume = append(volume, generateVolumesForSSL(r.NifiCluster, id)...)
-		volumeMount = append(volumeMount, generateVolumeMountForSSL()...)
+		volume = append(volume, generateVolumesForSSL(serverKeystoreVolume, fmt.Sprintf(pkicommon.NodeServerCertTemplate, r.NifiCluster.Name, id))...)
+		volumeMount = append(volumeMount, generateVolumeMountForSSL(serverKeystoreVolume, serverKeystorePath)...)
+		volume = append(volume, generateVolumesForSSL(clientKeystoreVolume, fmt.Sprintf(pkicommon.NodeControllerTemplate, r.NifiCluster.Name))...)
+		volumeMount = append(volumeMount, generateVolumeMountForSSL(clientKeystoreVolume, clientKeystorePath)...)
+	}
+
+	// Ldap Keystore
+	if r.NifiCluster.Spec.LdapConfiguration.Tls.Keystore != nil {
+		volume = append(volume, generateVolumesForSSL(ldapKeystoreVolume, r.NifiCluster.Spec.LdapConfiguration.Tls.Keystore.SecretName)...)
+		volumeMount = append(volumeMount, generateVolumeMountForSSL(ldapKeystoreVolume, ldapKeystorePath)...)
 	}
 
 	podVolumes := append(volume, []corev1.Volume{
@@ -305,22 +314,14 @@ func GetServerPort(l *v1alpha1.ListenersConfig) int32 {
 	return httpServerPort
 }
 
-func generateVolumesForSSL(cluster *v1alpha1.NifiCluster, nodeId int32) []corev1.Volume {
+func generateVolumesForSSL(truststoreVolumeName string, truststoreSecretName string) []corev1.Volume {
 	return []corev1.Volume{
 		{
-			Name: serverKeystoreVolume,
+			//Name: ldapTruststoreVolume,
+			Name: truststoreVolumeName,
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
-					SecretName:  fmt.Sprintf(pkicommon.NodeServerCertTemplate, cluster.Name, nodeId),
-					DefaultMode: util.Int32Pointer(0644),
-				},
-			},
-		},
-		{
-			Name: clientKeystoreVolume,
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
-					SecretName:  fmt.Sprintf(pkicommon.NodeControllerTemplate, cluster.Name),
+					SecretName:  truststoreSecretName,
 					DefaultMode: util.Int32Pointer(0644),
 				},
 			},
@@ -328,15 +329,11 @@ func generateVolumesForSSL(cluster *v1alpha1.NifiCluster, nodeId int32) []corev1
 	}
 }
 
-func generateVolumeMountForSSL() []corev1.VolumeMount {
+func generateVolumeMountForSSL(truststoreVolume string, truststorePath string) []corev1.VolumeMount {
 	return []corev1.VolumeMount{
 		{
-			Name:      serverKeystoreVolume,
-			MountPath: serverKeystorePath,
-		},
-		{
-			Name:      clientKeystoreVolume,
-			MountPath: clientKeystorePath,
+			Name:      truststoreVolume,
+			MountPath: truststorePath,
 		},
 	}
 }
