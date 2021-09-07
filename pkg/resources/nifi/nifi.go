@@ -17,7 +17,7 @@ package nifi
 import (
 	"context"
 	"fmt"
-	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
+	"github.com/Orange-OpenSource/nifikop/pkg/nificlient/config"
 	"github.com/Orange-OpenSource/nifikop/pkg/pki"
 	"reflect"
 	"strings"
@@ -238,7 +238,11 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		return errors.WrapIf(err, "Cluster is not ready yet, will wait until it is.")
 	}
 
-	clientConfig, err := nificlient.ClusterConfig(r.Client, r.NifiCluster)
+	configManager := config.GetClientConfigManager(r.Client, v1alpha1.ClusterReference{
+		Namespace: r.NifiCluster.Namespace,
+		Name:      r.NifiCluster.Name,
+	})
+	clientConfig, err := configManager.BuildConfig()
 	if err != nil {
 		// the cluster does not exist - should have been caught pre-flight
 		return errors.WrapIf(err, "Failed to create HTTP client the for referenced cluster")
@@ -252,7 +256,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		return err
 	}
 
-	if nificlient.UseSSL(r.NifiCluster) {
+	if clientConfig.UseSSL {
 		if err := r.reconcileNifiUsersAndGroups(log); err != nil {
 			return errors.WrapIf(err, "failed to reconcile resource")
 		}
@@ -552,7 +556,7 @@ func (r *Reconciler) reconcileNifiPod(log logr.Logger, desiredPod *corev1.Pod) (
 	err := r.Client.List(context.TODO(), podList, client.InNamespace(currentPod.Namespace), matchingLabels)
 	if err != nil && len(podList.Items) == 0 {
 		return errorfactory.New(errorfactory.APIFailure{},
-		err, "getting resource failed", "kind", desiredType), false
+			err, "getting resource failed", "kind", desiredType), false
 	}
 
 	if len(podList.Items) == 0 {
@@ -562,14 +566,14 @@ func (r *Reconciler) reconcileNifiPod(log logr.Logger, desiredPod *corev1.Pod) (
 
 		if err := r.Client.Create(context.TODO(), desiredPod); err != nil {
 			return errorfactory.New(errorfactory.APIFailure{},
-			err, "creating resource failed", "kind", desiredType), false
+				err, "creating resource failed", "kind", desiredType), false
 		}
 
 		// Update status to Config InSync because node is configured to go
 		statusErr := k8sutil.UpdateNodeStatus(r.Client, []string{desiredPod.Labels["nodeId"]}, r.NifiCluster, v1alpha1.ConfigInSync, log)
 		if statusErr != nil {
 			return errorfactory.New(errorfactory.StatusUpdateError{},
-			statusErr, "updating status for resource failed", "kind", desiredType), false
+				statusErr, "updating status for resource failed", "kind", desiredType), false
 		}
 
 		if val, ok := r.NifiCluster.Status.NodesState[desiredPod.Labels["nodeId"]]; ok &&
@@ -583,7 +587,7 @@ func (r *Reconciler) reconcileNifiPod(log logr.Logger, desiredPod *corev1.Pod) (
 			statusErr = k8sutil.UpdateNodeStatus(r.Client, []string{desiredPod.Labels["nodeId"]}, r.NifiCluster, gracefulActionState, log)
 			if statusErr != nil {
 				return errorfactory.New(errorfactory.StatusUpdateError{},
-				statusErr, "could not update node graceful action state"), false
+					statusErr, "could not update node graceful action state"), false
 			}
 		}
 		log.Info("resource created")
@@ -597,11 +601,11 @@ func (r *Reconciler) reconcileNifiPod(log logr.Logger, desiredPod *corev1.Pod) (
 			}
 		} else {
 			return errorfactory.New(errorfactory.InternalError{}, errors.New("reconcile failed"),
-			fmt.Sprintf("could not find status for the given node id, %s", nodeId)), false
+				fmt.Sprintf("could not find status for the given node id, %s", nodeId)), false
 		}
 	} else {
 		return errorfactory.New(errorfactory.TooManyResources{}, errors.New("reconcile failed"),
-		"more then one matching pod found", "labels", matchingLabels), false
+			"more then one matching pod found", "labels", matchingLabels), false
 	}
 
 	// TODO check if this err == nil check necessary (baluchicken)
@@ -634,7 +638,7 @@ func (r *Reconciler) reconcileNifiPod(log logr.Logger, desiredPod *corev1.Pod) (
 					if err := k8sutil.UpdateNodeStatus(r.Client, []string{desiredPod.Labels["nodeId"]}, r.NifiCluster,
 						v1alpha1.GracefulActionState{ErrorMessage: "", State: v1alpha1.GracefulUpscaleSucceeded}, log); err != nil {
 						return errorfactory.New(errorfactory.StatusUpdateError{},
-						err, "could not update node graceful action state"), false
+							err, "could not update node graceful action state"), false
 					}
 				}
 				log.V(1).Info("resource is in sync")
@@ -657,7 +661,7 @@ func (r *Reconciler) reconcileNifiPod(log logr.Logger, desiredPod *corev1.Pod) (
 			if r.NifiCluster.Status.State != v1alpha1.NifiClusterRollingUpgrading {
 				if err := k8sutil.UpdateCRStatus(r.Client, r.NifiCluster, v1alpha1.NifiClusterRollingUpgrading, log); err != nil {
 					return errorfactory.New(errorfactory.StatusUpdateError{},
-					err, "setting state to rolling upgrade failed"), false
+						err, "setting state to rolling upgrade failed"), false
 				}
 			}
 
@@ -672,16 +676,16 @@ func (r *Reconciler) reconcileNifiPod(log logr.Logger, desiredPod *corev1.Pod) (
 				for _, pod := range podList.Items {
 					if k8sutil.IsMarkedForDeletion(pod.ObjectMeta) {
 						return errorfactory.New(errorfactory.ReconcileRollingUpgrade{},
-						errors.New("pod is still terminating"), "rolling upgrade in progress"), false
+							errors.New("pod is still terminating"), "rolling upgrade in progress"), false
 					}
 					if k8sutil.IsPodContainsPendingContainer(&pod) {
 						return errorfactory.New(errorfactory.ReconcileRollingUpgrade{},
-						errors.New("pod is still creating"), "rolling upgrade in progress"), false
+							errors.New("pod is still creating"), "rolling upgrade in progress"), false
 					}
 
 					if !k8sutil.PodReady(&pod) {
 						return errorfactory.New(errorfactory.ReconcileRollingUpgrade{},
-						errors.New("pod is still not ready"), "rolling upgrade in progress"), false
+							errors.New("pod is still not ready"), "rolling upgrade in progress"), false
 					}
 				}
 			}
@@ -690,7 +694,7 @@ func (r *Reconciler) reconcileNifiPod(log logr.Logger, desiredPod *corev1.Pod) (
 		err = r.Client.Delete(context.TODO(), currentPod)
 		if err != nil {
 			return errorfactory.New(errorfactory.APIFailure{},
-			err, "deleting resource failed", "kind", desiredType), false
+				err, "deleting resource failed", "kind", desiredType), false
 		}
 	}
 
@@ -869,7 +873,11 @@ func (r *Reconciler) reconcilePrometheusReportingTask(log logr.Logger) error {
 
 	var err error
 
-	clientConfig, err := nificlient.ClusterConfig(r.Client, r.NifiCluster)
+	configManager := config.GetClientConfigManager(r.Client, v1alpha1.ClusterReference{
+		Namespace: r.NifiCluster.Namespace,
+		Name:      r.NifiCluster.Name,
+	})
+	clientConfig, err := configManager.BuildConfig()
 	if err != nil {
 		return err
 	}
@@ -907,7 +915,11 @@ func (r *Reconciler) reconcilePrometheusReportingTask(log logr.Logger) error {
 }
 
 func (r *Reconciler) reconcileMaximumTimerDrivenThreadCount(log logr.Logger) error {
-	clientConfig, err := nificlient.ClusterConfig(r.Client, r.NifiCluster)
+	configManager := config.GetClientConfigManager(r.Client, v1alpha1.ClusterReference{
+		Namespace: r.NifiCluster.Namespace,
+		Name:      r.NifiCluster.Name,
+	})
+	clientConfig, err := configManager.BuildConfig()
 	if err != nil {
 		return err
 	}

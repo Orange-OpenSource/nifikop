@@ -1,46 +1,44 @@
-package nificlient
+package nificluster
 
 import (
-	"crypto/tls"
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
+	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
 	"github.com/Orange-OpenSource/nifikop/pkg/pki"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	"github.com/Orange-OpenSource/nifikop/pkg/util/nifi"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 )
 
-const (
-	nifiDefaultTimeout = int64(5)
-)
+func (n *nifiCluster) BuildConfig() (*clientconfig.NifiConfig, error) {
+	var cluster *v1alpha1.NifiCluster
+	var err error
+	if cluster, err = k8sutil.LookupNifiCluster(n.client, n.clusterRef.Name, n.clusterRef.Namespace); err != nil {
+		return nil, err
+	}
 
-// NifiConfig are the options to creating a new ClusterAdmin client
-type NifiConfig struct {
-	nodeURITemplate string
-	NodesURI        map[int32]nodeUri
-	NifiURI          string
-	UseSSL          bool
-	TLSConfig        *tls.Config
-
-	OperationTimeout int64
-	RootProcessGroupId string
+	return clusterConfig(n.client, cluster)
 }
 
-type nodeUri struct {
-	HostListener string
-	RequestHost  string
+func (n *nifiCluster) BuildConnect() (cluster clientconfig.ClusterConnect, err error) {
+	cluster, err = k8sutil.LookupNifiCluster(n.client, n.clusterRef.Name, n.clusterRef.Namespace)
+	return
+}
+
+func (n *nifiCluster) IsExternal() bool {
+	return n.IsExternal()
 }
 
 // ClusterConfig creates connection options from a NifiCluster CR
-func ClusterConfig(client client.Client, cluster *v1alpha1.NifiCluster) (*NifiConfig, error) {
-
-	conf := &NifiConfig{}
+func clusterConfig(client client.Client, cluster *v1alpha1.NifiCluster) (*clientconfig.NifiConfig, error) {
+	conf := &clientconfig.NifiConfig{}
 	conf.RootProcessGroupId = cluster.Status.RootProcessGroupId
-	conf.nodeURITemplate = generateNodesURITemplate(cluster)
+	conf.NodeURITemplate = generateNodesURITemplate(cluster)
 	conf.NodesURI = generateNodesAddress(cluster)
 	conf.NifiURI = nifi.GenerateRequestNiFiAllNodeAddressFromCluster(cluster)
-	conf.OperationTimeout = nifiDefaultTimeout
+	conf.OperationTimeout = clientconfig.NifiDefaultTimeout
 
 	if cluster.Spec.ListenersConfig.SSLSecrets != nil && UseSSL(cluster) {
 		tlsConfig, err := pki.GetPKIManager(client, cluster).GetControllerTLSConfig()
@@ -57,12 +55,12 @@ func UseSSL(cluster *v1alpha1.NifiCluster) bool {
 	return cluster.Spec.ListenersConfig.SSLSecrets != nil
 }
 
-func generateNodesAddress(cluster *v1alpha1.NifiCluster) map[int32]nodeUri {
-	addresses := make(map[int32]nodeUri)
+func generateNodesAddress(cluster *v1alpha1.NifiCluster) map[int32]clientconfig.NodeUri {
+	addresses := make(map[int32]clientconfig.NodeUri)
 
 	for nId, state := range cluster.Status.NodesState {
 		if !(state.GracefulActionState.State.IsRunningState() || state.GracefulActionState.State.IsRequiredState()) && state.GracefulActionState.ActionStep != v1alpha1.RemoveStatus {
-			addresses[util.ConvertStringToInt32(nId)] = nodeUri{
+			addresses[util.ConvertStringToInt32(nId)] = clientconfig.NodeUri{
 				HostListener: nifi.GenerateHostListenerNodeAddressFromCluster(util.ConvertStringToInt32(nId), cluster),
 				RequestHost:  nifi.GenerateRequestNiFiNodeAddressFromCluster(util.ConvertStringToInt32(nId), cluster),
 			}

@@ -16,6 +16,7 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	"time"
 
 	"emperror.dev/errors"
@@ -101,7 +102,7 @@ func ApplyClusterRefLabel(cluster *v1alpha1.NifiCluster, labels map[string]strin
 }
 
 // applyClusterRefLabel ensures a map of labels contains a reference to a parent nifi cluster
-func ApplyClusterReferenceLabel(cluster v1alpha1.ClusterConnect, labels map[string]string) map[string]string {
+func ApplyClusterReferenceLabel(cluster clientconfig.ClusterConnect, labels map[string]string) map[string]string {
 	labelValue := cluster.ClusterLabelString()
 	if labels == nil {
 		labels = make(map[string]string, 0)

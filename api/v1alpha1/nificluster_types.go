@@ -656,11 +656,11 @@ func (nSpec *NifiClusterSpec) GetMetricPort() *int {
 	return nil
 }
 
-func (cluster *NifiCluster) IsExternal() bool{
+func (cluster *NifiCluster) IsExternal() bool {
 	return false
 }
 
-func (cluster *NifiCluster) IsInternal() bool{
+func (cluster *NifiCluster) IsInternal() bool {
 	return true
 }
 
@@ -669,7 +669,7 @@ func (cluster *NifiCluster) ClusterLabelString() string {
 }
 
 func (cluster NifiCluster) IsReady() bool {
-	for _,nodeState := range cluster.Status.NodesState {
+	for _, nodeState := range cluster.Status.NodesState {
 		if nodeState.ConfigurationState != ConfigInSync || nodeState.GracefulActionState.State != GracefulUpscaleSucceeded ||
 			!nodeState.PodIsReady {
 			return false
@@ -682,6 +682,6 @@ func (cluster *NifiCluster) Id() string {
 	return cluster.Name
 }
 
-func (cluster *NifiCluster) RootProcessGroupId() string{
+func (cluster *NifiCluster) RootProcessGroupId() string {
 	return cluster.Status.RootProcessGroupId
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/common"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -13,7 +14,7 @@ import (
 
 var log = ctrl.Log.WithName("parametercontext-method")
 
-func ExistParameterContext( parameterContext *v1alpha1.NifiParameterContext, config *nificlient.NifiConfig) (bool, error) {
+func ExistParameterContext(parameterContext *v1alpha1.NifiParameterContext, config *clientconfig.NifiConfig) (bool, error) {
 
 	if parameterContext.Status.Id == "" {
 		return false, nil
@@ -36,7 +37,7 @@ func ExistParameterContext( parameterContext *v1alpha1.NifiParameterContext, con
 }
 
 func CreateParameterContext(parameterContext *v1alpha1.NifiParameterContext, parameterSecrets []*corev1.Secret,
-	config *nificlient.NifiConfig) (*v1alpha1.NifiParameterContextStatus, error) {
+	config *clientconfig.NifiConfig) (*v1alpha1.NifiParameterContextStatus, error) {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -58,7 +59,7 @@ func CreateParameterContext(parameterContext *v1alpha1.NifiParameterContext, par
 }
 
 func SyncParameterContext(parameterContext *v1alpha1.NifiParameterContext, parameterSecrets []*corev1.Secret,
-	config *nificlient.NifiConfig) (*v1alpha1.NifiParameterContextStatus, error) {
+	config *clientconfig.NifiConfig) (*v1alpha1.NifiParameterContextStatus, error) {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -107,7 +108,7 @@ func SyncParameterContext(parameterContext *v1alpha1.NifiParameterContext, param
 }
 
 func RemoveParameterContext(parameterContext *v1alpha1.NifiParameterContext, parameterSecrets []*corev1.Secret,
-	config *nificlient.NifiConfig) error {
+	config *clientconfig.NifiConfig) error {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {

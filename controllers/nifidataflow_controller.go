@@ -24,8 +24,9 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/dataflow"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
-	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
+	"github.com/Orange-OpenSource/nifikop/pkg/nificlient/config"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -83,7 +84,7 @@ func (r *NifiDataflowReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Get the last configuration viewed by the operator.
-	o, err :=patch.DefaultAnnotator.GetOriginalConfiguration(instance)
+	o, err := patch.DefaultAnnotator.GetOriginalConfiguration(instance)
 	// Create it if not exist.
 	if o == nil {
 		if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(instance); err != nil {
@@ -92,7 +93,7 @@ func (r *NifiDataflowReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if err := r.Client.Update(ctx, instance); err != nil {
 			return RequeueWithError(r.Log, "failed to update NifiRegistryClient", err)
 		}
-		o, err =patch.DefaultAnnotator.GetOriginalConfiguration(instance)
+		o, err = patch.DefaultAnnotator.GetOriginalConfiguration(instance)
 	}
 
 	// Check if the cluster reference changed.
@@ -178,13 +179,18 @@ func (r *NifiDataflowReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			errors.New("inconsistent cluster references"))
 	}
 
-	var clientConfig *nificlient.NifiConfig
-	var clusterConnect v1alpha1.ClusterConnect
+	// Prepare cluster connection configurations
+	var clientConfig *clientconfig.NifiConfig
+	var clusterConnect clientconfig.ClusterConnect
 
-	// Get the referenced NifiCluster
-	if !instance.Spec.ClusterRef.IsExternal() {
-		var cluster *v1alpha1.NifiCluster
-		if cluster, err = k8sutil.LookupNifiCluster(r.Client, instance.Spec.ClusterRef.Name, currentClusterRef.Namespace); err != nil {
+	// Get the client config manager associated to the cluster ref.
+	clusterRef := instance.Spec.ClusterRef
+	clusterRef.Namespace = currentClusterRef.Namespace
+	configManager := config.GetClientConfigManager(r.Client, clusterRef)
+
+	// Generate the connect object
+	if clusterConnect, err = configManager.BuildConnect(); err != nil {
+		if !configManager.IsExternal() {
 			// This shouldn't trigger anymore, but leaving it here as a safetybelt
 			if k8sutil.IsMarkedForDeletion(instance.ObjectMeta) {
 				r.Log.Info("Cluster is already gone, there is nothing we can do")
@@ -212,16 +218,16 @@ func (r *NifiDataflowReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			// the cluster does not exist - should have been caught pre-flight
 			return RequeueWithError(r.Log, "failed to lookup referenced cluster", err)
 		}
-		clusterConnect = cluster
-		clientConfig, err = nificlient.ClusterConfig(r.Client, cluster)
-		if err != nil {
-			r.Recorder.Event(instance, corev1.EventTypeWarning, "ReferenceClusterError",
-				fmt.Sprintf("Failed to create HTTP client for the referenced cluster : %s in %s",
-					instance.Spec.ClusterRef.Name, currentClusterRef.Namespace))
-			// the cluster does not exist - should have been caught pre-flight
-			return RequeueWithError(r.Log, "failed to create HTTP client the for referenced cluster", err)
-		}
-	} else {
+	}
+
+	// Generate the client configuration.
+	clientConfig, err = configManager.BuildConfig()
+	if err != nil {
+		r.Recorder.Event(instance, corev1.EventTypeWarning, "ReferenceClusterError",
+			fmt.Sprintf("Failed to create HTTP client for the referenced cluster : %s in %s",
+				instance.Spec.ClusterRef.Name, currentClusterRef.Namespace))
+		// the cluster does not exist - should have been caught pre-flight
+		return RequeueWithError(r.Log, "failed to create HTTP client the for referenced cluster", err)
 	}
 
 	// Check if marked for deletion and if so run finalizers
@@ -243,7 +249,7 @@ func (r *NifiDataflowReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// Ìn case of the cluster reference changed.
 	if !v1alpha1.ClusterRefsEquals([]v1alpha1.ClusterReference{instance.Spec.ClusterRef, current.Spec.ClusterRef}) {
 		// Delete the resource on the previous cluster.
-		if _,err := dataflow.RemoveDataflow(instance, clientConfig); err != nil {
+		if _, err := dataflow.RemoveDataflow(instance, clientConfig); err != nil {
 			r.Recorder.Event(instance, corev1.EventTypeWarning, "RemoveError",
 				fmt.Sprintf("Failed to delete NifiDataflow %s from cluster %s before moving in %s",
 					instance.Name, original.Spec.ClusterRef.Name, original.Spec.ClusterRef.Name))
@@ -446,7 +452,7 @@ func (r *NifiDataflowReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *NifiDataflowReconciler) ensureClusterLabel(ctx context.Context,  cluster v1alpha1.ClusterConnect,
+func (r *NifiDataflowReconciler) ensureClusterLabel(ctx context.Context, cluster clientconfig.ClusterConnect,
 	flow *v1alpha1.NifiDataflow) (*v1alpha1.NifiDataflow, error) {
 
 	labels := ApplyClusterReferenceLabel(cluster, flow.GetLabels())
@@ -470,7 +476,7 @@ func (r *NifiDataflowReconciler) updateAndFetchLatest(ctx context.Context,
 }
 
 func (r *NifiDataflowReconciler) checkFinalizers(ctx context.Context, flow *v1alpha1.NifiDataflow,
-	config *nificlient.NifiConfig) (reconcile.Result, error) {
+	config *clientconfig.NifiConfig) (reconcile.Result, error) {
 
 	r.Log.Info("NiFi dataflow is marked for deletion")
 	var err error
@@ -497,7 +503,7 @@ func (r *NifiDataflowReconciler) removeFinalizer(ctx context.Context, flow *v1al
 	return err
 }
 
-func (r *NifiDataflowReconciler) finalizeNifiDataflow(flow *v1alpha1.NifiDataflow, config *nificlient.NifiConfig) error {
+func (r *NifiDataflowReconciler) finalizeNifiDataflow(flow *v1alpha1.NifiDataflow, config *clientconfig.NifiConfig) error {
 
 	exists, err := dataflow.DataflowExist(flow, config)
 	if err != nil {

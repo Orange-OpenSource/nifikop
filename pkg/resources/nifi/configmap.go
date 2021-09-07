@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
+	"github.com/Orange-OpenSource/nifikop/pkg/nificlient/config/nificluster"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,7 +28,6 @@ import (
 	"text/template"
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
-	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates/config"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
@@ -62,7 +62,7 @@ func (r *Reconciler) configMap(id int32, nodeConfig *v1alpha1.NodeConfig, server
 		},
 	}
 
-	if nificlient.UseSSL(r.NifiCluster) {
+	if nificluster.UseSSL(r.NifiCluster) {
 		configMap.Data["authorizers.xml"] = []byte(r.getAuthorizersConfigString(nodeConfig, id, log))
 	}
 	return configMap
@@ -137,7 +137,7 @@ func (r *Reconciler) getNifiPropertiesConfigString(nConfig *v1alpha1.NodeConfig,
 		webProxyHosts = strings.Join(append(dnsNames, base.WebProxyHosts...), ",")
 	}
 
-	useSSL := nificlient.UseSSL(r.NifiCluster)
+	useSSL := nificluster.UseSSL(r.NifiCluster)
 	var out bytes.Buffer
 	t := template.Must(template.New("nConfig-config").Parse(config.NifiPropertiesTemplate))
 	if err := t.Execute(&out, map[string]interface{}{

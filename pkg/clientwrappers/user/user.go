@@ -6,13 +6,14 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/accesspolicies"
 	"github.com/Orange-OpenSource/nifikop/pkg/common"
 	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 var log = ctrl.Log.WithName("user-method")
 
-func ExistUser(user *v1alpha1.NifiUser, config *nificlient.NifiConfig) (bool, error) {
+func ExistUser(user *v1alpha1.NifiUser, config *clientconfig.NifiConfig) (bool, error) {
 
 	if user.Status.Id == "" {
 		return false, nil
@@ -34,7 +35,7 @@ func ExistUser(user *v1alpha1.NifiUser, config *nificlient.NifiConfig) (bool, er
 	return entity != nil, nil
 }
 
-func FindUserByIdentity(user *v1alpha1.NifiUser, config *nificlient.NifiConfig) (*v1alpha1.NifiUserStatus, error) {
+func FindUserByIdentity(user *v1alpha1.NifiUser, config *clientconfig.NifiConfig) (*v1alpha1.NifiUserStatus, error) {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -61,7 +62,7 @@ func FindUserByIdentity(user *v1alpha1.NifiUser, config *nificlient.NifiConfig) 
 	return nil, nil
 }
 
-func CreateUser(user *v1alpha1.NifiUser, config *nificlient.NifiConfig) (*v1alpha1.NifiUserStatus, error) {
+func CreateUser(user *v1alpha1.NifiUser, config *clientconfig.NifiConfig) (*v1alpha1.NifiUserStatus, error) {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -82,7 +83,7 @@ func CreateUser(user *v1alpha1.NifiUser, config *nificlient.NifiConfig) (*v1alph
 	}, nil
 }
 
-func SyncUser(user *v1alpha1.NifiUser, config *nificlient.NifiConfig) (*v1alpha1.NifiUserStatus, error) {
+func SyncUser(user *v1alpha1.NifiUser, config *clientconfig.NifiConfig) (*v1alpha1.NifiUserStatus, error) {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -154,7 +155,7 @@ func SyncUser(user *v1alpha1.NifiUser, config *nificlient.NifiConfig) (*v1alpha1
 	return &status, nil
 }
 
-func RemoveUser(user *v1alpha1.NifiUser, config *nificlient.NifiConfig) error {
+func RemoveUser(user *v1alpha1.NifiUser, config *clientconfig.NifiConfig) error {
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return err

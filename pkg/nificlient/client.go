@@ -16,6 +16,8 @@ package nificlient
 import (
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
+	"github.com/Orange-OpenSource/nifikop/pkg/nificlient/config/nificluster"
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	"net/http"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -141,7 +143,7 @@ type NifiClient interface {
 
 type nifiClient struct {
 	NifiClient
-	opts       *NifiConfig
+	opts       *clientconfig.NifiConfig
 	client     *nigoapi.APIClient
 	nodeClient map[int32]*nigoapi.APIClient
 	timeout    time.Duration
@@ -151,7 +153,7 @@ type nifiClient struct {
 	newClient func(*nigoapi.Configuration) *nigoapi.APIClient
 }
 
-func New(opts *NifiConfig) NifiClient {
+func New(opts *clientconfig.NifiConfig) NifiClient {
 	nClient := &nifiClient{
 		opts:    opts,
 		timeout: time.Duration(opts.OperationTimeout) * time.Second,
@@ -183,7 +185,7 @@ func (n *nifiClient) Build() error {
 }
 
 // NewFromConfig is a convenient wrapper around New() and ClusterConfig()
-func NewFromConfig(opts *NifiConfig) (NifiClient, error) {
+func NewFromConfig(opts *clientconfig.NifiConfig) (NifiClient, error) {
 	var client NifiClient
 	var err error
 
@@ -200,12 +202,12 @@ func NewFromConfig(opts *NifiConfig) (NifiClient, error) {
 func NewFromCluster(k8sclient client.Client, cluster *v1alpha1.NifiCluster) (NifiClient, error) {
 	var client NifiClient
 	var err error
+	var opts *clientconfig.NifiConfig
 
-	opts, err := ClusterConfig(k8sclient, cluster)
-	if err != nil {
+	if opts, err = nificluster.New(k8sclient,
+		v1alpha1.ClusterReference{Name: cluster.Name, Namespace: cluster.Namespace}).BuildConfig(); err != nil {
 		return nil, err
 	}
-
 	client = New(opts)
 	err = client.Build()
 	if err != nil {
@@ -327,7 +329,7 @@ func (n *nifiClient) nodeDtoByNodeId(nId int32) *nigoapi.NodeDto {
 	for id := range n.nodes {
 		nodeDto := n.nodes[id]
 		// Check if the Cluster Node uri match with the one associated to the NifiCluster nodeId searched
-		if fmt.Sprintf("%s:%d", nodeDto.Address, nodeDto.ApiPort) == fmt.Sprintf(n.opts.nodeURITemplate, nId) {
+		if fmt.Sprintf("%s:%d", nodeDto.Address, nodeDto.ApiPort) == fmt.Sprintf(n.opts.NodeURITemplate, nId) {
 			return &nodeDto
 		}
 	}

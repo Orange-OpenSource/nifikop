@@ -15,6 +15,7 @@
 package nificlient
 
 import (
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	"testing"
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
@@ -29,7 +30,7 @@ var (
 
 type mockNiFiClient struct {
 	NifiClient
-	opts       *NifiConfig
+	opts       *clientconfig.NifiConfig
 	client     *nigoapi.APIClient
 	nodeClient map[int32]*nigoapi.APIClient
 	nodes      []nigoapi.NodeDto
@@ -38,8 +39,8 @@ type mockNiFiClient struct {
 	failOpts  bool
 }
 
-func newMockOpts() *NifiConfig {
-	return &NifiConfig{}
+func newMockOpts() *clientconfig.NifiConfig {
+	return &clientconfig.NifiConfig{}
 }
 
 func newMockHttpClient(c *nigoapi.Configuration) *nigoapi.APIClient {

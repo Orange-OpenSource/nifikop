@@ -6,13 +6,14 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/accesspolicies"
 	"github.com/Orange-OpenSource/nifikop/pkg/common"
 	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 var log = ctrl.Log.WithName("usergroup-method")
 
-func ExistUserGroup(userGroup *v1alpha1.NifiUserGroup, config *nificlient.NifiConfig) (bool, error) {
+func ExistUserGroup(userGroup *v1alpha1.NifiUserGroup, config *clientconfig.NifiConfig) (bool, error) {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -37,7 +38,7 @@ func ExistUserGroup(userGroup *v1alpha1.NifiUserGroup, config *nificlient.NifiCo
 }
 
 func CreateUserGroup(userGroup *v1alpha1.NifiUserGroup,
-	users []*v1alpha1.NifiUser, config *nificlient.NifiConfig) (*v1alpha1.NifiUserGroupStatus, error) {
+	users []*v1alpha1.NifiUser, config *clientconfig.NifiConfig) (*v1alpha1.NifiUserGroupStatus, error) {
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return nil, err
@@ -58,7 +59,7 @@ func CreateUserGroup(userGroup *v1alpha1.NifiUserGroup,
 }
 
 func SyncUserGroup(userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.NifiUser,
-	config *nificlient.NifiConfig) (*v1alpha1.NifiUserGroupStatus, error) {
+	config *clientconfig.NifiConfig) (*v1alpha1.NifiUserGroupStatus, error) {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -142,7 +143,7 @@ func SyncUserGroup(userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.NifiUser
 	return &status, nil
 }
 
-func RemoveUserGroup(userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.NifiUser,config *nificlient.NifiConfig) error {
+func RemoveUserGroup(userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.NifiUser, config *clientconfig.NifiConfig) error {
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return err

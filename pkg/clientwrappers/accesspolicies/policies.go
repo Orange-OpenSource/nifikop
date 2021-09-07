@@ -5,13 +5,14 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers"
 	"github.com/Orange-OpenSource/nifikop/pkg/common"
 	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 var log = ctrl.Log.WithName("accesspolicies-method")
 
-func ExistAccessPolicies(accessPolicy *v1alpha1.AccessPolicy, config *nificlient.NifiConfig) (bool, error) {
+func ExistAccessPolicies(accessPolicy *v1alpha1.AccessPolicy, config *clientconfig.NifiConfig) (bool, error) {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -29,7 +30,7 @@ func ExistAccessPolicies(accessPolicy *v1alpha1.AccessPolicy, config *nificlient
 	return entity != nil, nil
 }
 
-func CreateAccessPolicy(accessPolicy *v1alpha1.AccessPolicy, config *nificlient.NifiConfig) (string, error) {
+func CreateAccessPolicy(accessPolicy *v1alpha1.AccessPolicy, config *clientconfig.NifiConfig) (string, error) {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -58,7 +59,7 @@ func UpdateAccessPolicy(
 	removeUsers []*v1alpha1.NifiUser,
 	addUserGroups []*v1alpha1.NifiUserGroup,
 	removeUserGroups []*v1alpha1.NifiUserGroup,
-	config *nificlient.NifiConfig) error {
+	config *clientconfig.NifiConfig) error {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -94,7 +95,7 @@ func UpdateAccessPolicyEntity(
 	removeUsers []*v1alpha1.NifiUser,
 	addUserGroups []*v1alpha1.NifiUserGroup,
 	removeUserGroups []*v1alpha1.NifiUserGroup,
-	config *nificlient.NifiConfig) error {
+	config *clientconfig.NifiConfig) error {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -119,7 +120,7 @@ func updateAccessPolicyEntity(
 	removeUsers []*v1alpha1.NifiUser,
 	addUserGroups []*v1alpha1.NifiUserGroup,
 	removeUserGroups []*v1alpha1.NifiUserGroup,
-	config *nificlient.NifiConfig,
+	config *clientconfig.NifiConfig,
 	entity *nigoapi.AccessPolicyEntity) {
 
 	var defaultVersion int64 = 0

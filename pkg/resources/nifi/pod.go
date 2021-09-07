@@ -16,12 +16,12 @@ package nifi
 
 import (
 	"fmt"
+	"github.com/Orange-OpenSource/nifikop/pkg/nificlient/config/nificluster"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sort"
 	"strings"
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
-	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
 	nifiutil "github.com/Orange-OpenSource/nifikop/pkg/util/nifi"
@@ -401,7 +401,7 @@ func (r *Reconciler) createNifiNodeContainer(nodeConfig *v1alpha1.NodeConfig, id
 	requestClusterStatus := fmt.Sprintf("curl --fail -v http://%s/nifi-api/controller/cluster > $NIFI_BASE_DIR/cluster.state",
 		nifiutil.GenerateRequestNiFiAllNodeAddressFromCluster(r.NifiCluster))
 
-	if nificlient.UseSSL(r.NifiCluster) {
+	if nificluster.UseSSL(r.NifiCluster) {
 		requestClusterStatus = fmt.Sprintf(
 			"curl --fail -kv --cert /var/run/secrets/java.io/keystores/client/tls.crt --key /var/run/secrets/java.io/keystores/client/tls.key https://%s/nifi-api/controller/cluster > $NIFI_BASE_DIR/cluster.state",
 			nifiutil.GenerateRequestNiFiAllNodeAddressFromCluster(r.NifiCluster))

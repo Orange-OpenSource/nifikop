@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -31,7 +32,7 @@ var NewNifiFromConfig = nificlient.NewFromConfig
 
 // newNodeConnection is a convenience wrapper for creating a node connection
 // and creating a safer close function
-func NewClusterConnection(log logr.Logger, config *nificlient.NifiConfig) (node nificlient.NifiClient, err error) {
+func NewClusterConnection(log logr.Logger, config *clientconfig.NifiConfig) (node nificlient.NifiClient, err error) {
 
 	// Get a nifi connection
 	node, err = NewNifiFromConfig(config)

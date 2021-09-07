@@ -1,6 +1,7 @@
 package dataflow
 
 import (
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	"strings"
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
@@ -15,7 +16,7 @@ import (
 var log = ctrl.Log.WithName("dataflow-method")
 
 // DataflowExist check if the NifiDataflow exist on NiFi Cluster
-func DataflowExist(flow *v1alpha1.NifiDataflow, config *nificlient.NifiConfig) (bool, error) {
+func DataflowExist(flow *v1alpha1.NifiDataflow, config *clientconfig.NifiConfig) (bool, error) {
 
 	if flow.Status.ProcessGroupID == "" {
 		return false, nil
@@ -37,7 +38,7 @@ func DataflowExist(flow *v1alpha1.NifiDataflow, config *nificlient.NifiConfig) (
 	return flowEntity != nil, nil
 }
 
-func RootProcessGroup(config *nificlient.NifiConfig) (string, error) {
+func RootProcessGroup(config *clientconfig.NifiConfig) (string, error) {
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return "", err
@@ -55,7 +56,7 @@ func RootProcessGroup(config *nificlient.NifiConfig) (string, error) {
 }
 
 // CreateDataflow will deploy the NifiDataflow on NiFi Cluster
-func CreateDataflow(flow *v1alpha1.NifiDataflow, config *nificlient.NifiConfig,
+func CreateDataflow(flow *v1alpha1.NifiDataflow, config *clientconfig.NifiConfig,
 	registry *v1alpha1.NifiRegistryClient) (*v1alpha1.NifiDataflowStatus, error) {
 
 	nClient, err := common.NewClusterConnection(log, config)
@@ -77,7 +78,7 @@ func CreateDataflow(flow *v1alpha1.NifiDataflow, config *nificlient.NifiConfig,
 }
 
 // ScheduleDataflow will schedule the controller services and components of the NifiDataflow.
-func ScheduleDataflow(flow *v1alpha1.NifiDataflow, config *nificlient.NifiConfig) error {
+func ScheduleDataflow(flow *v1alpha1.NifiDataflow, config *clientconfig.NifiConfig) error {
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return err
@@ -133,7 +134,7 @@ func ScheduleDataflow(flow *v1alpha1.NifiDataflow, config *nificlient.NifiConfig
 // IsOutOfSyncDataflow control if the deployed dataflow is out of sync with the NifiDataflow resource
 func IsOutOfSyncDataflow(
 	flow *v1alpha1.NifiDataflow,
-	config *nificlient.NifiConfig,
+	config *clientconfig.NifiConfig,
 	registry *v1alpha1.NifiRegistryClient,
 	parameterContext *v1alpha1.NifiParameterContext) (bool, error) {
 
@@ -180,7 +181,7 @@ func isParameterContextChanged(
 
 func isParentProcessGroupChanged(
 	flow *v1alpha1.NifiDataflow,
-	config *nificlient.NifiConfig,
+	config *clientconfig.NifiConfig,
 	pgFlowEntity *nigoapi.ProcessGroupEntity) bool {
 	return flow.Spec.GetParentProcessGroupID(config.RootProcessGroupId) != pgFlowEntity.Component.ParentGroupId
 }
@@ -213,7 +214,7 @@ func isVersioningChanged(
 // SyncDataflow implements the logic to sync a NifiDataflow with the deployed flow.
 func SyncDataflow(
 	flow *v1alpha1.NifiDataflow,
-	config *nificlient.NifiConfig,
+	config *clientconfig.NifiConfig,
 	registry *v1alpha1.NifiRegistryClient,
 	parameterContext *v1alpha1.NifiParameterContext) (*v1alpha1.NifiDataflowStatus, error) {
 
@@ -390,7 +391,7 @@ func SyncDataflow(
 }
 
 // prepareUpdatePG ensure drain or drop logic
-func prepareUpdatePG(flow *v1alpha1.NifiDataflow, config *nificlient.NifiConfig) (*v1alpha1.NifiDataflowStatus, error) {
+func prepareUpdatePG(flow *v1alpha1.NifiDataflow, config *clientconfig.NifiConfig) (*v1alpha1.NifiDataflowStatus, error) {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -500,7 +501,7 @@ func prepareUpdatePG(flow *v1alpha1.NifiDataflow, config *nificlient.NifiConfig)
 	return &flow.Status, nil
 }
 
-func RemoveDataflow(flow *v1alpha1.NifiDataflow,config *nificlient.NifiConfig) (*v1alpha1.NifiDataflowStatus, error) {
+func RemoveDataflow(flow *v1alpha1.NifiDataflow, config *clientconfig.NifiConfig) (*v1alpha1.NifiDataflowStatus, error) {
 
 	// Prepare Dataflow
 	status, err := prepareUpdatePG(flow, config)
@@ -534,7 +535,7 @@ func RemoveDataflow(flow *v1alpha1.NifiDataflow,config *nificlient.NifiConfig) (
 	return nil, nil
 }
 
-func UnscheduleDataflow(flow *v1alpha1.NifiDataflow,config *nificlient.NifiConfig) error {
+func UnscheduleDataflow(flow *v1alpha1.NifiDataflow, config *clientconfig.NifiConfig) error {
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return err
@@ -603,7 +604,7 @@ func processGroupFromFlow(
 }
 
 // listComponents will get all ProcessGroups, Processors, Connections and Ports recursively
-func listComponents(config *nificlient.NifiConfig,
+func listComponents(config *clientconfig.NifiConfig,
 	processGroupID string) ([]nigoapi.ProcessGroupEntity, []nigoapi.ProcessorEntity, []nigoapi.ConnectionEntity, []nigoapi.PortEntity, error) {
 
 	var processGroups []nigoapi.ProcessGroupEntity
@@ -679,7 +680,7 @@ func updateRequest2Status(updateRequest *nigoapi.VersionedFlowUpdateRequestEntit
 func updateProcessGroupEntity(
 	flow *v1alpha1.NifiDataflow,
 	registry *v1alpha1.NifiRegistryClient,
-	config *nificlient.NifiConfig,
+	config *clientconfig.NifiConfig,
 	entity *nigoapi.ProcessGroupEntity) {
 
 	stringFactory := func() string { return "" }

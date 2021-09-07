@@ -48,6 +48,9 @@ type InitClusterNode bool
 // PKIBackend represents an interface implementing the PKIManager
 type PKIBackend string
 
+// ClientConfigType represents an interface implementing the  ClientConfigManager
+type ClientConfigType string
+
 // AccessPolicyType represents the type of access policy
 type AccessPolicyType string
 
@@ -114,39 +117,35 @@ type SecretConfigReference struct {
 	Data string `json:"data"`
 }
 
-const(
-	EXTERNAL_REFERENCE string  = "external"
-	INTERNAL_REFERENCE string  = "internal"
+const (
+	EXTERNAL_REFERENCE string = "external"
+	INTERNAL_REFERENCE string = "internal"
 )
-
-type ClusterConnect interface {
-	//NodeConnection(log logr.Logger, client client.Client) (node nificlient.NifiClient, err error)
-	IsInternal() bool
-	IsExternal() bool
-	ClusterLabelString() string
-	IsReady() bool
-	Id() string
-}
 
 // ClusterReference states a reference to a cluster for dataflow/registryclient/user
 // provisioning
 type ClusterReference struct {
-	Name      string          `json:"name,omitempty"`
-	Namespace string          `json:"namespace,omitempty"`
-	Type      string          `json:"type,omitempty"`
-	Hostname  string          `json:"hostname,omitempty"`
-	SecretRef SecretReference `json:"secretRef,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
+	// +kubebuilder:validation:Enum={"external-tls","nificluster","external-basic"}
+	Type               ClientConfigType `json:"type,omitempty"`
+	NodeURITemplate    string           `json:"nodeURITemplate,omitempty"`
+	NodeIds            []int32          `json:"nodeIds,omitempty"`
+	NifiURI            string           `json:"nifiURI,omitempty"`
+	RootProcessGroupId string           `json:"rootProcessGroupId,omitempty"`
+	SecretRef          SecretReference  `json:"secretRef,omitempty"`
 }
 
-func (c *ClusterReference) GetType() string {
-	if c.Type == "" || c.Type != EXTERNAL_REFERENCE {
-		return INTERNAL_REFERENCE
+func (c *ClusterReference) GetType() ClientConfigType {
+	if c.Type == "" {
+		return ClientConfigNiFiCluster
 	}
-	return EXTERNAL_REFERENCE
+	return c.Type
 }
 
-func (c *ClusterReference) IsSet() bool{
-	return (c.Name != "" && c.GetType() == INTERNAL_REFERENCE) || (c.Hostname != "" &&  c.GetType() == EXTERNAL_REFERENCE)
+// @TODO
+func (c *ClusterReference) IsSet() bool {
+	return (c.Name != "" && c.GetType() == ClientConfigNiFiCluster) || (c.NodeURITemplate != "" && c.GetType() != "" && c.GetType() != ClientConfigNiFiCluster)
 }
 
 // RegistryClientReference states a reference to a registry client for dataflow
@@ -276,6 +275,12 @@ const (
 	// TODO : Add vault
 	//PKIBackendVault invokes vault PKI for user certificate management
 	//PKIBackendVault PKIBackend = "vault"
+)
+
+const (
+	ClientConfigNiFiCluster   ClientConfigType = "nificluster"
+	ClientConfigExternalTLS   ClientConfigType = "external-tls"
+	ClientConfigExternalBasic ClientConfigType = "external-basic"
 )
 
 const (
@@ -419,11 +424,11 @@ const (
 )
 
 func ClusterRefsEquals(clusterRefs []ClusterReference) bool {
-	c1       := clusterRefs[0]
-	refType  := c1.Type
-	hostname := c1.Hostname
-	name     := c1.Name
-	ns       := c1.Namespace
+	c1 := clusterRefs[0]
+	refType := c1.Type
+	hostname := c1.NodeURITemplate
+	name := c1.Name
+	ns := c1.Namespace
 
 	var secretRefs []SecretReference
 	for _, cluster := range clusterRefs {
@@ -431,7 +436,7 @@ func ClusterRefsEquals(clusterRefs []ClusterReference) bool {
 			return false
 		}
 		if c1.IsExternal() {
-			if hostname != cluster.Hostname {
+			if hostname != cluster.NodeURITemplate {
 				return false
 			}
 			secretRefs = append(secretRefs, SecretReference{Name: cluster.SecretRef.Name, Namespace: cluster.Namespace})
@@ -446,13 +451,13 @@ func ClusterRefsEquals(clusterRefs []ClusterReference) bool {
 	return true
 }
 
-func (c ClusterReference) IsExternal() bool{
-	return c.Type == EXTERNAL_REFERENCE
+func (c ClusterReference) IsExternal() bool {
+	return c.Type != ClientConfigNiFiCluster
 }
 
 func SecretRefsEquals(secretRefs []SecretReference) bool {
 	name := secretRefs[0].Name
-	ns   := secretRefs[0].Namespace
+	ns := secretRefs[0].Namespace
 	for _, secretRef := range secretRefs {
 		if name != secretRef.Name || ns != secretRef.Namespace {
 			return false

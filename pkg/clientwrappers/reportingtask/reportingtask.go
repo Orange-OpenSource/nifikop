@@ -6,6 +6,7 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/common"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"strconv"
@@ -23,7 +24,7 @@ const (
 	reportingTaskSendJVM             = "true"
 )
 
-func ExistReportingTaks(config *nificlient.NifiConfig, cluster *v1alpha1.NifiCluster) (bool, error) {
+func ExistReportingTaks(config *clientconfig.NifiConfig, cluster *v1alpha1.NifiCluster) (bool, error) {
 
 	if cluster.Status.PrometheusReportingTask.Id == "" {
 		return false, nil
@@ -45,7 +46,7 @@ func ExistReportingTaks(config *nificlient.NifiConfig, cluster *v1alpha1.NifiClu
 	return entity != nil, nil
 }
 
-func CreateReportingTask(config *nificlient.NifiConfig, cluster *v1alpha1.NifiCluster) (*v1alpha1.PrometheusReportingTaskStatus, error) {
+func CreateReportingTask(config *clientconfig.NifiConfig, cluster *v1alpha1.NifiCluster) (*v1alpha1.PrometheusReportingTaskStatus, error) {
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return nil, err
@@ -65,7 +66,7 @@ func CreateReportingTask(config *nificlient.NifiConfig, cluster *v1alpha1.NifiCl
 	}, nil
 }
 
-func SyncReportingTask(config *nificlient.NifiConfig, cluster *v1alpha1.NifiCluster) (*v1alpha1.PrometheusReportingTaskStatus, error) {
+func SyncReportingTask(config *clientconfig.NifiConfig, cluster *v1alpha1.NifiCluster) (*v1alpha1.PrometheusReportingTaskStatus, error) {
 
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
@@ -123,7 +124,7 @@ func SyncReportingTask(config *nificlient.NifiConfig, cluster *v1alpha1.NifiClus
 	return &status, nil
 }
 
-func RemoveReportingTaks(config *nificlient.NifiConfig, cluster *v1alpha1.NifiCluster) error {
+func RemoveReportingTaks(config *clientconfig.NifiConfig, cluster *v1alpha1.NifiCluster) error {
 	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return err

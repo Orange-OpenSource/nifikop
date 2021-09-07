@@ -1,4 +1,4 @@
-package nificlient
+package nificluster
 
 import (
 	"fmt"
@@ -82,7 +82,7 @@ func TestClusterConfig(t *testing.T) {
 
 func testClusterConfig(t *testing.T, cluster *v1alpha1.NifiCluster, expectedUseSSL bool) {
 	assert := assert.New(t)
-	conf, err := ClusterConfig(mockClient{}, cluster)
+	conf, err := clusterConfig(mockClient{}, cluster)
 	assert.Nil(err)
 	assert.Equal(expectedUseSSL, conf.UseSSL)
 
@@ -95,7 +95,7 @@ func testClusterConfig(t *testing.T, cluster *v1alpha1.NifiCluster, expectedUseS
 	assert.Equal(
 		fmt.Sprintf("%s-%s-node.%s.svc.cluster.local:%d",
 			clusterName, "%d", clusterNamespace, httpContainerPort),
-		conf.nodeURITemplate)
+		conf.NodeURITemplate)
 
 	assert.Equal(1, len(conf.NodesURI))
 	assert.NotNil(conf.NodesURI[succeededNodeId])
