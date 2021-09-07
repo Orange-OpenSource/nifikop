@@ -28,7 +28,7 @@ func (n *nifiCluster) BuildConnect() (cluster clientconfig.ClusterConnect, err e
 }
 
 func (n *nifiCluster) IsExternal() bool {
-	return n.IsExternal()
+	return false
 }
 
 // ClusterConfig creates connection options from a NifiCluster CR
