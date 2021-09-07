@@ -150,9 +150,9 @@ func (d *NifiDataflowSpec) GetRunOnce() bool {
 	return true
 }
 
-func (d *NifiDataflowSpec) GetParentProcessGroupID(cluster *NifiCluster) string {
+func (d *NifiDataflowSpec) GetParentProcessGroupID(rootProcessGroupId string) string {
 	if d.ParentProcessGroupID == "" {
-		return cluster.Status.RootProcessGroupId
+		return rootProcessGroupId
 	}
 	return d.ParentProcessGroupID
 }

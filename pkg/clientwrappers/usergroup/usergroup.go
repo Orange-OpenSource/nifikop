@@ -8,15 +8,13 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var log = ctrl.Log.WithName("usergroup-method")
 
-func ExistUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup,
-	cluster *v1alpha1.NifiCluster) (bool, error) {
+func ExistUserGroup(userGroup *v1alpha1.NifiUserGroup, config *nificlient.NifiConfig) (bool, error) {
 
-	nClient, err := common.NewNodeConnection(log, client, cluster)
+	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return false, err
 	}
@@ -38,9 +36,9 @@ func ExistUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup,
 	return false, nil
 }
 
-func CreateUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.NifiUser,
-	cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiUserGroupStatus, error) {
-	nClient, err := common.NewNodeConnection(log, client, cluster)
+func CreateUserGroup(userGroup *v1alpha1.NifiUserGroup,
+	users []*v1alpha1.NifiUser, config *nificlient.NifiConfig) (*v1alpha1.NifiUserGroupStatus, error) {
+	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return nil, err
 	}
@@ -59,10 +57,10 @@ func CreateUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup, us
 	}, nil
 }
 
-func SyncUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.NifiUser,
-	cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiUserGroupStatus, error) {
+func SyncUserGroup(userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.NifiUser,
+	config *nificlient.NifiConfig) (*v1alpha1.NifiUserGroupStatus, error) {
 
-	nClient, err := common.NewNodeConnection(log, client, cluster)
+	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return nil, err
 	}
@@ -108,15 +106,15 @@ func SyncUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup, user
 		contains := false
 		for _, accessPolicy := range userGroup.Spec.AccessPolicies {
 			if entity.Component.Action == string(accessPolicy.Action) &&
-				entity.Component.Resource == accessPolicy.GetResource(cluster) {
+				entity.Component.Resource == accessPolicy.GetResource(config.RootProcessGroupId) {
 				contains = true
 				break
 			}
 		}
 		if !contains {
-			if err := accesspolicies.UpdateAccessPolicyEntity(client, &entity,
+			if err := accesspolicies.UpdateAccessPolicyEntity(&entity,
 				[]*v1alpha1.NifiUser{}, []*v1alpha1.NifiUser{},
-				[]*v1alpha1.NifiUserGroup{}, []*v1alpha1.NifiUserGroup{userGroup}, cluster); err != nil {
+				[]*v1alpha1.NifiUserGroup{}, []*v1alpha1.NifiUserGroup{userGroup}, config); err != nil {
 				return &status, err
 			}
 		}
@@ -127,15 +125,15 @@ func SyncUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup, user
 		contains := false
 		for _, entity := range entity.Component.AccessPolicies {
 			if entity.Component.Action == string(accessPolicy.Action) &&
-				entity.Component.Resource == accessPolicy.GetResource(cluster) {
+				entity.Component.Resource == accessPolicy.GetResource(config.RootProcessGroupId) {
 				contains = true
 				break
 			}
 		}
 		if !contains {
-			if err := accesspolicies.UpdateAccessPolicy(client, &accessPolicy,
+			if err := accesspolicies.UpdateAccessPolicy(&accessPolicy,
 				[]*v1alpha1.NifiUser{}, []*v1alpha1.NifiUser{},
-				[]*v1alpha1.NifiUserGroup{userGroup}, []*v1alpha1.NifiUserGroup{}, cluster); err != nil {
+				[]*v1alpha1.NifiUserGroup{userGroup}, []*v1alpha1.NifiUserGroup{}, config); err != nil {
 				return &status, err
 			}
 		}
@@ -144,9 +142,8 @@ func SyncUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup, user
 	return &status, nil
 }
 
-func RemoveUserGroup(client client.Client, userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.NifiUser,
-	cluster *v1alpha1.NifiCluster) error {
-	nClient, err := common.NewNodeConnection(log, client, cluster)
+func RemoveUserGroup(userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.NifiUser,config *nificlient.NifiConfig) error {
+	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return err
 	}

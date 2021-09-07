@@ -98,12 +98,25 @@ spec:
                 description: contains the reference to the NifiCluster with the one
                   the user is linked
                 properties:
+                  hostname:
+                    type: string
                   name:
                     type: string
                   namespace:
                     type: string
-                required:
-                - name
+                  secretRef:
+                    description: SecretReference states a reference to a secret for
+                      parameter context provisioning
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  type:
+                    type: string
                 type: object
               createCert:
                 description: Whether or not a certificate will be created for this

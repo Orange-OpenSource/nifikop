@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -653,4 +654,34 @@ func (nSpec *NifiClusterSpec) GetMetricPort() *int {
 	}
 
 	return nil
+}
+
+func (cluster *NifiCluster) IsExternal() bool{
+	return false
+}
+
+func (cluster *NifiCluster) IsInternal() bool{
+	return true
+}
+
+func (cluster *NifiCluster) ClusterLabelString() string {
+	return fmt.Sprintf("%s.%s", cluster.Name, cluster.Namespace)
+}
+
+func (cluster NifiCluster) IsReady() bool {
+	for _,nodeState := range cluster.Status.NodesState {
+		if nodeState.ConfigurationState != ConfigInSync || nodeState.GracefulActionState.State != GracefulUpscaleSucceeded ||
+			!nodeState.PodIsReady {
+			return false
+		}
+	}
+	return cluster.Status.State.IsReady()
+}
+
+func (cluster *NifiCluster) Id() string {
+	return cluster.Name
+}
+
+func (cluster *NifiCluster) RootProcessGroupId() string{
+	return cluster.Status.RootProcessGroupId
 }

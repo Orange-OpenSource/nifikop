@@ -100,6 +100,22 @@ func ApplyClusterRefLabel(cluster *v1alpha1.NifiCluster, labels map[string]strin
 	return labels
 }
 
+// applyClusterRefLabel ensures a map of labels contains a reference to a parent nifi cluster
+func ApplyClusterReferenceLabel(cluster v1alpha1.ClusterConnect, labels map[string]string) map[string]string {
+	labelValue := cluster.ClusterLabelString()
+	if labels == nil {
+		labels = make(map[string]string, 0)
+	}
+	if label, ok := labels[ClusterRefLabel]; ok {
+		if label != labelValue {
+			labels[ClusterRefLabel] = labelValue
+		}
+	} else {
+		labels[ClusterRefLabel] = labelValue
+	}
+	return labels
+}
+
 // getClusterRefNamespace returns the expected namespace for a Nifi cluster
 // referenced by a user/dataflow CR. It takes the namespace of the CR as the first
 // argument and the reference itself as the second.

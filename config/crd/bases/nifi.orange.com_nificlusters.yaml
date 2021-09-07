@@ -4383,10 +4383,15 @@ spec:
                       description: InitClusterNode contains if this nodes was part
                         of the initial cluster
                       type: boolean
+                    podIsReady:
+                      description: PodIsReady whether or not the associated pod is
+                        ready
+                      type: boolean
                   required:
                   - configurationState
                   - gracefulActionState
                   - initClusterNode
+                  - podIsReady
                   type: object
                 description: Store the state of each nifi node
                 type: object

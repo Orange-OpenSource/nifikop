@@ -15,7 +15,6 @@
 package nificlient
 
 import (
-	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 )
 
@@ -62,21 +61,21 @@ func (n *nifiClient) GetClusterNode(nId int32) (*nigoapi.NodeEntity, error) {
 
 func (n *nifiClient) DisconnectClusterNode(nId int32) (*nigoapi.NodeEntity, error) {
 	// Request to update the node status to DISCONNECTING
-	nodeEntity, err := n.setClusterNodeStatus(nId, v1alpha1.DisconnectNodeAction, v1alpha1.DisconnectStatus)
+	nodeEntity, err := n.setClusterNodeStatus(nId, DISCONNECTING_STATUS, DISCONNECTED_STATUS)
 
 	return setClusterNodeStatusReturn(nodeEntity, err, "Disconnect cluster gracefully failed since Nifi node returned non 200")
 }
 
 func (n *nifiClient) ConnectClusterNode(nId int32) (*nigoapi.NodeEntity, error) {
 	// Request to update the node status to CONNECTING
-	nodeEntity, err := n.setClusterNodeStatus(nId, v1alpha1.ConnectNodeAction, v1alpha1.ConnectStatus)
+	nodeEntity, err := n.setClusterNodeStatus(nId, CONNECTING_STATUS, CONNECTED_STATUS)
 
 	return setClusterNodeStatusReturn(nodeEntity, err, "Connect node gracefully failed since Nifi node returned non 200")
 }
 
 func (n *nifiClient) OffloadClusterNode(nId int32) (*nigoapi.NodeEntity, error) {
 	// Request to update the node status to OFFLOADING
-	nodeEntity, err := n.setClusterNodeStatus(nId, v1alpha1.OffloadNodeAction, v1alpha1.OffloadStatus)
+	nodeEntity, err := n.setClusterNodeStatus(nId, OFFLOADING_STATUS, OFFLOADED_STATUS)
 
 	return setClusterNodeStatusReturn(nodeEntity, err, "Offload node gracefully failed since Nifi node returned non 200")
 }
@@ -116,7 +115,7 @@ func (n *nifiClient) RemoveClusterNodeFromClusterNodeId(nId string) error {
 	return errorDeleteOperation(rsp, body, err)
 }
 
-func (n *nifiClient) setClusterNodeStatus(nId int32, status, expectedActionStatus v1alpha1.ActionStep) (*nigoapi.NodeEntity, error) {
+func (n *nifiClient) setClusterNodeStatus(nId int32, status, expectedActionStatus string) (*nigoapi.NodeEntity, error) {
 	// Find the Cluster node associated to the NifiCluster nodeId
 	targetedNode := n.nodeDtoByNodeId(nId)
 	if targetedNode == nil {
@@ -126,8 +125,8 @@ func (n *nifiClient) setClusterNodeStatus(nId int32, status, expectedActionStatu
 
 	// Check if the targeted node is still in expected status
 	// TODO : ensure it may not leads to inconsistent situations
-	if targetedNode.Status == string(expectedActionStatus) ||
-		targetedNode.Status == string(status) {
+	if targetedNode.Status == expectedActionStatus ||
+		targetedNode.Status == status {
 
 		node := nigoapi.NodeEntity{Node: targetedNode}
 		return &node, nil

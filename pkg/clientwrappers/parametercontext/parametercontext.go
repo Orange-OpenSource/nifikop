@@ -9,19 +9,17 @@ import (
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var log = ctrl.Log.WithName("parametercontext-method")
 
-func ExistParameterContext(client client.Client, parameterContext *v1alpha1.NifiParameterContext,
-	cluster *v1alpha1.NifiCluster) (bool, error) {
+func ExistParameterContext( parameterContext *v1alpha1.NifiParameterContext, config *nificlient.NifiConfig) (bool, error) {
 
 	if parameterContext.Status.Id == "" {
 		return false, nil
 	}
 
-	nClient, err := common.NewNodeConnection(log, client, cluster)
+	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return false, err
 	}
@@ -37,12 +35,10 @@ func ExistParameterContext(client client.Client, parameterContext *v1alpha1.Nifi
 	return entity != nil, nil
 }
 
-func CreateParameterContext(
-	client client.Client,
-	parameterContext *v1alpha1.NifiParameterContext,
-	parameterSecrets []*corev1.Secret,
-	cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiParameterContextStatus, error) {
-	nClient, err := common.NewNodeConnection(log, client, cluster)
+func CreateParameterContext(parameterContext *v1alpha1.NifiParameterContext, parameterSecrets []*corev1.Secret,
+	config *nificlient.NifiConfig) (*v1alpha1.NifiParameterContextStatus, error) {
+
+	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return nil, err
 	}
@@ -61,13 +57,10 @@ func CreateParameterContext(
 	return &parameterContext.Status, nil
 }
 
-func SyncParameterContext(
-	client client.Client,
-	parameterContext *v1alpha1.NifiParameterContext,
-	parameterSecrets []*corev1.Secret,
-	cluster *v1alpha1.NifiCluster) (*v1alpha1.NifiParameterContextStatus, error) {
+func SyncParameterContext(parameterContext *v1alpha1.NifiParameterContext, parameterSecrets []*corev1.Secret,
+	config *nificlient.NifiConfig) (*v1alpha1.NifiParameterContextStatus, error) {
 
-	nClient, err := common.NewNodeConnection(log, client, cluster)
+	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return nil, err
 	}
@@ -113,12 +106,10 @@ func SyncParameterContext(
 	return &status, nil
 }
 
-func RemoveParameterContext(client client.Client,
-	parameterContext *v1alpha1.NifiParameterContext,
-	parameterSecrets []*corev1.Secret,
-	cluster *v1alpha1.NifiCluster) error {
+func RemoveParameterContext(parameterContext *v1alpha1.NifiParameterContext, parameterSecrets []*corev1.Secret,
+	config *nificlient.NifiConfig) error {
 
-	nClient, err := common.NewNodeConnection(log, client, cluster)
+	nClient, err := common.NewClusterConnection(log, config)
 	if err != nil {
 		return err
 	}

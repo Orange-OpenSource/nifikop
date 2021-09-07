@@ -19,11 +19,14 @@ package controllers
 import (
 	"context"
 	"emperror.dev/errors"
+	"encoding/json"
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/parametercontext"
 	errorfactory "github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
+	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/record"
@@ -78,6 +81,28 @@ func (r *NifiParameterContextReconciler) Reconcile(ctx context.Context, req ctrl
 		return RequeueWithError(r.Log, err.Error(), err)
 	}
 
+	// Get the last configuration viewed by the operator.
+	o, err :=patch.DefaultAnnotator.GetOriginalConfiguration(instance)
+	// Create it if not exist.
+	if o == nil {
+		if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(instance); err != nil {
+			return RequeueWithError(r.Log, "could not apply last state to annotation", err)
+		}
+		if err := r.Client.Update(ctx, instance); err != nil {
+			return RequeueWithError(r.Log, "failed to update NifiParameterContext", err)
+		}
+		o, err =patch.DefaultAnnotator.GetOriginalConfiguration(instance)
+	}
+
+	// Check if the cluster reference changed.
+	original := &v1alpha1.NifiParameterContext{}
+	current := instance.DeepCopy()
+	json.Unmarshal(o, original)
+	if !v1alpha1.ClusterRefsEquals([]v1alpha1.ClusterReference{original.Spec.ClusterRef, instance.Spec.ClusterRef}) &&
+		original.Spec.ClusterRef.IsSet() {
+		instance.Spec.ClusterRef = original.Spec.ClusterRef
+	}
+
 	// Get the referenced secrets
 	var parameterSecrets []*corev1.Secret
 	for _, parameterSecret := range instance.Spec.SecretRefs {
@@ -99,37 +124,93 @@ func (r *NifiParameterContextReconciler) Reconcile(ctx context.Context, req ctrl
 		parameterSecrets = append(parameterSecrets, secret)
 	}
 
+	var clientConfig *nificlient.NifiConfig
+	var clusterConnect v1alpha1.ClusterConnect
+
 	// Get the referenced NifiCluster
-	clusterNamespace := GetClusterRefNamespace(instance.Namespace, instance.Spec.ClusterRef)
-	var cluster *v1alpha1.NifiCluster
-	if cluster, err = k8sutil.LookupNifiCluster(r.Client, instance.Spec.ClusterRef.Name, clusterNamespace); err != nil {
-		// This shouldn't trigger anymore, but leaving it here as a safetybelt
-		if k8sutil.IsMarkedForDeletion(instance.ObjectMeta) {
-			r.Log.Info("Cluster is already gone, there is nothing we can do")
-			if err = r.removeFinalizer(ctx, instance); err != nil {
-				return RequeueWithError(r.Log, "failed to remove finalizer", err)
+	if !instance.Spec.ClusterRef.IsExternal() {
+		clusterNamespace := GetClusterRefNamespace(instance.Namespace, instance.Spec.ClusterRef)
+		var cluster *v1alpha1.NifiCluster
+		if cluster, err = k8sutil.LookupNifiCluster(r.Client, instance.Spec.ClusterRef.Name, clusterNamespace); err != nil {
+			// This shouldn't trigger anymore, but leaving it here as a safetybelt
+			if k8sutil.IsMarkedForDeletion(instance.ObjectMeta) {
+				r.Log.Info("Cluster is already gone, there is nothing we can do")
+				if err = r.removeFinalizer(ctx, instance); err != nil {
+					return RequeueWithError(r.Log, "failed to remove finalizer", err)
+				}
+				return Reconciled()
 			}
-			return Reconciled()
+			// If the referenced cluster no more exist, just skip the deletion requirement in cluster ref change case.
+			if !v1alpha1.ClusterRefsEquals([]v1alpha1.ClusterReference{instance.Spec.ClusterRef, current.Spec.ClusterRef}) {
+				if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(current); err != nil {
+					return RequeueWithError(r.Log, "could not apply last state to annotation", err)
+				}
+				if err := r.Client.Update(ctx, current); err != nil {
+					return RequeueWithError(r.Log, "failed to update NifiRegistryClient", err)
+				}
+				return RequeueAfter(time.Duration(15) * time.Second)
+			}
+
+			r.Recorder.Event(instance, corev1.EventTypeWarning, "ReferenceClusterError",
+				fmt.Sprintf("Failed to lookup reference cluster : %s in %s",
+					instance.Spec.ClusterRef.Name, clusterNamespace))
+
+			// the cluster does not exist - should have been caught pre-flight
+			return RequeueWithError(r.Log, "failed to lookup referenced cluster", err)
 		}
-
-		r.Recorder.Event(instance, corev1.EventTypeWarning, "ReferenceClusterError",
-			fmt.Sprintf("Failed to lookup reference cluster : %s in %s",
-				instance.Spec.ClusterRef.Name, clusterNamespace))
-
-		// the cluster does not exist - should have been caught pre-flight
-		return RequeueWithError(r.Log, "failed to lookup referenced cluster", err)
+		// Set cluster connection configuration.
+		clusterConnect = cluster
+		clientConfig, err = nificlient.ClusterConfig(r.Client, cluster)
+		if err != nil {
+			r.Recorder.Event(instance, corev1.EventTypeWarning, "ReferenceClusterError",
+				fmt.Sprintf("Failed to create HTTP client for the referenced cluster : %s in %s",
+					instance.Spec.ClusterRef.Name, clusterNamespace))
+			// the cluster does not exist - should have been caught pre-flight
+			return RequeueWithError(r.Log, "failed to create HTTP client the for referenced cluster", err)
+		}
+	} else {
 	}
 
 	// Check if marked for deletion and if so run finalizers
 	if k8sutil.IsMarkedForDeletion(instance.ObjectMeta) {
-		return r.checkFinalizers(ctx, instance, parameterSecrets, cluster)
+		return r.checkFinalizers(ctx, instance, parameterSecrets, clientConfig)
+	}
+
+	// Ensure the cluster is ready to receive actions
+	if !clusterConnect.IsReady() {
+		r.Log.Info("Cluster is not ready yet, will wait until it is.")
+		r.Recorder.Event(instance, corev1.EventTypeNormal, "ReferenceClusterNotReady",
+			fmt.Sprintf("The referenced cluster is not ready yet : %s in %s",
+				instance.Spec.ClusterRef.Name, clusterConnect.Id()))
+
+		// the cluster does not exist - should have been caught pre-flight
+		return RequeueAfter(time.Duration(15) * time.Second)
+	}
+
+	// Ìn case of the cluster reference changed.
+	if !v1alpha1.ClusterRefsEquals([]v1alpha1.ClusterReference{instance.Spec.ClusterRef, current.Spec.ClusterRef}) {
+		// Delete the resource on the previous cluster.
+		if err := parametercontext.RemoveParameterContext(instance, parameterSecrets, clientConfig); err != nil {
+			r.Recorder.Event(instance, corev1.EventTypeWarning, "RemoveError",
+				fmt.Sprintf("Failed to delete NifiParameterContext %s from cluster %s before moving in %s",
+					instance.Name, original.Spec.ClusterRef.Name, original.Spec.ClusterRef.Name))
+			return RequeueWithError(r.Log, "Failed to delete NifiParameterContext before moving", err)
+		}
+		// Update the last view configuration to the current one.
+		if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(current); err != nil {
+			return RequeueWithError(r.Log, "could not apply last state to annotation", err)
+		}
+		if err := r.Client.Update(ctx, current); err != nil {
+			return RequeueWithError(r.Log, "failed to update NifiRegistryClient", err)
+		}
+		return RequeueAfter(time.Duration(15) * time.Second)
 	}
 
 	r.Recorder.Event(instance, corev1.EventTypeNormal, "Reconciling",
 		fmt.Sprintf("Reconciling parameter context %s", instance.Name))
 
 	// Check if the NiFi registry client already exist
-	exist, err := parametercontext.ExistParameterContext(r.Client, instance, cluster)
+	exist, err := parametercontext.ExistParameterContext(instance, clientConfig)
 	if err != nil {
 		return RequeueWithError(r.Log, "failure checking for existing parameter context", err)
 	}
@@ -139,7 +220,7 @@ func (r *NifiParameterContextReconciler) Reconcile(ctx context.Context, req ctrl
 		r.Recorder.Event(instance, corev1.EventTypeNormal, "Creating",
 			fmt.Sprintf("Creating parameter context %s", instance.Name))
 
-		status, err := parametercontext.CreateParameterContext(r.Client, instance, parameterSecrets, cluster)
+		status, err := parametercontext.CreateParameterContext(instance, parameterSecrets, clientConfig)
 		if err != nil {
 			return RequeueWithError(r.Log, "failure creating parameter context", err)
 		}
@@ -156,7 +237,7 @@ func (r *NifiParameterContextReconciler) Reconcile(ctx context.Context, req ctrl
 	// Sync ParameterContext resource with NiFi side component
 	r.Recorder.Event(instance, corev1.EventTypeNormal, "Synchronizing",
 		fmt.Sprintf("Synchronizing parameter context %s", instance.Name))
-	status, err := parametercontext.SyncParameterContext(r.Client, instance, parameterSecrets, cluster)
+	status, err := parametercontext.SyncParameterContext(instance, parameterSecrets, clientConfig)
 	if status != nil {
 		instance.Status = *status
 		if err := r.Client.Status().Update(ctx, instance); err != nil {
@@ -178,7 +259,7 @@ func (r *NifiParameterContextReconciler) Reconcile(ctx context.Context, req ctrl
 		fmt.Sprintf("Synchronized parameter context %s", instance.Name))
 
 	// Ensure NifiCluster label
-	if instance, err = r.ensureClusterLabel(ctx, cluster, instance); err != nil {
+	if instance, err = r.ensureClusterLabel(ctx, clusterConnect, instance); err != nil {
 		return RequeueWithError(r.Log, "failed to ensure NifiCluster label on parameter context", err)
 	}
 
@@ -208,10 +289,10 @@ func (r *NifiParameterContextReconciler) SetupWithManager(mgr ctrl.Manager) erro
 		Complete(r)
 }
 
-func (r *NifiParameterContextReconciler) ensureClusterLabel(ctx context.Context, cluster *v1alpha1.NifiCluster,
+func (r *NifiParameterContextReconciler) ensureClusterLabel(ctx context.Context, cluster v1alpha1.ClusterConnect,
 	parameterContext *v1alpha1.NifiParameterContext) (*v1alpha1.NifiParameterContext, error) {
 
-	labels := ApplyClusterRefLabel(cluster, parameterContext.GetLabels())
+	labels := ApplyClusterReferenceLabel(cluster, parameterContext.GetLabels())
 	if !reflect.DeepEqual(labels, parameterContext.GetLabels()) {
 		parameterContext.SetLabels(labels)
 		return r.updateAndFetchLatest(ctx, parameterContext)
@@ -235,12 +316,12 @@ func (r *NifiParameterContextReconciler) checkFinalizers(
 	ctx context.Context,
 	parameterContext *v1alpha1.NifiParameterContext,
 	parameterSecrets []*corev1.Secret,
-	cluster *v1alpha1.NifiCluster) (reconcile.Result, error) {
+	config *nificlient.NifiConfig) (reconcile.Result, error) {
 
 	r.Log.Info("NiFi parameter context is marked for deletion")
 	var err error
 	if util.StringSliceContains(parameterContext.GetFinalizers(), parameterContextFinalizer) {
-		if err = r.finalizeNifiParameterContext(parameterContext, parameterSecrets, cluster); err != nil {
+		if err = r.finalizeNifiParameterContext(parameterContext, parameterSecrets, config); err != nil {
 			return RequeueWithError(r.Log, "failed to finalize parameter context", err)
 		}
 		if err = r.removeFinalizer(ctx, parameterContext); err != nil {
@@ -259,9 +340,9 @@ func (r *NifiParameterContextReconciler) removeFinalizer(ctx context.Context, fl
 func (r *NifiParameterContextReconciler) finalizeNifiParameterContext(
 	parameterContext *v1alpha1.NifiParameterContext,
 	parameterSecrets []*corev1.Secret,
-	cluster *v1alpha1.NifiCluster) error {
+	config *nificlient.NifiConfig) error {
 
-	if err := parametercontext.RemoveParameterContext(r.Client, parameterContext, parameterSecrets, cluster); err != nil {
+	if err := parametercontext.RemoveParameterContext(parameterContext, parameterSecrets, config); err != nil {
 		return err
 	}
 	r.Log.Info("Delete Registry client")

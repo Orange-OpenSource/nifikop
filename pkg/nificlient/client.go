@@ -15,14 +15,14 @@ package nificlient
 
 import (
 	"fmt"
+	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"net/http"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 
-	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var log = ctrl.Log.WithName("nifi_client")
@@ -30,6 +30,22 @@ var log = ctrl.Log.WithName("nifi_client")
 const (
 	PRIMARY_NODE        = "Primary Node"
 	CLUSTER_COORDINATOR = "Cluster Coordinator"
+	// ConnectNodeAction states that the NiFi node is connecting to the NiFi Cluster
+	CONNECTING_STATUS = "CONNECTING"
+	// ConnectStatus states that the NiFi node is connected to the NiFi Cluster
+	CONNECTED_STATUS = "CONNECTED"
+	// DisconnectNodeAction states that the NiFi node is disconnecting from NiFi Cluster
+	DISCONNECTING_STATUS = "DISCONNECTING"
+	// DisconnectStatus states that the NiFi node is disconnected from NiFi Cluster
+	DISCONNECTED_STATUS = "DISCONNECTED"
+	// OffloadNodeAction states that the NiFi node is offloading data to NiFi Cluster
+	OFFLOADING_STATUS = "OFFLOADING"
+	// OffloadStatus states that the NiFi node offloaded data to NiFi Cluster
+	OFFLOADED_STATUS = "OFFLOADED"
+	// RemoveNodeAction states that the NiFi node is removing from NiFi Cluster
+	REMOVING_STATUS = "REMOVING"
+	// RemoveStatus states that the NiFi node is removed from NiFi Cluster
+	REMOVED_STATUS = "REMOVED"
 )
 
 // NiFiClient is the exported interface for NiFi operations
@@ -166,6 +182,20 @@ func (n *nifiClient) Build() error {
 	return nil
 }
 
+// NewFromConfig is a convenient wrapper around New() and ClusterConfig()
+func NewFromConfig(opts *NifiConfig) (NifiClient, error) {
+	var client NifiClient
+	var err error
+
+	client = New(opts)
+	err = client.Build()
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
 // NewFromCluster is a convenient wrapper around New() and ClusterConfig()
 func NewFromCluster(k8sclient client.Client, cluster *v1alpha1.NifiCluster) (NifiClient, error) {
 	var client NifiClient
@@ -290,7 +320,7 @@ func isCoordinator(node *nigoapi.NodeDto) bool {
 }
 
 func isConnected(node *nigoapi.NodeDto) bool {
-	return node.Status == string(v1alpha1.ConnectStatus)
+	return node.Status == CONNECTED_STATUS
 }
 
 func (n *nifiClient) nodeDtoByNodeId(nId int32) *nigoapi.NodeDto {

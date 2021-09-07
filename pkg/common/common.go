@@ -8,9 +8,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// newNifiFromCluster points to the function for retrieving nifi clients,
+// NewNifiFromCluster points to the function for retrieving nifi clients,
 // use as var so it can be overwritten from unit tests
-var newNifiFromCluster = nificlient.NewFromCluster
+var NewNifiFromCluster = nificlient.NewFromCluster
 
 // newNodeConnection is a convenience wrapper for creating a node connection
 // and creating a safer close function
@@ -18,7 +18,23 @@ func NewNodeConnection(log logr.Logger, client client.Client, cluster *v1alpha1.
 
 	// Get a nifi connection
 	log.Info(fmt.Sprintf("Retrieving Nifi client for %s/%s", cluster.Namespace, cluster.Name))
-	node, err = newNifiFromCluster(client, cluster)
+	node, err = NewNifiFromCluster(client, cluster)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// NewNifiFromCluster points to the function for retrieving nifi clients,
+// use as var so it can be overwritten from unit tests
+var NewNifiFromConfig = nificlient.NewFromConfig
+
+// newNodeConnection is a convenience wrapper for creating a node connection
+// and creating a safer close function
+func NewClusterConnection(log logr.Logger, config *nificlient.NifiConfig) (node nificlient.NifiClient, err error) {
+
+	// Get a nifi connection
+	node, err = NewNifiFromConfig(config)
 	if err != nil {
 		return
 	}

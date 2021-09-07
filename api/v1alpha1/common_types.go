@@ -14,7 +14,9 @@
 
 package v1alpha1
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // DataflowState defines the state of a NifiDataflow
 type DataflowState string
@@ -82,6 +84,10 @@ func (r State) Complete() State {
 	}
 }
 
+func (r ClusterState) IsReady() bool {
+	return r == NifiClusterRunning || r == NifiClusterReconciling
+}
+
 // NifiAccessType hold info about Nifi ACL
 type NifiAccessType string
 
@@ -108,11 +114,39 @@ type SecretConfigReference struct {
 	Data string `json:"data"`
 }
 
+const(
+	EXTERNAL_REFERENCE string  = "external"
+	INTERNAL_REFERENCE string  = "internal"
+)
+
+type ClusterConnect interface {
+	//NodeConnection(log logr.Logger, client client.Client) (node nificlient.NifiClient, err error)
+	IsInternal() bool
+	IsExternal() bool
+	ClusterLabelString() string
+	IsReady() bool
+	Id() string
+}
+
 // ClusterReference states a reference to a cluster for dataflow/registryclient/user
 // provisioning
 type ClusterReference struct {
-	Name      string `json:"name"`
-	Namespace string `json:"namespace,omitempty"`
+	Name      string          `json:"name,omitempty"`
+	Namespace string          `json:"namespace,omitempty"`
+	Type      string          `json:"type,omitempty"`
+	Hostname  string          `json:"hostname,omitempty"`
+	SecretRef SecretReference `json:"secretRef,omitempty"`
+}
+
+func (c *ClusterReference) GetType() string {
+	if c.Type == "" || c.Type != EXTERNAL_REFERENCE {
+		return INTERNAL_REFERENCE
+	}
+	return EXTERNAL_REFERENCE
+}
+
+func (c *ClusterReference) IsSet() bool{
+	return (c.Name != "" && c.GetType() == INTERNAL_REFERENCE) || (c.Hostname != "" &&  c.GetType() == EXTERNAL_REFERENCE)
 }
 
 // RegistryClientReference states a reference to a registry client for dataflow
@@ -162,13 +196,13 @@ type AccessPolicy struct {
 	ComponentId string `json:"componentId,omitempty"`
 }
 
-func (a *AccessPolicy) GetResource(cluster *NifiCluster) string {
+func (a *AccessPolicy) GetResource(rootProcessGroupId string) string {
 	if a.Type == GlobalAccessPolicyType {
 		return string(a.Resource)
 	}
 	componentId := a.ComponentId
 	if a.ComponentType == "process-groups" && componentId == "" {
-		componentId = cluster.Status.RootProcessGroupId
+		componentId = rootProcessGroupId
 	}
 	resource := a.Resource
 	if a.Resource == ComponentsAccessPolicyResource {
@@ -315,6 +349,8 @@ type NodeState struct {
 	ConfigurationState ConfigurationState `json:"configurationState"`
 	// InitClusterNode contains if this nodes was part of the initial cluster
 	InitClusterNode InitClusterNode `json:"initClusterNode"`
+	// PodIsReady whether or not the associated pod is ready
+	PodIsReady bool `json:"podIsReady"`
 }
 
 // RackAwarenessState holds info about rack awareness status
@@ -381,3 +417,46 @@ const (
 	// NotInitClusterNode states the node is not part of initial cluster setup
 	NotInitClusterNode InitClusterNode = false
 )
+
+func ClusterRefsEquals(clusterRefs []ClusterReference) bool {
+	c1       := clusterRefs[0]
+	refType  := c1.Type
+	hostname := c1.Hostname
+	name     := c1.Name
+	ns       := c1.Namespace
+
+	var secretRefs []SecretReference
+	for _, cluster := range clusterRefs {
+		if refType != cluster.Type {
+			return false
+		}
+		if c1.IsExternal() {
+			if hostname != cluster.Hostname {
+				return false
+			}
+			secretRefs = append(secretRefs, SecretReference{Name: cluster.SecretRef.Name, Namespace: cluster.Namespace})
+		} else if name != cluster.Name || ns != cluster.Namespace {
+			return false
+		}
+	}
+
+	if c1.IsExternal() {
+		return SecretRefsEquals(secretRefs)
+	}
+	return true
+}
+
+func (c ClusterReference) IsExternal() bool{
+	return c.Type == EXTERNAL_REFERENCE
+}
+
+func SecretRefsEquals(secretRefs []SecretReference) bool {
+	name := secretRefs[0].Name
+	ns   := secretRefs[0].Namespace
+	for _, secretRef := range secretRefs {
+		if name != secretRef.Name || ns != secretRef.Namespace {
+			return false
+		}
+	}
+	return true
+}
