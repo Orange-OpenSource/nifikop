@@ -117,11 +117,6 @@ type SecretConfigReference struct {
 	Data string `json:"data"`
 }
 
-const (
-	EXTERNAL_REFERENCE string = "external"
-	INTERNAL_REFERENCE string = "internal"
-)
-
 // ClusterReference states a reference to a cluster for dataflow/registryclient/user
 // provisioning
 type ClusterReference struct {
@@ -131,7 +126,7 @@ type ClusterReference struct {
 	Type               ClientConfigType `json:"type,omitempty"`
 	NodeURITemplate    string           `json:"nodeURITemplate,omitempty"`
 	NodeIds            []int32          `json:"nodeIds,omitempty"`
-	NifiURI            string           `json:"nifiURI,omitempty"`
+	NifiURI             string           `json:"nifiURI,omitempty"`
 	RootProcessGroupId string           `json:"rootProcessGroupId,omitempty"`
 	SecretRef          SecretReference  `json:"secretRef,omitempty"`
 }
@@ -143,9 +138,9 @@ func (c *ClusterReference) GetType() ClientConfigType {
 	return c.Type
 }
 
-// @TODO
 func (c *ClusterReference) IsSet() bool {
-	return (c.Name != "" && c.GetType() == ClientConfigNiFiCluster) || (c.NodeURITemplate != "" && c.GetType() != "" && c.GetType() != ClientConfigNiFiCluster)
+	return (c.GetType() == ClientConfigNiFiCluster && c.Name != "") ||
+		(c.GetType() != ClientConfigNiFiCluster && c.NodeURITemplate != "" && c.NifiURI != ""  && c.RootProcessGroupId != "")
 }
 
 // RegistryClientReference states a reference to a registry client for dataflow
@@ -425,14 +420,14 @@ const (
 
 func ClusterRefsEquals(clusterRefs []ClusterReference) bool {
 	c1 := clusterRefs[0]
-	refType := c1.Type
+	refType := c1.GetType()
 	hostname := c1.NodeURITemplate
 	name := c1.Name
 	ns := c1.Namespace
 
 	var secretRefs []SecretReference
 	for _, cluster := range clusterRefs {
-		if refType != cluster.Type {
+		if refType != cluster.GetType() {
 			return false
 		}
 		if c1.IsExternal() {
@@ -452,7 +447,7 @@ func ClusterRefsEquals(clusterRefs []ClusterReference) bool {
 }
 
 func (c ClusterReference) IsExternal() bool {
-	return c.Type != ClientConfigNiFiCluster
+	return c.GetType() != ClientConfigNiFiCluster
 }
 
 func SecretRefsEquals(secretRefs []SecretReference) bool {
