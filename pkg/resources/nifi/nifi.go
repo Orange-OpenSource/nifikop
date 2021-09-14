@@ -629,7 +629,7 @@ func (r *Reconciler) reconcileNifiPod(log logr.Logger, desiredPod *corev1.Pod) (
 		if err != nil {
 			log.Error(err, "could not match objects", "kind", desiredType)
 		} else if patchResult.IsEmpty() {
-			if !k8sutil.IsPodContainsTerminatedContainer(currentPod) && r.NifiCluster.Status.NodesState[currentPod.Labels["nodeId"]].ConfigurationState == v1alpha1.ConfigInSync {
+			if !k8sutil.IsPodTerminatedOrShutdown(currentPod) && r.NifiCluster.Status.NodesState[currentPod.Labels["nodeId"]].ConfigurationState == v1alpha1.ConfigInSync {
 				if val, found := r.NifiCluster.Status.NodesState[desiredPod.Labels["nodeId"]]; found &&
 					val.GracefulActionState.State == v1alpha1.GracefulUpscaleRunning &&
 					val.GracefulActionState.ActionStep == v1alpha1.ConnectStatus &&
@@ -656,7 +656,7 @@ func (r *Reconciler) reconcileNifiPod(log logr.Logger, desiredPod *corev1.Pod) (
 			return errors.WrapIf(err, "could not apply last state to annotation"), false
 		}
 
-		if !k8sutil.IsPodContainsTerminatedContainer(currentPod) {
+		if !k8sutil.IsPodTerminatedOrShutdown(currentPod) {
 
 			if r.NifiCluster.Status.State != v1alpha1.NifiClusterRollingUpgrading {
 				if err := k8sutil.UpdateCRStatus(r.Client, r.NifiCluster, v1alpha1.NifiClusterRollingUpgrading, log); err != nil {
