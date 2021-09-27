@@ -118,32 +118,30 @@ func (r *NifiUserReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Generate the connect object
 	if clusterConnect, err = configManager.BuildConnect(); err != nil {
-		if !clusterConnect.IsExternal() {
-			// This shouldn't trigger anymore, but leaving it here as a safetybelt
-			if k8sutil.IsMarkedForDeletion(instance.ObjectMeta) {
-				r.Log.Info("Cluster is gone already, there is nothing we can do")
-				if err = r.removeFinalizer(ctx, instance); err != nil {
-					return RequeueWithError(r.Log, "failed to remove finalizer from NifiUser", err)
-				}
-				return Reconciled()
+		// This shouldn't trigger anymore, but leaving it here as a safetybelt
+		if k8sutil.IsMarkedForDeletion(instance.ObjectMeta) {
+			r.Log.Info("Cluster is gone already, there is nothing we can do")
+			if err = r.removeFinalizer(ctx, instance); err != nil {
+				return RequeueWithError(r.Log, "failed to remove finalizer from NifiUser", err)
 			}
+			return Reconciled()
+		}
 
-			// If the referenced cluster no more exist, just skip the deletion requirement in cluster ref change case.
-			if !v1alpha1.ClusterRefsEquals([]v1alpha1.ClusterReference{instance.Spec.ClusterRef, current.Spec.ClusterRef}) {
-				if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(current); err != nil {
-					return RequeueWithError(r.Log, "could not apply last state to annotation", err)
-				}
-				if err := r.Client.Update(ctx, current); err != nil {
+		// If the referenced cluster no more exist, just skip the deletion requirement in cluster ref change case.
+		if !v1alpha1.ClusterRefsEquals([]v1alpha1.ClusterReference{instance.Spec.ClusterRef, current.Spec.ClusterRef}) {
+			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(current); err != nil {
+				return RequeueWithError(r.Log, "could not apply last state to annotation", err)
+			}
+			if err := r.Client.Update(ctx, current); err != nil {
 					return RequeueWithError(r.Log, "failed to update NifiUser", err)
 				}
-				return RequeueAfter(time.Duration(15) * time.Second)
-			}
-
-			r.Recorder.Event(instance, corev1.EventTypeWarning, "ReferenceClusterError",
-				fmt.Sprintf("Failed to lookup reference cluster : %s in %s",
-					instance.Spec.ClusterRef.Name, clusterRef.Namespace))
-			return RequeueWithError(r.Log, "failed to lookup referenced cluster", err)
+			return RequeueAfter(time.Duration(15) * time.Second)
 		}
+
+		r.Recorder.Event(instance, corev1.EventTypeWarning, "ReferenceClusterError",
+			fmt.Sprintf("Failed to lookup reference cluster : %s in %s",
+					instance.Spec.ClusterRef.Name, clusterRef.Namespace))
+		return RequeueWithError(r.Log, "failed to lookup referenced cluster", err)
 	}
 
 	// Get the referenced NifiCluster

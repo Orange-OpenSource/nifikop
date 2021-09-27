@@ -25,7 +25,7 @@ func (n *tls) BuildConfig() (*clientconfig.NifiConfig, error) {
 func (n *tls) BuildConnect() (cluster clientconfig.ClusterConnect, err error) {
 	var c *v1alpha1.NifiCluster
 	if c, err = k8sutil.LookupNifiCluster(n.client, n.clusterRef.Name, n.clusterRef.Namespace); err != nil {
-		return nil, err
+		return
 	}
 
 	if !c.IsExternal() {

@@ -135,34 +135,33 @@ func (r *NifiParameterContextReconciler) Reconcile(ctx context.Context, req ctrl
 
 	// Generate the connect object
 	if clusterConnect, err = configManager.BuildConnect(); err != nil {
-		if !clusterConnect.IsExternal() {
 			// This shouldn't trigger anymore, but leaving it here as a safetybelt
-			if k8sutil.IsMarkedForDeletion(instance.ObjectMeta) {
-				r.Log.Info("Cluster is already gone, there is nothing we can do")
-				if err = r.removeFinalizer(ctx, instance); err != nil {
+		if k8sutil.IsMarkedForDeletion(instance.ObjectMeta) {
+			r.Log.Info("Cluster is already gone, there is nothing we can do")
+			if err = r.removeFinalizer(ctx, instance); err != nil {
 					return RequeueWithError(r.Log, "failed to remove finalizer", err)
 				}
-				return Reconciled()
+			return Reconciled()
+		}
+		// If the referenced cluster no more exist, just skip the deletion requirement in cluster ref change case.
+		if !v1alpha1.ClusterRefsEquals([]v1alpha1.ClusterReference{instance.Spec.ClusterRef, current.Spec.ClusterRef}) {
+			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(current); err != nil {
+				return RequeueWithError(r.Log, "could not apply last state to annotation", err)
 			}
-			// If the referenced cluster no more exist, just skip the deletion requirement in cluster ref change case.
-			if !v1alpha1.ClusterRefsEquals([]v1alpha1.ClusterReference{instance.Spec.ClusterRef, current.Spec.ClusterRef}) {
-				if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(current); err != nil {
-					return RequeueWithError(r.Log, "could not apply last state to annotation", err)
-				}
-				if err := r.Client.Update(ctx, current); err != nil {
-					return RequeueWithError(r.Log, "failed to update NifiParameterContext", err)
-				}
-				return RequeueAfter(time.Duration(15) * time.Second)
+			if err := r.Client.Update(ctx, current); err != nil {
+				return RequeueWithError(r.Log, "failed to update NifiParameterContext", err)
 			}
+			return RequeueAfter(time.Duration(15) * time.Second)
+		}
 
-			r.Recorder.Event(instance, corev1.EventTypeWarning, "ReferenceClusterError",
-				fmt.Sprintf("Failed to lookup reference cluster : %s in %s",
+		r.Recorder.Event(instance, corev1.EventTypeWarning, "ReferenceClusterError",
+			fmt.Sprintf("Failed to lookup reference cluster : %s in %s",
 					instance.Spec.ClusterRef.Name, clusterRef.Namespace))
 
-			// the cluster does not exist - should have been caught pre-flight
-			return RequeueWithError(r.Log, "failed to lookup referenced cluster", err)
-		}
+		// the cluster does not exist - should have been caught pre-flight
+		return RequeueWithError(r.Log, "failed to lookup referenced cluster", err)
 	}
+
 
 	// Generate the client configuration.
 	clientConfig, err = configManager.BuildConfig()
