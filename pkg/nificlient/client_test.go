@@ -23,14 +23,13 @@ import (
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
-	nifiutil "github.com/Orange-OpenSource/nifikop/pkg/util/nifi"
 	nigoapi "github.com/erdrix/nigoapi/pkg/nifi"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 )
 
 const (
-	httpContainerPort int32 = 443
+	httpContainerPort int32 = 80
 	succeededNodeId   int32 = 4
 
 	clusterName      = "test-cluster"
@@ -95,27 +94,4 @@ func TestBuild(t *testing.T) {
 
 	err = client.Build()
 	assert.IsType(errorfactory.NodesUnreachable{}, err)
-}
-
-func TestNewFromCluster(t *testing.T) {
-	httpmock.Activate()
-	assert := assert.New(t)
-
-	cluster := testClusterMock(t)
-
-	url := fmt.Sprintf("http://%s/nifi-api/controller/cluster", nifiutil.GenerateRequestNiFiAllNodeAddressFromCluster(cluster))
-	httpmock.RegisterResponder(http.MethodGet, url,
-		func(req *http.Request) (*http.Response, error) {
-			return httpmock.NewJsonResponse(
-				200,
-				MockGetClusterResponse(cluster, false))
-		})
-
-	_, err := NewFromCluster(mockClient{}, cluster)
-	assert.Nil(err)
-
-	httpmock.DeactivateAndReset()
-	_, err = NewFromCluster(mockClient{}, cluster)
-	assert.IsType(errorfactory.NodesUnreachable{}, err)
-
 }

@@ -48,8 +48,11 @@ type InitClusterNode bool
 // PKIBackend represents an interface implementing the PKIManager
 type PKIBackend string
 
-// ClientConfigType represents an interface implementing the  ClientConfigManager
+// ClientConfigType represents an interface implementing the ClientConfigManager
 type ClientConfigType string
+
+// ClusterType represents an interface implementing the  ClientConfigManager
+type ClusterType string
 
 // AccessPolicyType represents the type of access policy
 type AccessPolicyType string
@@ -120,27 +123,8 @@ type SecretConfigReference struct {
 // ClusterReference states a reference to a cluster for dataflow/registryclient/user
 // provisioning
 type ClusterReference struct {
-	Name      string `json:"name,omitempty"`
+	Name      string `json:"name"`
 	Namespace string `json:"namespace,omitempty"`
-	// +kubebuilder:validation:Enum={"external-tls","nificluster","external-basic"}
-	Type               ClientConfigType `json:"type,omitempty"`
-	NodeURITemplate    string           `json:"nodeURITemplate,omitempty"`
-	NodeIds            []int32          `json:"nodeIds,omitempty"`
-	NifiURI             string           `json:"nifiURI,omitempty"`
-	RootProcessGroupId string           `json:"rootProcessGroupId,omitempty"`
-	SecretRef          SecretReference  `json:"secretRef,omitempty"`
-}
-
-func (c *ClusterReference) GetType() ClientConfigType {
-	if c.Type == "" {
-		return ClientConfigNiFiCluster
-	}
-	return c.Type
-}
-
-func (c *ClusterReference) IsSet() bool {
-	return (c.GetType() == ClientConfigNiFiCluster && c.Name != "") ||
-		(c.GetType() != ClientConfigNiFiCluster && c.NodeURITemplate != "" && c.NifiURI != ""  && c.RootProcessGroupId != "")
 }
 
 // RegistryClientReference states a reference to a registry client for dataflow
@@ -273,9 +257,13 @@ const (
 )
 
 const (
-	ClientConfigNiFiCluster   ClientConfigType = "nificluster"
-	ClientConfigExternalTLS   ClientConfigType = "external-tls"
-	ClientConfigExternalBasic ClientConfigType = "external-basic"
+	ClientConfigTLS   ClientConfigType = "tls"
+	ClientConfigBasic ClientConfigType = "basic"
+)
+
+const (
+	ExternalCluster ClusterType = "external"
+	InternalCluster ClusterType = "internal"
 )
 
 const (
@@ -420,34 +408,16 @@ const (
 
 func ClusterRefsEquals(clusterRefs []ClusterReference) bool {
 	c1 := clusterRefs[0]
-	refType := c1.GetType()
-	hostname := c1.NodeURITemplate
 	name := c1.Name
 	ns := c1.Namespace
 
-	var secretRefs []SecretReference
 	for _, cluster := range clusterRefs {
-		if refType != cluster.GetType() {
-			return false
-		}
-		if c1.IsExternal() {
-			if hostname != cluster.NodeURITemplate {
-				return false
-			}
-			secretRefs = append(secretRefs, SecretReference{Name: cluster.SecretRef.Name, Namespace: cluster.Namespace})
-		} else if name != cluster.Name || ns != cluster.Namespace {
+		if name != cluster.Name || ns != cluster.Namespace {
 			return false
 		}
 	}
 
-	if c1.IsExternal() {
-		return SecretRefsEquals(secretRefs)
-	}
 	return true
-}
-
-func (c ClusterReference) IsExternal() bool {
-	return c.GetType() != ClientConfigNiFiCluster
 }
 
 func SecretRefsEquals(secretRefs []SecretReference) bool {

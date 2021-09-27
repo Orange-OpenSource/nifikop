@@ -1,7 +1,9 @@
 package clientconfig
 
 import (
+	"context"
 	"crypto/tls"
+	"github.com/go-logr/logr"
 )
 
 const (
@@ -11,7 +13,6 @@ const (
 type Manager interface {
 	BuildConfig() (*NifiConfig, error)
 	BuildConnect() (ClusterConnect, error)
-	IsExternal() bool
 }
 
 type ClusterConnect interface {
@@ -19,7 +20,7 @@ type ClusterConnect interface {
 	IsInternal() bool
 	IsExternal() bool
 	ClusterLabelString() string
-	IsReady() bool
+	IsReady(log logr.Logger) bool
 	Id() string
 }
 
@@ -30,9 +31,13 @@ type NifiConfig struct {
 	NifiURI         string
 	UseSSL          bool
 	TLSConfig       *tls.Config
+	ProxyUrl        string
 
 	OperationTimeout   int64
 	RootProcessGroupId string
+	NodesContext       map[int32]context.Context
+
+	SkipDescribeCluster bool
 }
 
 type NodeUri struct {

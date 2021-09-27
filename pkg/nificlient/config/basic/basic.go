@@ -1,4 +1,4 @@
-package nificluster
+package basic
 
 import (
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
@@ -6,15 +6,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type NifiCluster interface {
+type Basic interface {
 	clientconfig.Manager
 }
 
-type nifiCluster struct {
+type basic struct {
 	client     client.Client
 	clusterRef v1alpha1.ClusterReference
 }
 
-func New(client client.Client, clusterRef v1alpha1.ClusterReference) NifiCluster {
-	return &nifiCluster{clusterRef: clusterRef, client: client}
+func New(client client.Client, clusterRef v1alpha1.ClusterReference) Basic {
+	return &basic{clusterRef: clusterRef, client: client}
 }

@@ -20,13 +20,30 @@ import (
 
 func (n *nifiClient) DescribeCluster() (*nigoapi.ClusterEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
-	client := n.privilegeCoordinatorClient()
+	client, context := n.privilegeCoordinatorClient()
 	if client == nil {
 		log.Error(ErrNoNodeClientsAvailable, "Error during creating node client")
 		return nil, ErrNoNodeClientsAvailable
 	}
 
-	clusterEntry, rsp, body, err := client.ControllerApi.GetCluster(nil)
+	clusterEntry, rsp, body, err := client.ControllerApi.GetCluster(context)
+	if err := errorGetOperation(rsp, body, err); err != nil {
+		return nil, err
+	}
+
+	return &clusterEntry, nil
+}
+
+func (n *nifiClient) DescribeClusterFromNodeId(nodeId int32) (*nigoapi.ClusterEntity, error) {
+	// Get nigoapi client, favoring the one associated to the coordinator node.
+	client := n.nodeClient[nodeId]
+	context := n.opts.NodesContext[nodeId]
+	if client == nil {
+		log.Error(ErrNoNodeClientsAvailable, "Error during creating node client")
+		return nil, ErrNoNodeClientsAvailable
+	}
+
+	clusterEntry, rsp, body, err := client.ControllerApi.GetCluster(context)
 	if err := errorGetOperation(rsp, body, err); err != nil {
 		return nil, err
 	}
@@ -36,7 +53,7 @@ func (n *nifiClient) DescribeCluster() (*nigoapi.ClusterEntity, error) {
 
 func (n *nifiClient) GetClusterNode(nId int32) (*nigoapi.NodeEntity, error) {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
-	client := n.privilegeCoordinatorExceptNodeIdClient(nId)
+	client, context := n.privilegeCoordinatorExceptNodeIdClient(nId)
 	if client == nil {
 		log.Error(ErrNoNodeClientsAvailable, "Error during creating node client")
 		return nil, ErrNoNodeClientsAvailable
@@ -50,7 +67,7 @@ func (n *nifiClient) GetClusterNode(nId int32) (*nigoapi.NodeEntity, error) {
 	}
 
 	// Request on Nifi Rest API to get the node information
-	nodeEntity, rsp, body, err := client.ControllerApi.GetNode(nil, targetedNode.NodeId)
+	nodeEntity, rsp, body, err := client.ControllerApi.GetNode(context, targetedNode.NodeId)
 
 	if err := errorGetOperation(rsp, body, err); err != nil {
 		return nil, err
@@ -89,28 +106,28 @@ func (n *nifiClient) RemoveClusterNode(nId int32) error {
 	}
 
 	// Get nigoapi client, favoring the one associated to the coordinator node.
-	client := n.privilegeCoordinatorExceptNodeIdClient(nId)
+	client, context := n.privilegeCoordinatorExceptNodeIdClient(nId)
 	if client == nil {
 		log.Error(ErrNoNodeClientsAvailable, "Error during creating node client")
 		return ErrNoNodeClientsAvailable
 	}
 
 	// Request on Nifi Rest API to remove the node
-	_, rsp, body, err := client.ControllerApi.DeleteNode(nil, targetedNode.NodeId)
+	_, rsp, body, err := client.ControllerApi.DeleteNode(context, targetedNode.NodeId)
 
 	return errorDeleteOperation(rsp, body, err)
 }
 
 func (n *nifiClient) RemoveClusterNodeFromClusterNodeId(nId string) error {
 	// Get nigoapi client, favoring the one associated to the coordinator node.
-	client := n.privilegeCoordinatorClient()
+	client, context := n.privilegeCoordinatorClient()
 	if client == nil {
 		log.Error(ErrNoNodeClientsAvailable, "Error during creating node client")
 		return ErrNoNodeClientsAvailable
 	}
 
 	// Request on Nifi Rest API to remove the node
-	_, rsp, body, err := client.ControllerApi.DeleteNode(nil, nId)
+	_, rsp, body, err := client.ControllerApi.DeleteNode(context, nId)
 
 	return errorDeleteOperation(rsp, body, err)
 }
@@ -133,7 +150,7 @@ func (n *nifiClient) setClusterNodeStatus(nId int32, status, expectedActionStatu
 	}
 
 	// Get nigoapi client, favoring the one associated to the coordinator node.
-	client := n.privilegeCoordinatorExceptNodeIdClient(nId)
+	client, context := n.privilegeCoordinatorExceptNodeIdClient(nId)
 	if client == nil {
 		log.Error(ErrNoNodeClientsAvailable, "Error during creating node client")
 		return nil, ErrNoNodeClientsAvailable
@@ -143,7 +160,7 @@ func (n *nifiClient) setClusterNodeStatus(nId int32, status, expectedActionStatu
 	targetedNode.Status = string(status)
 
 	// Request on Nifi Rest API to update the node status
-	nodeEntity, rsp, body, err := client.ControllerApi.UpdateNode(nil, targetedNode.NodeId, nigoapi.NodeEntity{Node: targetedNode})
+	nodeEntity, rsp, body, err := client.ControllerApi.UpdateNode(context, targetedNode.NodeId, nigoapi.NodeEntity{Node: targetedNode})
 	if err := errorUpdateOperation(rsp, body, err); err != nil {
 		return nil, err
 	}

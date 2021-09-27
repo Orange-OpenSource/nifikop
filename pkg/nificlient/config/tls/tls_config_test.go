@@ -1,4 +1,4 @@
-package nificluster
+package tls
 
 import (
 	"fmt"
@@ -29,6 +29,7 @@ func testCluster(t *testing.T) *v1alpha1.NifiCluster {
 	cluster.Name = clusterName
 	cluster.Namespace = clusterNamespace
 	cluster.Spec = v1alpha1.NifiClusterSpec{}
+	cluster.Spec.ListenersConfig = &v1alpha1.ListenersConfig{}
 
 	cluster.Status.NodesState = make(map[string]v1alpha1.NodeState)
 	cluster.Status.NodesState["1"] = v1alpha1.NodeState{
@@ -108,38 +109,4 @@ func testClusterConfig(t *testing.T, cluster *v1alpha1.NifiCluster, expectedUseS
 		fmt.Sprintf("%s-all-node.%s.svc.cluster.local:%d",
 			clusterName, clusterNamespace, httpContainerPort),
 		conf.NifiURI)
-}
-
-func TestUseSSL(t *testing.T) {
-	assert := assert.New(t)
-
-	cluster := testCluster(t)
-	assert.Equal(false, UseSSL(cluster))
-	cluster = testSecuredCluster(t)
-	assert.Equal(true, UseSSL(cluster))
-}
-
-func TestGenerateNodesAddress(t *testing.T) {
-	assert := assert.New(t)
-
-	cluster := testCluster(t)
-	nodesURI := generateNodesAddress(cluster)
-
-	assert.Equal(1, len(nodesURI))
-	assert.NotNil(nodesURI[succeededNodeId])
-	assert.Equal(
-		fmt.Sprintf("%s-%d-node.%s.svc.cluster.local:%d",
-			clusterName, succeededNodeId, clusterNamespace, httpContainerPort),
-		nodesURI[succeededNodeId].RequestHost)
-}
-
-func TestGenerateNodesURITemplate(t *testing.T) {
-	assert := assert.New(t)
-
-	cluster := testCluster(t)
-
-	assert.Equal(
-		fmt.Sprintf("%s-%s-node.%s.svc.cluster.local:%d",
-			clusterName, "%d", clusterNamespace, httpContainerPort),
-		generateNodesURITemplate(cluster))
 }

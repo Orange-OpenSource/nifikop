@@ -90,21 +90,23 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtimeClie
 			if err := client.Update(context.TODO(), desired); err != nil {
 				return errorfactory.New(errorfactory.APIFailure{}, err, "updating resource failed", "kind", desiredType)
 			}
-			switch desired.(type) {
-			case *corev1.ConfigMap:
-				// Only update status when configmap belongs to node
-				if id, ok := desired.(*corev1.ConfigMap).Labels["nodeId"]; ok {
-					statusErr := UpdateNodeStatus(client, []string{id}, cr, v1alpha1.ConfigOutOfSync, log)
-					if statusErr != nil {
-						return errors.WrapIfWithDetails(err, "updating status for resource failed", "kind", desiredType)
+			if cr != nil {
+				switch desired.(type) {
+				case *corev1.ConfigMap:
+					// Only update status when configmap belongs to node
+					if id, ok := desired.(*corev1.ConfigMap).Labels["nodeId"]; ok {
+						statusErr := UpdateNodeStatus(client, []string{id}, cr, v1alpha1.ConfigOutOfSync, log)
+						if statusErr != nil {
+							return errors.WrapIfWithDetails(err, "updating status for resource failed", "kind", desiredType)
+						}
 					}
-				}
-			case *corev1.Secret:
-				// Only update status when secret belongs to node
-				if id, ok := desired.(*corev1.Secret).Labels["nodeId"]; ok {
-					statusErr := UpdateNodeStatus(client, []string{id}, cr, v1alpha1.ConfigOutOfSync, log)
-					if statusErr != nil {
-						return errors.WrapIfWithDetails(err, "updating status for resource failed", "kind", desiredType)
+				case *corev1.Secret:
+					// Only update status when secret belongs to node
+					if id, ok := desired.(*corev1.Secret).Labels["nodeId"]; ok {
+						statusErr := UpdateNodeStatus(client, []string{id}, cr, v1alpha1.ConfigOutOfSync, log)
+						if statusErr != nil {
+							return errors.WrapIfWithDetails(err, "updating status for resource failed", "kind", desiredType)
+						}
 					}
 				}
 			}

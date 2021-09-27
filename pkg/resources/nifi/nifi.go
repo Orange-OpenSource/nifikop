@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/pkg/nificlient/config"
 	"github.com/Orange-OpenSource/nifikop/pkg/pki"
+	nifiutil "github.com/Orange-OpenSource/nifikop/pkg/util/nifi"
 	"reflect"
 	"strings"
 
@@ -49,9 +50,9 @@ import (
 const (
 	componentName = "nifi"
 
-	nodeConfigMapVolumeMount = "node-config"
-	nodeTmp                  = "node-tmp"
-	nifiDataVolumeMount      = "nifi-data"
+	nodeSecretVolumeMount = "node-config"
+	nodeTmp               = "node-tmp"
+	nifiDataVolumeMount   = "nifi-data"
 
 	serverKeystoreVolume = "server-ks-files"
 	serverKeystorePath   = "/var/run/secrets/java.io/keystores/server"
@@ -63,12 +64,6 @@ const (
 type Reconciler struct {
 	resources.Reconciler
 	Scheme *runtime.Scheme
-}
-
-// LabelsForNifi returns the labels for selecting the resources
-// belonging to the given Nifi CR name.
-func LabelsForNifi(name string) map[string]string {
-	return map[string]string{"app": "nifi", "nifi_cr": name}
 }
 
 // New creates a new reconciler for Nifi
@@ -106,6 +101,10 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	log.V(1).Info("Reconciling")
 
+	if r.NifiCluster.IsExternal() {
+		log.V(1).Info("Reconciled")
+		return nil
+	}
 	// TODO : manage external LB
 	uniqueHostnamesMap := make(map[string]struct{})
 
@@ -164,7 +163,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 		}
 
-		o := r.configMap(node.Id, nodeConfig, serverPass, clientPass, superUsers, log)
+		o := r.secretConfig(node.Id, nodeConfig, serverPass, clientPass, superUsers, log)
 		err = k8sutil.Reconcile(log, r.Client, o, r.NifiCluster)
 		if err != nil {
 			return errors.WrapIfWithDetails(err, "failed to reconcile resource", "resource", o.GetObjectKind().GroupVersionKind())
@@ -224,20 +223,6 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		return errors.WrapIf(err, "failed to reconcile resource")
 	}
 
-	// TODO: Ensure usage and needing
-	err = scale.EnsureRemovedNodes(r.Client, r.NifiCluster)
-	if err != nil && len(r.NifiCluster.Status.NodesState) > 0 {
-		return err
-	}
-
-	// Reconcile cluster communications
-	// Ensure the cluster is ready to receive actions
-	if !r.NifiCluster.IsReady() {
-		log.Info("Cluster is not ready yet, will wait until it is.")
-		// the cluster does not exist - should have been caught pre-flight
-		return errors.WrapIf(err, "Cluster is not ready yet, will wait until it is.")
-	}
-
 	configManager := config.GetClientConfigManager(r.Client, v1alpha1.ClusterReference{
 		Namespace: r.NifiCluster.Namespace,
 		Name:      r.NifiCluster.Name,
@@ -247,6 +232,13 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		// the cluster does not exist - should have been caught pre-flight
 		return errors.WrapIf(err, "Failed to create HTTP client the for referenced cluster")
 	}
+
+	// TODO: Ensure usage and needing
+	err = scale.EnsureRemovedNodes(clientConfig, r.NifiCluster)
+	if err != nil && len(r.NifiCluster.Status.NodesState) > 0 {
+		return err
+	}
+
 	pgRootId, err := dataflow.RootProcessGroup(clientConfig)
 	if err != nil {
 		return err
@@ -282,7 +274,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 func (r *Reconciler) reconcileNifiPodDelete(log logr.Logger) error {
 
 	podList := &corev1.PodList{}
-	matchingLabels := client.MatchingLabels(LabelsForNifi(r.NifiCluster.Name))
+	matchingLabels := client.MatchingLabels(nifiutil.LabelsForNifi(r.NifiCluster.Name))
 
 	err := r.Client.List(context.TODO(), podList,
 		client.ListOption(client.InNamespace(r.NifiCluster.Namespace)), client.ListOption(matchingLabels))
@@ -359,13 +351,13 @@ OUTERLOOP:
 				return errors.WrapIfWithDetails(err, "could not delete node", "id", node.Labels["nodeId"])
 			}
 
-			err = r.Client.Delete(context.TODO(), &corev1.Secret{ObjectMeta: templates.ObjectMeta(fmt.Sprintf(templates.NodeConfigTemplate+"-%s", r.NifiCluster.Name, node.Labels["nodeId"]), LabelsForNifi(r.NifiCluster.Name), r.NifiCluster)})
+			err = r.Client.Delete(context.TODO(), &corev1.Secret{ObjectMeta: templates.ObjectMeta(fmt.Sprintf(templates.NodeConfigTemplate+"-%s", r.NifiCluster.Name, node.Labels["nodeId"]), nifiutil.LabelsForNifi(r.NifiCluster.Name), r.NifiCluster)})
 			if err != nil {
-				return errors.WrapIfWithDetails(err, "could not delete configmap for node", "id", node.Labels["nodeId"])
+				return errors.WrapIfWithDetails(err, "could not delete secret config for node", "id", node.Labels["nodeId"])
 			}
 
 			if !r.NifiCluster.Spec.Service.HeadlessEnabled {
-				err = r.Client.Delete(context.TODO(), &corev1.Service{ObjectMeta: templates.ObjectMeta(fmt.Sprintf("%s-%s", r.NifiCluster.Name, node.Labels["nodeId"]), LabelsForNifi(r.NifiCluster.Name), r.NifiCluster)})
+				err = r.Client.Delete(context.TODO(), &corev1.Service{ObjectMeta: templates.ObjectMeta(fmt.Sprintf("%s-%s", r.NifiCluster.Name, node.Labels["nodeId"]), nifiutil.LabelsForNifi(r.NifiCluster.Name), r.NifiCluster)})
 				if err != nil {
 					if apierrors.IsNotFound(err) {
 						// can happen when node was not fully initialized and now is deleted
@@ -668,7 +660,7 @@ func (r *Reconciler) reconcileNifiPod(log logr.Logger, desiredPod *corev1.Pod) (
 			if r.NifiCluster.Status.State == v1alpha1.NifiClusterRollingUpgrading {
 				// Check if any nifi pod is in terminating, pending or not ready state
 				podList := &corev1.PodList{}
-				matchingLabels := client.MatchingLabels(LabelsForNifi(r.NifiCluster.Name))
+				matchingLabels := client.MatchingLabels(nifiutil.LabelsForNifi(r.NifiCluster.Name))
 				err := r.Client.List(context.TODO(), podList, client.ListOption(client.InNamespace(r.NifiCluster.Namespace)), client.ListOption(matchingLabels))
 				if err != nil {
 					return errors.WrapIf(err, "failed to reconcile resource"), false

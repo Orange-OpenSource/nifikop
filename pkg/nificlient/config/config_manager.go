@@ -2,7 +2,8 @@ package config
 
 import (
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
-	"github.com/Orange-OpenSource/nifikop/pkg/nificlient/config/nificluster"
+	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
+	"github.com/Orange-OpenSource/nifikop/pkg/nificlient/config/basic"
 	"github.com/Orange-OpenSource/nifikop/pkg/nificlient/config/tls"
 	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -11,17 +12,16 @@ import (
 var MockClientConfig = v1alpha1.ClientConfigType("mock")
 
 func GetClientConfigManager(client client.Client, clusterRef v1alpha1.ClusterReference) clientconfig.Manager {
-	switch clusterRef.Type {
-	case v1alpha1.ClientConfigNiFiCluster:
-		return nificluster.New(client, clusterRef)
-	case v1alpha1.ClientConfigExternalTLS:
+	cluster, _ := k8sutil.LookupNifiCluster(client, clusterRef.Name, clusterRef.Namespace)
+	switch cluster.GetClientType() {
+	case v1alpha1.ClientConfigTLS:
 		return tls.New(client, clusterRef)
-	//case v1alpha1.ClientConfigExternalBasic:
-	//	return
+	case v1alpha1.ClientConfigBasic:
+		return basic.New(client, clusterRef)
 	case MockClientConfig:
-		return newMockClientConfig(client, clusterRef)
+		return NewMockClientConfig(client, clusterRef)
 	default:
-		return nificluster.New(client, clusterRef)
+		return tls.New(client, clusterRef)
 	}
 }
 
@@ -32,7 +32,7 @@ type mockClientConfig struct {
 	clusterRef v1alpha1.ClusterReference
 }
 
-func newMockClientConfig(client client.Client, clusterRef v1alpha1.ClusterReference) clientconfig.Manager {
+func NewMockClientConfig(client client.Client, clusterRef v1alpha1.ClusterReference) clientconfig.Manager {
 	return &mockClientConfig{client: client, clusterRef: clusterRef}
 }
 

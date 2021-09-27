@@ -15,6 +15,7 @@
 package nificlient
 
 import (
+	"github.com/Orange-OpenSource/nifikop/pkg/nificlient/config/common"
 	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	"testing"
 
@@ -145,6 +146,7 @@ func testClusterMock(t *testing.T) *v1alpha1.NifiCluster {
 	cluster.Name = clusterName
 	cluster.Namespace = clusterNamespace
 	cluster.Spec = v1alpha1.NifiClusterSpec{}
+	cluster.Spec.ListenersConfig = &v1alpha1.ListenersConfig{}
 
 	cluster.Spec.Nodes = []v1alpha1.Node{
 		{Id: 0},
@@ -158,4 +160,9 @@ func testClusterMock(t *testing.T) *v1alpha1.NifiCluster {
 		{Type: "s2s", ContainerPort: 8085},
 	}
 	return cluster
+}
+
+func configFromCluster(cluster *v1alpha1.NifiCluster) (*clientconfig.NifiConfig, error) {
+	conf := common.ClusterConfig(cluster)
+	return conf, nil
 }

@@ -14,13 +14,12 @@
 package nificlient
 
 import (
+	"context"
 	"fmt"
-	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
-	"github.com/Orange-OpenSource/nifikop/pkg/nificlient/config/nificluster"
 	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	"net/http"
+	"net/url"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
@@ -52,8 +51,12 @@ const (
 
 // NiFiClient is the exported interface for NiFi operations
 type NifiClient interface {
+	// Access func
+	CreateAccessTokenUsingBasicAuth(username, password string, nodeId int32) (*string, error)
+
 	// System func
 	DescribeCluster() (*nigoapi.ClusterEntity, error)
+	DescribeClusterFromNodeId(nodeId int32) (*nigoapi.ClusterEntity, error)
 	DisconnectClusterNode(nId int32) (*nigoapi.NodeEntity, error)
 	ConnectClusterNode(nId int32) (*nigoapi.NodeEntity, error)
 	OffloadClusterNode(nId int32) (*nigoapi.NodeEntity, error)
@@ -173,13 +176,15 @@ func (n *nifiClient) Build() error {
 		n.nodeClient[nodeId] = n.newClient(nodeConfig)
 	}
 
-	clusterEntity, err := n.DescribeCluster()
-	if err != nil || clusterEntity == nil || clusterEntity.Cluster == nil {
-		err = errorfactory.New(errorfactory.NodesUnreachable{}, err, fmt.Sprintf("could not connect to nifi nodes: %s", n.opts.NifiURI))
-		return err
-	}
+	if !n.opts.SkipDescribeCluster {
+		clusterEntity, err := n.DescribeCluster()
+		if err != nil || clusterEntity == nil || clusterEntity.Cluster == nil {
+			err = errorfactory.New(errorfactory.NodesUnreachable{}, err, fmt.Sprintf("could not connect to nifi nodes: %s", n.opts.NifiURI))
+			return err
+		}
 
-	n.nodes = clusterEntity.Cluster.Nodes
+		n.nodes = clusterEntity.Cluster.Nodes
+	}
 
 	return nil
 }
@@ -198,39 +203,42 @@ func NewFromConfig(opts *clientconfig.NifiConfig) (NifiClient, error) {
 	return client, nil
 }
 
-// NewFromCluster is a convenient wrapper around New() and ClusterConfig()
-func NewFromCluster(k8sclient client.Client, cluster *v1alpha1.NifiCluster) (NifiClient, error) {
-	var client NifiClient
-	var err error
-	var opts *clientconfig.NifiConfig
-
-	if opts, err = nificluster.New(k8sclient,
-		v1alpha1.ClusterReference{Name: cluster.Name, Namespace: cluster.Namespace}).BuildConfig(); err != nil {
-		return nil, err
-	}
-	client = New(opts)
-	err = client.Build()
-	if err != nil {
-		return nil, err
-	}
-
-	return client, nil
-}
-
 func (n *nifiClient) getNifiGoApiConfig() (config *nigoapi.Configuration) {
 	config = nigoapi.NewConfiguration()
 
 	protocol := "http"
+	var transport *http.Transport = nil
 	if n.opts.UseSSL {
+		transport = &http.Transport{}
 		config.Scheme = "HTTPS"
 		n.opts.TLSConfig.BuildNameToCertificate()
-		transport := &http.Transport{TLSClientConfig: n.opts.TLSConfig}
-		config.HTTPClient = &http.Client{Transport: transport}
+		transport.TLSClientConfig = n.opts.TLSConfig
 		protocol = "https"
 	}
+
+	if len(n.opts.ProxyUrl) > 0 {
+		proxyUrl, err := url.Parse(n.opts.ProxyUrl)
+		if err == nil {
+			if transport == nil {
+				transport = &http.Transport{}
+			}
+			transport.Proxy = http.ProxyURL(proxyUrl)
+		}
+	}
+
+	config.HTTPClient = &http.Client{}
+	if transport != nil {
+		config.HTTPClient = &http.Client{Transport: transport}
+	}
+
 	config.BasePath = fmt.Sprintf("%s://%s/nifi-api", protocol, n.opts.NifiURI)
 	config.Host = n.opts.NifiURI
-
+	if len(n.opts.NifiURI) == 0 {
+		for nodeId, _ := range n.opts.NodesURI {
+			config.BasePath = fmt.Sprintf("%s://%s/nifi-api", protocol, n.opts.NodesURI[nodeId].RequestHost)
+			config.Host = n.opts.NodesURI[nodeId].RequestHost
+		}
+	}
 	return
 }
 
@@ -239,36 +247,55 @@ func (n *nifiClient) getNiNodeGoApiConfig(nodeId int32) (config *nigoapi.Configu
 	config.HTTPClient = &http.Client{}
 	protocol := "http"
 
+	var transport *http.Transport = nil
 	if n.opts.UseSSL {
+		transport = &http.Transport{}
 		config.Scheme = "HTTPS"
 		n.opts.TLSConfig.BuildNameToCertificate()
-		transport := &http.Transport{TLSClientConfig: n.opts.TLSConfig}
-		config.HTTPClient = &http.Client{Transport: transport}
+		transport.TLSClientConfig = n.opts.TLSConfig
 		protocol = "https"
 	}
+
+	if n.opts.ProxyUrl != "" {
+		proxyUrl, err := url.Parse(n.opts.ProxyUrl)
+		if err == nil {
+			if transport == nil {
+				transport = &http.Transport{}
+			}
+			transport.Proxy = http.ProxyURL(proxyUrl)
+		}
+	}
+	config.HTTPClient = &http.Client{}
+	if transport != nil {
+		config.HTTPClient = &http.Client{Transport: transport}
+	}
+
 	config.BasePath = fmt.Sprintf("%s://%s/nifi-api", protocol, n.opts.NodesURI[nodeId].RequestHost)
-	config.Host = n.opts.NifiURI
+	config.Host = n.opts.NodesURI[nodeId].RequestHost
+	if len(n.opts.NifiURI) != 0 {
+		config.Host = n.opts.NifiURI
+	}
 
 	return
 }
 
-func (n *nifiClient) privilegeCoordinatorClient() *nigoapi.APIClient {
+func (n *nifiClient) privilegeCoordinatorClient() (*nigoapi.APIClient, context.Context) {
 	if clientId := n.coordinatorNodeId(); clientId != nil {
-		return n.nodeClient[*clientId]
+		return n.nodeClient[*clientId], n.opts.NodesContext[*clientId]
 	}
 
 	if clientId := n.privilegeNodeClient(); clientId != nil {
-		return n.nodeClient[*clientId]
+		return n.nodeClient[*clientId], n.opts.NodesContext[*clientId]
 	}
 
-	return n.client
+	return n.client, nil
 }
 
-func (n *nifiClient) privilegeCoordinatorExceptNodeIdClient(nId int32) *nigoapi.APIClient {
+func (n *nifiClient) privilegeCoordinatorExceptNodeIdClient(nId int32) (*nigoapi.APIClient, context.Context) {
 	nodeDto := n.nodeDtoByNodeId(nId)
 	if nodeDto == nil || isCoordinator(nodeDto) {
 		if clientId := n.firstConnectedNodeId(nId); clientId != nil {
-			return n.nodeClient[*clientId]
+			return n.nodeClient[*clientId], n.opts.NodesContext[*clientId]
 		}
 	}
 

@@ -99,8 +99,7 @@ func (r *NifiParameterContextReconciler) Reconcile(ctx context.Context, req ctrl
 	original := &v1alpha1.NifiParameterContext{}
 	current := instance.DeepCopy()
 	json.Unmarshal(o, original)
-	if !v1alpha1.ClusterRefsEquals([]v1alpha1.ClusterReference{original.Spec.ClusterRef, instance.Spec.ClusterRef}) &&
-		original.Spec.ClusterRef.IsSet() {
+	if !v1alpha1.ClusterRefsEquals([]v1alpha1.ClusterReference{original.Spec.ClusterRef, instance.Spec.ClusterRef}) {
 		instance.Spec.ClusterRef = original.Spec.ClusterRef
 	}
 
@@ -136,7 +135,7 @@ func (r *NifiParameterContextReconciler) Reconcile(ctx context.Context, req ctrl
 
 	// Generate the connect object
 	if clusterConnect, err = configManager.BuildConnect(); err != nil {
-		if !configManager.IsExternal() {
+		if !clusterConnect.IsExternal() {
 			// This shouldn't trigger anymore, but leaving it here as a safetybelt
 			if k8sutil.IsMarkedForDeletion(instance.ObjectMeta) {
 				r.Log.Info("Cluster is already gone, there is nothing we can do")
@@ -151,7 +150,7 @@ func (r *NifiParameterContextReconciler) Reconcile(ctx context.Context, req ctrl
 					return RequeueWithError(r.Log, "could not apply last state to annotation", err)
 				}
 				if err := r.Client.Update(ctx, current); err != nil {
-					return RequeueWithError(r.Log, "failed to update NifiRegistryClient", err)
+					return RequeueWithError(r.Log, "failed to update NifiParameterContext", err)
 				}
 				return RequeueAfter(time.Duration(15) * time.Second)
 			}
@@ -181,7 +180,7 @@ func (r *NifiParameterContextReconciler) Reconcile(ctx context.Context, req ctrl
 	}
 
 	// Ensure the cluster is ready to receive actions
-	if !clusterConnect.IsReady() {
+	if !clusterConnect.IsReady(r.Log) {
 		r.Log.Info("Cluster is not ready yet, will wait until it is.")
 		r.Recorder.Event(instance, corev1.EventTypeNormal, "ReferenceClusterNotReady",
 			fmt.Sprintf("The referenced cluster is not ready yet : %s in %s",
@@ -205,7 +204,7 @@ func (r *NifiParameterContextReconciler) Reconcile(ctx context.Context, req ctrl
 			return RequeueWithError(r.Log, "could not apply last state to annotation", err)
 		}
 		if err := r.Client.Update(ctx, current); err != nil {
-			return RequeueWithError(r.Log, "failed to update NifiRegistryClient", err)
+			return RequeueWithError(r.Log, "failed to update NifiParameterContext", err)
 		}
 		return RequeueAfter(time.Duration(15) * time.Second)
 	}
@@ -213,7 +212,7 @@ func (r *NifiParameterContextReconciler) Reconcile(ctx context.Context, req ctrl
 	r.Recorder.Event(instance, corev1.EventTypeNormal, "Reconciling",
 		fmt.Sprintf("Reconciling parameter context %s", instance.Name))
 
-	// Check if the NiFi registry client already exist
+	// Check if the NiFi parameter context already exist
 	exist, err := parametercontext.ExistParameterContext(instance, clientConfig)
 	if err != nil {
 		return RequeueWithError(r.Log, "failure checking for existing parameter context", err)
@@ -349,7 +348,7 @@ func (r *NifiParameterContextReconciler) finalizeNifiParameterContext(
 	if err := parametercontext.RemoveParameterContext(parameterContext, parameterSecrets, config); err != nil {
 		return err
 	}
-	r.Log.Info("Delete Registry client")
+	r.Log.Info("Delete NifiParameter Context")
 
 	return nil
 }

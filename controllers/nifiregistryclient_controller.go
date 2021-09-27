@@ -97,8 +97,7 @@ func (r *NifiRegistryClientReconciler) Reconcile(ctx context.Context, req ctrl.R
 	original := &v1alpha1.NifiRegistryClient{}
 	current := instance.DeepCopy()
 	json.Unmarshal(o, original)
-	if !v1alpha1.ClusterRefsEquals([]v1alpha1.ClusterReference{original.Spec.ClusterRef, instance.Spec.ClusterRef}) &&
-		original.Spec.ClusterRef.IsSet() {
+	if !v1alpha1.ClusterRefsEquals([]v1alpha1.ClusterReference{original.Spec.ClusterRef, instance.Spec.ClusterRef}) {
 		instance.Spec.ClusterRef = original.Spec.ClusterRef
 	}
 
@@ -113,7 +112,7 @@ func (r *NifiRegistryClientReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 	// Generate the connect object
 	if clusterConnect, err = configManager.BuildConnect(); err != nil {
-		if !configManager.IsExternal() {
+		if !clusterConnect.IsExternal() {
 			// This shouldn't trigger anymore, but leaving it here as a safetybelt
 			if k8sutil.IsMarkedForDeletion(instance.ObjectMeta) {
 				r.Log.Info("Cluster is already gone, there is nothing we can do")
@@ -157,7 +156,7 @@ func (r *NifiRegistryClientReconciler) Reconcile(ctx context.Context, req ctrl.R
 	}
 
 	// Ensure the cluster is ready to receive actions
-	if !clusterConnect.IsReady() {
+	if !clusterConnect.IsReady(r.Log) {
 		r.Log.Info("Cluster is not ready yet, will wait until it is.")
 		r.Recorder.Event(instance, corev1.EventTypeNormal, "ReferenceClusterNotReady",
 			fmt.Sprintf("The referenced cluster is not ready yet : %s in %s",

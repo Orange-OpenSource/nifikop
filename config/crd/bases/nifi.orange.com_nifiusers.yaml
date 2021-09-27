@@ -102,36 +102,8 @@ spec:
                     type: string
                   namespace:
                     type: string
-                  nifiURI:
-                    type: string
-                  nodeIds:
-                    items:
-                      format: int32
-                      type: integer
-                    type: array
-                  nodeURITemplate:
-                    type: string
-                  rootProcessGroupId:
-                    type: string
-                  secretRef:
-                    description: SecretReference states a reference to a secret for
-                      parameter context provisioning
-                    properties:
-                      name:
-                        type: string
-                      namespace:
-                        type: string
-                    required:
-                    - name
-                    type: object
-                  type:
-                    description: ClientConfigType represents an interface implementing
-                      the  ClientConfigManager
-                    enum:
-                    - external-tls
-                    - nificluster
-                    - external-basic
-                    type: string
+                required:
+                - name
                 type: object
               createCert:
                 description: Whether or not a certificate will be created for this
