@@ -86,7 +86,7 @@ manager: generate fmt vet
 # Generate code
 generate: controller-gen
 	@echo "Generate zzz-deepcopy objects"
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..." -mod=mod
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
