@@ -261,7 +261,8 @@ func (r *NifiDataflowReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return RequeueAfter(time.Duration(15) * time.Second)
 	}
 
-	if instance.Spec.GetRunOnce() && instance.Status.State == v1alpha1.DataflowStateRan {
+	if (instance.Spec.SyncNever() && len(instance.Status.State) > 0) ||
+		(instance.Spec.SyncOnce() && instance.Status.State == v1alpha1.DataflowStateRan) {
 		return Reconciled()
 	}
 
@@ -317,6 +318,10 @@ func (r *NifiDataflowReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// Push any changes
 	if instance, err = r.updateAndFetchLatest(ctx, instance); err != nil {
 		return RequeueWithError(r.Log, "failed to update NifiDataflow", err)
+	}
+
+	if instance.Spec.SyncNever(){
+		return Reconciled()
 	}
 
 	// In case where the flow is not sync
@@ -381,7 +386,7 @@ func (r *NifiDataflowReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	if instance.Status.State == v1alpha1.DataflowStateCreated ||
 		instance.Status.State == v1alpha1.DataflowStateStarting ||
 		instance.Status.State == v1alpha1.DataflowStateInSync ||
-		(!instance.Spec.GetRunOnce() && instance.Status.State == v1alpha1.DataflowStateRan) {
+		(!instance.Spec.SyncOnce() && instance.Status.State == v1alpha1.DataflowStateRan) {
 
 		instance.Status.State = v1alpha1.DataflowStateStarting
 		if err := r.Client.Status().Update(ctx, instance); err != nil {
@@ -434,7 +439,7 @@ func (r *NifiDataflowReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			instance.Name, instance.Spec.BucketId,
 			instance.Spec.FlowId, strconv.FormatInt(int64(*instance.Spec.FlowVersion), 10)))
 
-	if instance.Spec.GetRunOnce() {
+	if instance.Spec.SyncOnce() {
 		return Reconciled()
 	}
 

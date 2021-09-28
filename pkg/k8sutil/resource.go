@@ -38,7 +38,6 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtimeClie
 	current := desired.DeepCopyObject().(runtimeClient.Object)
 
 	var err error
-
 	switch desired.(type) {
 	default:
 		var key runtimeClient.ObjectKey
@@ -71,6 +70,17 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtimeClie
 		}
 	}
 	if err == nil {
+		switch desired.(type) {
+		case *v1alpha1.NifiUser:
+			user := desired.(*v1alpha1.NifiUser)
+			user.Status = current.(*v1alpha1.NifiUser).Status
+			desired = user
+		case *v1alpha1.NifiUserGroup:
+			group := desired.(*v1alpha1.NifiUserGroup)
+			group.Status = current.(*v1alpha1.NifiUserGroup).Status
+			desired = group
+		}
+
 		if CheckIfObjectUpdated(log, desiredType, current, desired) {
 
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(desired); err != nil {

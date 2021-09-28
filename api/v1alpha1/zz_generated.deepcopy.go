@@ -556,11 +556,6 @@ func (in *NifiDataflowSpec) DeepCopyInto(out *NifiDataflowSpec) {
 		*out = new(ParameterContextReference)
 		**out = **in
 	}
-	if in.RunOnce != nil {
-		in, out := &in.RunOnce, &out.RunOnce
-		*out = new(bool)
-		**out = **in
-	}
 	out.ClusterRef = in.ClusterRef
 	if in.RegistryClientRef != nil {
 		in, out := &in.RegistryClientRef, &out.RegistryClientRef

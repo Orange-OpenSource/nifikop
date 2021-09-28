@@ -104,14 +104,7 @@ func SyncUserGroup(userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.NifiUser
 
 	// Remove from access policy
 	for _, entity := range entity.Component.AccessPolicies {
-		contains := false
-		for _, accessPolicy := range userGroup.Spec.AccessPolicies {
-			if entity.Component.Action == string(accessPolicy.Action) &&
-				entity.Component.Resource == accessPolicy.GetResource(config.RootProcessGroupId) {
-				contains = true
-				break
-			}
-		}
+		contains := userGroupContainsAccessPolicy(userGroup, entity, config.RootProcessGroupId)
 		if !contains {
 			if err := accesspolicies.UpdateAccessPolicyEntity(&entity,
 				[]*v1alpha1.NifiUser{}, []*v1alpha1.NifiUser{},
@@ -123,14 +116,7 @@ func SyncUserGroup(userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.NifiUser
 
 	// add
 	for _, accessPolicy := range userGroup.Spec.AccessPolicies {
-		contains := false
-		for _, entity := range entity.Component.AccessPolicies {
-			if entity.Component.Action == string(accessPolicy.Action) &&
-				entity.Component.Resource == accessPolicy.GetResource(config.RootProcessGroupId) {
-				contains = true
-				break
-			}
-		}
+		contains := UserGroupEntityContainsAccessPolicy(entity, accessPolicy, config.RootProcessGroupId)
 		if !contains {
 			if err := accesspolicies.UpdateAccessPolicy(&accessPolicy,
 				[]*v1alpha1.NifiUser{}, []*v1alpha1.NifiUser{},
@@ -210,4 +196,25 @@ func updateUserGroupEntity(userGroup *v1alpha1.NifiUserGroup, users []*v1alpha1.
 	for _, user := range users {
 		entity.Component.Users = append(entity.Component.Users, nigoapi.TenantEntity{Id: user.Status.Id})
 	}
+}
+
+
+func userGroupContainsAccessPolicy(userGroup *v1alpha1.NifiUserGroup, entity nigoapi.AccessPolicyEntity, rootPGId string) bool {
+	for _, accessPolicy := range userGroup.Spec.AccessPolicies {
+		if entity.Component.Action == string(accessPolicy.Action) &&
+			entity.Component.Resource == accessPolicy.GetResource(rootPGId) {
+			return true
+		}
+	}
+	return false
+}
+
+func UserGroupEntityContainsAccessPolicy(entity *nigoapi.UserGroupEntity, accessPolicy v1alpha1.AccessPolicy, rootPGId string) bool {
+	for _, entity := range entity.Component.AccessPolicies {
+		if entity.Component.Action == string(accessPolicy.Action) &&
+			entity.Component.Resource == accessPolicy.GetResource(rootPGId) {
+			return true
+		}
+	}
+	return false
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/accesspolicies"
+	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers/usergroup"
 	"github.com/Orange-OpenSource/nifikop/pkg/common"
 	"github.com/Orange-OpenSource/nifikop/pkg/nificlient"
 	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
@@ -108,11 +109,16 @@ func SyncUser(user *v1alpha1.NifiUser, config *clientconfig.NifiConfig) (*v1alph
 	status.Id = entity.Id
 
 	// Remove from access policy
-	for _, entity := range entity.Component.AccessPolicies {
+	for _, ent := range entity.Component.AccessPolicies {
 		contains := false
-		for _, accessPolicy := range user.Spec.AccessPolicies {
-			if entity.Component.Action == string(accessPolicy.Action) &&
-				entity.Component.Resource == accessPolicy.GetResource(config.RootProcessGroupId) {
+		for _, group := range entity.Component.UserGroups {
+			userGroupEntity, err := nClient.GetUserGroup(group.Id)
+			if err := clientwrappers.ErrorGetOperation(log, err, "Get user-group"); err != nil {
+				return nil, err
+			}
+
+			if userContainsAccessPolicy(user, ent, config.RootProcessGroupId) ||
+				userGroupEntityContainsAccessPolicyEntity(userGroupEntity, ent) {
 				contains = true
 				break
 			}
@@ -121,9 +127,9 @@ func SyncUser(user *v1alpha1.NifiUser, config *clientconfig.NifiConfig) (*v1alph
 			if err := accesspolicies.UpdateAccessPolicyEntity(
 				&nigoapi.AccessPolicyEntity{
 					Component: &nigoapi.AccessPolicyDto{
-						Id:       entity.Component.Id,
-						Resource: entity.Component.Resource,
-						Action:   entity.Component.Action,
+						Id:       ent.Component.Id,
+						Resource: ent.Component.Resource,
+						Action:   ent.Component.Action,
 					},
 				},
 				[]*v1alpha1.NifiUser{}, []*v1alpha1.NifiUser{user},
@@ -136,9 +142,14 @@ func SyncUser(user *v1alpha1.NifiUser, config *clientconfig.NifiConfig) (*v1alph
 	// add
 	for _, accessPolicy := range user.Spec.AccessPolicies {
 		contains := false
-		for _, entity := range entity.Component.AccessPolicies {
-			if entity.Component.Action == string(accessPolicy.Action) &&
-				entity.Component.Resource == accessPolicy.GetResource(config.RootProcessGroupId) {
+		for _, group := range entity.Component.UserGroups {
+			userGroupEntity, err := nClient.GetUserGroup(group.Id)
+			if err := clientwrappers.ErrorGetOperation(log, err, "Get user-group"); err != nil {
+				return nil, err
+			}
+
+			if userEntityContainsAccessPolicy(entity, accessPolicy, config.RootProcessGroupId) ||
+				usergroup.UserGroupEntityContainsAccessPolicy(userGroupEntity, accessPolicy, config.RootProcessGroupId) {
 				contains = true
 				break
 			}
@@ -199,3 +210,34 @@ func updateUserEntity(user *v1alpha1.NifiUser, entity *nigoapi.UserEntity) {
 
 	entity.Component.Identity = user.GetIdentity()
 }
+
+func userContainsAccessPolicy(user *v1alpha1.NifiUser, entity nigoapi.AccessPolicySummaryEntity, rootPGId string) bool {
+	for _, accessPolicy := range user.Spec.AccessPolicies {
+		if entity.Component.Action == string(accessPolicy.Action) &&
+			entity.Component.Resource == accessPolicy.GetResource(rootPGId) {
+			return true
+		}
+	}
+	return false
+}
+
+func userEntityContainsAccessPolicy(entity *nigoapi.UserEntity, accessPolicy v1alpha1.AccessPolicy, rootPGId string)  bool {
+	for _, entity := range entity.Component.AccessPolicies {
+		if entity.Component.Action == string(accessPolicy.Action) &&
+			entity.Component.Resource == accessPolicy.GetResource(rootPGId) {
+			return true
+		}
+	}
+	return false
+}
+
+func userGroupEntityContainsAccessPolicyEntity(entity *nigoapi.UserGroupEntity, accessPolicy nigoapi.AccessPolicySummaryEntity) bool {
+	for _, entity := range entity.Component.AccessPolicies {
+		if entity.Component.Action == accessPolicy.Component.Action &&
+			entity.Component.Resource == accessPolicy.Component.Resource {
+			return true
+		}
+	}
+	return false
+}
+

@@ -35,8 +35,9 @@ type NifiDataflowSpec struct {
 	FlowVersion *int32 `json:"flowVersion,omitempty"`
 	// contains the reference to the ParameterContext with the one the dataflow is linked.
 	ParameterContextRef *ParameterContextReference `json:"parameterContextRef,omitempty"`
-	// if the flow will be ran once or continuously checked
-	RunOnce *bool `json:"runOnce,omitempty"`
+	// if the flow will be synchronized once, continuously or never
+	// +kubebuilder:validation:Enum={"never","always","once"}
+	SyncMode DataflowSyncMode `json:"syncMode,omitempty"`
 	// whether the flow is considered as ran if some controller services are still invalid or not.
 	SkipInvalidControllerService bool `json:"skipInvalidControllerService,omitempty"`
 	// whether the flow is considered as ran if some components are still invalid or not.
@@ -143,11 +144,25 @@ func init() {
 	SchemeBuilder.Register(&NifiDataflow{}, &NifiDataflowList{})
 }
 
-func (d *NifiDataflowSpec) GetRunOnce() bool {
-	if d.RunOnce != nil {
-		return *d.RunOnce
+func (d *NifiDataflowSpec) SyncOnce() bool {
+	if d.SyncMode == SyncOnce {
+		return true
 	}
-	return true
+	return false
+}
+
+func (d *NifiDataflowSpec) SyncAlways() bool {
+	if d.SyncMode == SyncAlways {
+		return true
+	}
+	return false
+}
+
+func (d *NifiDataflowSpec) SyncNever() bool {
+	if d.SyncMode == SyncNever {
+		return true
+	}
+	return false
 }
 
 func (d *NifiDataflowSpec) GetParentProcessGroupID(rootProcessGroupId string) string {

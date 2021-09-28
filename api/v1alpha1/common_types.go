@@ -430,3 +430,11 @@ func SecretRefsEquals(secretRefs []SecretReference) bool {
 	}
 	return true
 }
+
+type DataflowSyncMode string
+
+const (
+	SyncNever DataflowSyncMode  = "never"
+	SyncOnce DataflowSyncMode   = "once"
+	SyncAlways DataflowSyncMode = "always"
+)
