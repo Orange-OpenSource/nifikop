@@ -117,13 +117,12 @@ func SyncUser(user *v1alpha1.NifiUser, config *clientconfig.NifiConfig) (*v1alph
 				return nil, err
 			}
 
-			if userContainsAccessPolicy(user, ent, config.RootProcessGroupId) ||
-				userGroupEntityContainsAccessPolicyEntity(userGroupEntity, ent) {
+			if userGroupEntityContainsAccessPolicyEntity(userGroupEntity, ent) {
 				contains = true
 				break
 			}
 		}
-		if !contains {
+		if !contains && !userContainsAccessPolicy(user, ent, config.RootProcessGroupId) {
 			if err := accesspolicies.UpdateAccessPolicyEntity(
 				&nigoapi.AccessPolicyEntity{
 					Component: &nigoapi.AccessPolicyDto{
@@ -148,13 +147,12 @@ func SyncUser(user *v1alpha1.NifiUser, config *clientconfig.NifiConfig) (*v1alph
 				return nil, err
 			}
 
-			if userEntityContainsAccessPolicy(entity, accessPolicy, config.RootProcessGroupId) ||
-				usergroup.UserGroupEntityContainsAccessPolicy(userGroupEntity, accessPolicy, config.RootProcessGroupId) {
+			if usergroup.UserGroupEntityContainsAccessPolicy(userGroupEntity, accessPolicy, config.RootProcessGroupId) {
 				contains = true
 				break
 			}
 		}
-		if !contains {
+		if !contains && !userEntityContainsAccessPolicy(entity, accessPolicy, config.RootProcessGroupId) {
 			if err := accesspolicies.UpdateAccessPolicy(&accessPolicy,
 				[]*v1alpha1.NifiUser{user}, []*v1alpha1.NifiUser{},
 				[]*v1alpha1.NifiUserGroup{}, []*v1alpha1.NifiUserGroup{}, config); err != nil {
