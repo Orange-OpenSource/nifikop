@@ -15,6 +15,7 @@ package nificlient
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	"net/http"
@@ -194,6 +195,9 @@ func NewFromConfig(opts *clientconfig.NifiConfig) (NifiClient, error) {
 	var client NifiClient
 	var err error
 
+	if opts == nil {
+		return nil, errorfactory.New(errorfactory.NilClientConfig{}, errors.New("The NiFi client config is nil"), "The NiFi client config is nil")
+	}
 	client = New(opts)
 	err = client.Build()
 	if err != nil {

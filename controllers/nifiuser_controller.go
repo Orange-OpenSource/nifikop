@@ -214,7 +214,6 @@ func (r *NifiUserReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			if err = pkiManager.FinalizeUserCertificate(ctx, instance); err != nil {
 				return RequeueWithError(r.Log, "failed to finalize user certificate", err)
 			}
-			return r.checkFinalizers(ctx, instance, clientConfig)
 		}
 	}
 
