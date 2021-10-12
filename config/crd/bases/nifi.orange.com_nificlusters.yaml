@@ -37,8 +37,8 @@ spec:
             description: NifiClusterSpec defines the desired state of NifiCluster
             properties:
               clientType:
-                description: ClientConfigType represents an interface implementing
-                  the ClientConfigManager
+                description: clientType defines if the operator will use basic or
+                  tls authentication to query the NiFi cluster.
                 enum:
                 - tls
                 - basic
@@ -1422,7 +1422,7 @@ spec:
                 - retryDurationMinutes
                 type: object
               nifiURI:
-                description: nifiURI used access through a LB uri (used if external-*
+                description: nifiURI used access through a LB uri (used if external
                   type)
                 type: string
               nodeConfigGroups:
@@ -1921,7 +1921,7 @@ spec:
                 type: object
               nodeURITemplate:
                 description: nodeURITemplate used to dynamically compute node uri
-                  (used if external-* type)
+                  (used if external type)
                 type: string
               nodes:
                 description: all node requires an image, unique id, and storageConfigs
@@ -2865,8 +2865,8 @@ spec:
                 description: propage
                 type: boolean
               proxyUrl:
-                description: proxyUrl define the proxy required to query the NiFi
-                  cluster (used if external-* type)
+                description: proxyUrl defines the proxy required to query the NiFi
+                  cluster (used if external type)
                 type: string
               readOnlyConfig:
                 description: readOnlyConfig specifies the read-only type Nifi config
@@ -3247,11 +3247,11 @@ spec:
                 type: object
               rootProcessGroupId:
                 description: rootProcessGroupId contains the uuid of the root process
-                  group for this cluster (used if external-* type)
+                  group for this cluster (used if external type)
                 type: string
               secretRef:
                 description: secretRef reference the secret containing the informations
-                  required to authentiticate to the cluster (used if external-* type)
+                  required to authentiticate to the cluster (used if external type)
                 properties:
                   name:
                     type: string
@@ -4364,7 +4364,8 @@ spec:
                   type: object
                 type: array
               type:
-                description: ClusterType represents an interface implementing the  ClientConfigManager
+                description: type defines if the cluster is internal (i.e manager
+                  by the operator) or external.
                 enum:
                 - external
                 - internal

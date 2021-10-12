@@ -17,11 +17,12 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"strings"
+
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 )
 
 const (
@@ -37,19 +38,21 @@ const (
 
 // NifiClusterSpec defines the desired state of NifiCluster
 type NifiClusterSpec struct {
+	// clientType defines if the operator will use basic or tls authentication to query the NiFi cluster.
 	// +kubebuilder:validation:Enum={"tls","basic"}
 	ClientType ClientConfigType `json:"clientType,omitempty"`
+	// type defines if the cluster is internal (i.e manager by the operator) or external.
 	// +kubebuilder:validation:Enum={"external","internal"}
 	Type ClusterType `json:"type,omitempty"`
-	// nodeURITemplate used to dynamically compute node uri (used if external-* type)
+	// nodeURITemplate used to dynamically compute node uri (used if external type)
 	NodeURITemplate string `json:"nodeURITemplate,omitempty"`
-	// nifiURI used access through a LB uri (used if external-* type)
+	// nifiURI used access through a LB uri (used if external type)
 	NifiURI string `json:"nifiURI,omitempty"`
-	// rootProcessGroupId contains the uuid of the root process group for this cluster (used if external-* type)
+	// rootProcessGroupId contains the uuid of the root process group for this cluster (used if external type)
 	RootProcessGroupId string `json:"rootProcessGroupId,omitempty"`
-	// secretRef reference the secret containing the informations required to authentiticate to the cluster (used if external-* type)
+	// secretRef reference the secret containing the informations required to authentiticate to the cluster (used if external type)
 	SecretRef SecretReference `json:"secretRef,omitempty"`
-	// proxyUrl define the proxy required to query the NiFi cluster (used if external-* type)
+	// proxyUrl defines the proxy required to query the NiFi cluster (used if external type)
 	ProxyUrl string `json:"proxyUrl,omitempty"`
 	// Service defines the policy for services owned by NiFiKop operator.
 	Service ServicePolicy `json:"service,omitempty"`

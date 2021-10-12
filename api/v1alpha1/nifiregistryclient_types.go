@@ -29,7 +29,7 @@ type NifiRegistryClientSpec struct {
 	Uri string `json:"uri"`
 	// The Description of the Registry client.
 	Description string `json:"description,omitempty"`
-	// contains the reference to the NifiCluster with the one the dataflow is linked.
+	// contains the reference to the NifiCluster with the one the registry client is linked.
 	ClusterRef ClusterReference `json:"clusterRef,omitempty"`
 }
 
