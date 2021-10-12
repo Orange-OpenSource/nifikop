@@ -39,6 +39,8 @@
 ### Fixed Bugs
 
 - [COMMIT #d98eb15fb3a74a1be17be5d456b02bd6a2d333cd](https://github.com/Orange-OpenSource/nifikop/tree/d98eb15fb3a74a1be17be5d456b02bd6a2d333cd) - **[Fix/NiFiCluster]** Fix external service port configuration being ignore [#133](https://github.com/Orange-OpenSource/nifikop/issues/133)
+- [PR #134](https://github.com/Orange-OpenSource/nifikop/pull/134) - **[Operator/NifiCluster]** corrected typo in the nifi configmap for bootstrap-notification-service.
+- [PR #119](https://github.com/Orange-OpenSource/nifikop/pull/119) - **[Helm Chart]** bring nificlusters crd in helm chart to spec with rest of repo.
 
 ## v0.6.3
 
@@ -280,7 +282,7 @@
 - Implement pod management lifecycle
 - Implement Graceful downscale pod lifecycle management
 - Implement Graceful upscale pod lifecycle management
-- Implement configuration lifecycle management for : nifi.properties, zookeeper.properties, state-management.xml, login-identity-providers.xml, logback.xml, bootstrap.conf, bootstrap-notification-servces.xml
+- Implement configuration lifecycle management for : nifi.properties, zookeeper.properties, state-management.xml, login-identity-providers.xml, logback.xml, bootstrap.conf, bootstrap-notification-services.xml
 - Initiate documentations
 - Implementation basic makefile for some actions (debug, build, deploy, run, push, unit-test)
 - Create helm chart for operator
