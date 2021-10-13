@@ -63,7 +63,7 @@ orbs:
               root: /home/circleci
               paths:
                 - << parameters.operatorDir >>/build/_output
-                - << parameters.operatorDir >>/vendor
+                #- << parameters.operatorDir >>/vendor
           - save_cache:
               name: Save build artifacts in cache
               key: << parameters.operatorName >>-generate-{{ .Branch }}-{{ checksum "go.sum" }}
