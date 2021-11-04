@@ -69,6 +69,7 @@ NodeConfig defines the node configuration
 |nodeSelector|map\[string\]string|nodeSelector can be specified, which set the pod to fit on a node [nodeselector](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector)|No|nil|
 |tolerations|\[  \][Toleration](https://godoc.org/k8s.io/api/core/v1#Toleration)|tolerations can be specified, which set the pod's tolerations [taint-and-toleration](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/#concepts).|No|nil|
 |nodeAnnotations|map\[string\]string|Additionnal annotation to attach to the pod associated [annotations](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set).|No|nil|
+|nodeLabels|map\[string\]string|Additionnal labels to attach to the pod associated [labels](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set).|No|nil|
 
 ## StorageConfig
 

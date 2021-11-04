@@ -2,6 +2,8 @@
 
 ### Added
 
+- [PR #150](https://github.com/Orange-OpenSource/nifikop/pull/150) - **[Operator/NiFiCluster]** Added labels to nodeConfig and pod policy.
+
 ### Changed
 
 ### Deprecated

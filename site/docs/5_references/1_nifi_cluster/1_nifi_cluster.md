@@ -129,6 +129,7 @@ spec:
 | Field       | Type                | Description                                                                          | Required | Default |
 | ----------- | ------------------- | ------------------------------------------------------------------------------------ | -------- | ------- |
 | annotations | map\[string\]string | Annotations specifies the annotations to attach to pods the NiFiKop operator creates | No       | -       |
+| labels | map\[string\]string | Labels specifies the labels to attach to pods the NiFiKop operator creates | No       | -       |
 
 ## ManagedUsers
 
