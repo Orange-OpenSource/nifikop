@@ -153,7 +153,7 @@ func parameterContextIsSync(
 				if (!param.Parameter.Sensitive &&
 					!((expected.Parameter.Value == nil && param.Parameter.Value == nil) ||
 						((expected.Parameter.Value != nil && param.Parameter.Value != nil) &&
-							(*expected.Parameter.Value == *param.Parameter.Value))))||
+							(*expected.Parameter.Value == *param.Parameter.Value)))) ||
 					expected.Parameter.Description != param.Parameter.Description {
 
 					return false
@@ -202,8 +202,8 @@ func updateRequestPrepare(
 				if (!param.Parameter.Sensitive &&
 					!((expected.Parameter.Value == nil && param.Parameter.Value == nil) ||
 						((expected.Parameter.Value != nil && param.Parameter.Value != nil) &&
-							(*expected.Parameter.Value == *param.Parameter.Value))))||
-					expected.Parameter.Description != param.Parameter.Description  {
+							(*expected.Parameter.Value == *param.Parameter.Value)))) ||
+					expected.Parameter.Description != param.Parameter.Description {
 					notFound = false
 					parameters = append(parameters, expected)
 					break
