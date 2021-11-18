@@ -60,6 +60,7 @@ spec:
 |name|string| the name of the Parameter. |Yes| - |
 |value|string| the value of the Parameter. |No| - |
 |description|string| the description of the Parameter. |No| - |
+|sensitive|string| Whether the parameter is sensitive or not. |No| false |
 
 ## SecretReference
 
