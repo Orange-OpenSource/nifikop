@@ -270,7 +270,7 @@ func updateParameterContextEntity(parameterContext *v1alpha1.NifiParameterContex
 			Parameter: &nigoapi.ParameterDto{
 				Name:        parameter.Name,
 				Description: &desc,
-				Sensitive:   false,
+				Sensitive:   parameter.Sensitive,
 				Value:       parameter.Value,
 			},
 		})
