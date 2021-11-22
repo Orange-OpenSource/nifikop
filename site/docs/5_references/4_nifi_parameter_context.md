@@ -25,6 +25,7 @@ spec:
       description: tutu
     - name: test2
       description: toto
+      sensistive: true
 ```
 
 ## NifiParameterContext
