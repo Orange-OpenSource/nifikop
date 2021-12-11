@@ -7,5 +7,3 @@ resources:
   - self-signed-cert.yaml
   - nifi-issuer.yaml
   - namespace.yaml
-  - repo.yaml
-  - operator.yaml

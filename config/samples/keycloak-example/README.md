@@ -23,7 +23,7 @@ In the `step-1` directory below, we have several manifests that need to be appli
 * `lets-encrypt-issuer.yaml`: This configures our production cluster issuer that will add certs on all our ingress objects.
 * `self-signed-issuer.yaml`, `self-signed-cert.yaml` and `nifi-issuer.yaml` are all required to give up https internal addresses (like `cluster.local`) to our cluster. This is required for OIDC integration.
 * `namespace.yaml`: Where we intend to launch everything
-* `values.yaml`: The values.yaml for helm Since we are only in the nifi namespace for this example, we choose to only list it there. All the CRDs for the next step are applied here.
+* `operator.yaml`: The values.yaml for helm Since we are only in the nifi namespace for this example, we choose to only list it there. All the CRDs for the next step are applied here. THIS NEEDS TO BE APPLIED SEPARATELY FROM KUSTOMIZE (check out using flux for managing helm releases.)
 
 In the `step-2` we can now apply our cluster and ingress.
 
