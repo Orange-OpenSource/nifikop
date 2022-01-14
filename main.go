@@ -20,6 +20,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/pkg/common"
+	"github.com/Orange-OpenSource/nifikop/pkg/util"
 	"github.com/Orange-OpenSource/nifikop/version"
 	certv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	"os"
@@ -72,8 +73,10 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&certManagerEnabled, "cert-manager-enabled", false, "Enable cert-manager integration")
 
+	logLvl, isDevelopment := common.NewLogLevel(util.GetEnvWithDefault("LOG_LEVEL", "Debug"))
 	opts := zap.Options{
-		Development: true,
+		Development: isDevelopment,
+		Level:       logLvl,
 	}
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
