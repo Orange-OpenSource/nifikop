@@ -1,6 +1,6 @@
 # Image URL to use all building/pushing image targets
 SERVICE_NAME			:= nifikop
-DOCKER_REGISTRY_BASE 	?= orangeopensource
+DOCKER_REGISTRY_BASE 	?= influxdb
 IMAGE_TAG				?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null)
 IMAGE_NAME 				?= $(SERVICE_NAME)
 BUILD_IMAGE				?= orangeopensource/nifikop-build
@@ -19,7 +19,7 @@ DEV_DIR := docker/build-image
 ifdef CI_REGISTRY_IMAGE
 	REPOSITORY := $(CI_REGISTRY_IMAGE)
 else
-	REPOSITORY := $(DOCKER_REGISTRY_BASE)/$(IMAGE_NAME)
+	REPOSITORY := quay.io/$(DOCKER_REGISTRY_BASE)/$(IMAGE_NAME)
 endif
 
 # Branch is used for the docker image version
