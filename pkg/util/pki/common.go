@@ -38,7 +38,7 @@ const (
 	// NodeIssuerTemplate is the template used for node issuer resources
 	NodeIssuerTemplate = "%s-issuer"
 	// NodeControllerTemplate is the template used for operator certificate resources
-	NodeControllerTemplate = "%s-controller"
+	NodeControllerTemplate = "%s-c"
 	// NodeControllerFQDNTemplate is combined with the above and cluster namespace
 	// to create a 'fake' full-name for the controller user
 	NodeControllerFQDNTemplate = "%s.%s.mgt.%s"

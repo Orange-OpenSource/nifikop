@@ -72,7 +72,7 @@ func newCASecret() *corev1.Secret {
 
 func newPreCreatedSecret() *corev1.Secret {
 	secret := &corev1.Secret{}
-	secret.Name = "test-controller"
+	secret.Name = "test-c"
 	secret.Namespace = "test-namespace"
 	cert, key, _, _ := certutil.GenerateTestCert()
 	secret.Data = map[string][]byte{

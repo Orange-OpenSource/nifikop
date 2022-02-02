@@ -30,7 +30,7 @@ const (
 	// AllNodeServiceTemplate template for Nifi all nodes service
 	AllNodeServiceTemplate = "%s-all-node"
 	// HeadlessServiceTemplate template for Nifi headless service
-	HeadlessServiceTemplate = "%s-headless"
+	HeadlessServiceTemplate = "%s-h"
 
 	// TimeStampLayout defines the date format used.
 	TimeStampLayout = "Mon, 2 Jan 2006 15:04:05 GMT"
