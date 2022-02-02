@@ -1,6 +1,6 @@
 module github.com/Orange-OpenSource/nifikop
 
-go 1.15
+go 1.16
 
 require (
 	emperror.dev/errors v0.4.2
