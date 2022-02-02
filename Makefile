@@ -4,7 +4,7 @@ DOCKER_REGISTRY_BASE 	?= orangeopensource
 IMAGE_TAG				?= $(shell git describe --tags --abbrev=0 --match '[0-9].*[0-9].*[0-9]' 2>/dev/null)
 IMAGE_NAME 				?= $(SERVICE_NAME)
 BUILD_IMAGE				?= orangeopensource/nifikop-build
-GOLANG_VERSION          ?= 1.16
+GOLANG_VERSION          ?= 1.17
 
 # workdir
 WORKDIR := /go/nifikop
