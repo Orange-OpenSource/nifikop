@@ -108,7 +108,7 @@ func GetInternalDNSNames(cluster *v1alpha1.NifiCluster, nodeId int32) (dnsNames 
 //}
 
 func GetNodeUserName(cluster *v1alpha1.NifiCluster, nodeId int32) string {
-	return fmt.Sprintf("node-%s-user", nodeId)
+	return fmt.Sprintf("node-%d-user", nodeId)
 }
 
 // clusterDNSNames returns all the possible DNS Names for a NiFi Cluster
