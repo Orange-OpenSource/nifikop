@@ -7,7 +7,7 @@ require (
 	github.com/antihax/optional v1.0.0
 	github.com/banzaicloud/k8s-objectmatcher v1.4.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/erdrix/nigoapi v0.0.0-20211026131235-b258e0b217af
+	github.com/erdrix/nigoapi v0.0.0-20211122092449-0fa36e567288
 	github.com/go-logr/logr v0.4.0
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.0.6
