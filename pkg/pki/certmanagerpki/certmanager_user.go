@@ -24,7 +24,7 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/k8sutil"
 	certutil "github.com/Orange-OpenSource/nifikop/pkg/util/cert"
 	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
-	certv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	certv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	certmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -162,14 +162,18 @@ func (c *certManager) clusterCertificateForUser(user *v1alpha1.NifiUser, scheme 
 			Namespace: user.GetNamespace(),
 		},
 		Spec: certv1.CertificateSpec{
-			SecretName:  user.Spec.SecretName,
-			KeyEncoding: certv1.PKCS8,
-			CommonName:  user.GetName(),
-			URISANs:     []string{fmt.Sprintf(pkicommon.SpiffeIdTemplate, c.cluster.Name, user.GetNamespace(), user.GetName())},
-			Usages:      []certv1.KeyUsage{certv1.UsageClientAuth, certv1.UsageServerAuth},
+			SecretName: user.Spec.SecretName,
+			CommonName: user.GetName(),
+			URIs:       []string{fmt.Sprintf(pkicommon.SpiffeIdTemplate, c.cluster.Name, user.GetNamespace(), user.GetName())},
+			Usages:     []certv1.KeyUsage{certv1.UsageClientAuth, certv1.UsageServerAuth},
 			IssuerRef: certmeta.ObjectReference{
 				Name: caName,
 				Kind: caKind,
+			},
+			PrivateKey: &certv1.CertificatePrivateKey{
+				Encoding:  certv1.PKCS8,
+				Algorithm: certv1.RSAKeyAlgorithm,
+				Size:      4096,
 			},
 		},
 	}
