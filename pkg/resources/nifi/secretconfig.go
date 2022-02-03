@@ -32,7 +32,6 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates/config"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
-	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	utilpki "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	"github.com/go-logr/logr"
 	"github.com/imdario/mergo"
