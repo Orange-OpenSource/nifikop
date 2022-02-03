@@ -32,7 +32,6 @@ import (
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates"
 	"github.com/Orange-OpenSource/nifikop/pkg/resources/templates/config"
 	"github.com/Orange-OpenSource/nifikop/pkg/util"
-	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	utilpki "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	"github.com/go-logr/logr"
 	"github.com/imdario/mergo"
@@ -436,10 +435,7 @@ func (r *Reconciler) getAuthorizersConfigString(nConfig *v1alpha1.NodeConfig, id
 		"ClusterName": r.NifiCluster.Name,
 		"Namespace":   r.NifiCluster.Namespace,
 		"NodeList":    nodeList,
-		"ControllerUser": fmt.Sprintf(pkicommon.NodeControllerFQDNTemplate,
-			fmt.Sprintf(pkicommon.NodeControllerTemplate, r.NifiCluster.Name),
-			r.NifiCluster.Namespace,
-			r.NifiCluster.Spec.ListenersConfig.GetClusterDomain()),
+		"ControllerUser": "admin-user",
 	}); err != nil {
 		log.Error(err, "error occurred during parsing the config template")
 	}

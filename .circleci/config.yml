@@ -295,14 +295,14 @@ workflows:
       #            - unit-test-nifikop
       #          <<: *canonical_repo_filter
 
-      - operator/release-helm:
-          name: release-helm-orange-incubator-nifikop
-          requires:
-            - build-nifikop
-          <<: *only_on_release_tag
+      # - operator/release-helm:
+      #     name: release-helm-orange-incubator-nifikop
+      #     requires:
+      #       - build-nifikop
+      #     <<: *only_on_release_tag
 
-      - deploy-website:
-          name: deploy-website
-          requires:
-            - build-nifikop
-          <<: *website_publish
+      # - deploy-website:
+      #     name: deploy-website
+      #     requires:
+      #       - build-nifikop
+      #     <<: *website_publish
