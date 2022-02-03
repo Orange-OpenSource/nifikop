@@ -148,7 +148,9 @@ func CheckIfObjectUpdated(log logr.Logger, desiredType reflect.Type, current, de
 
 func IsPodTerminatedOrShutdown(pod *corev1.Pod) bool {
 	return (pod.Status.Phase == corev1.PodFailed &&
-		(pod.Status.Reason == "Shutdown" || pod.Status.Reason == "Evicted")) || IsPodContainsTerminatedContainer(pod)
+		(pod.Status.Reason == "Shutdown" || pod.Status.Reason == "Evicted" ||
+			pod.Status.Reason == "Terminated" || pod.Status.Reason == "NodeShutdown")) ||
+		IsPodContainsTerminatedContainer(pod)
 }
 
 func IsPodContainsTerminatedContainer(pod *corev1.Pod) bool {
