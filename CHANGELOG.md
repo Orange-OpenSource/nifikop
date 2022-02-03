@@ -11,7 +11,7 @@
 ### Fixed Bugs
 
 - [PR #167](https://github.com/Orange-OpenSource/nifikop/pull/167) - **[Operator/NiFiDataflow]** Fix nil pointer exception case whe sync Dataflow.
-- [PR #176](https://github.com/Orange-OpenSource/nifikop/pull/176) - **[Operator/NiFiCluster]** Support `terminated` and `nodeshutdown` pod status as terminating.
+- [PR #188](https://github.com/Orange-OpenSource/nifikop/pull/188) - **[Operator/NiFiCluster]** Support `terminated` and `nodeshutdown` pod status as terminating.
 
 ## v0.7.5
 
