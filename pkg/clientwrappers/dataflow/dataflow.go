@@ -1,8 +1,9 @@
 package dataflow
 
 import (
-	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 	"strings"
+
+	"github.com/Orange-OpenSource/nifikop/pkg/util/clientconfig"
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/clientwrappers"
@@ -697,17 +698,21 @@ func updateProcessGroupEntity(
 		}
 	}
 
-	if entity.Component == nil {
-		entity.Component = &nigoapi.ProcessGroupDto{
-			Position: &nigoapi.PositionDto{
-				X: 1,
-				Y: 1,
-			},
-		}
-	}
+	// if entity.Component == nil {
+	// 	entity.Component = &nigoapi.ProcessGroupDto{
+	// 		Position: &nigoapi.PositionDto{
+	// 			X: 1,
+	// 			Y: 1,
+	// 		},
+	// 	}
+	// }
 
 	entity.Component.Name = flow.Name
 	entity.Component.ParentGroupId = flow.Spec.GetParentProcessGroupID(config.RootProcessGroupId)
+	entity.Component.Position = &nigoapi.PositionDto{
+		X: float64(flow.Spec.GetFlowPositionX()),
+		Y: float64(flow.Spec.GetFlowPositionY()),
+	}
 	entity.Component.VersionControlInformation = &nigoapi.VersionControlInformationDto{
 		GroupId:          stringFactory(),
 		RegistryName:     stringFactory(),
