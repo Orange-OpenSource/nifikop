@@ -214,8 +214,9 @@ func isVersioningChanged(
 
 // isPostionChanged check if the position of the process group is out of sync.
 func isPostionChanged(flow *v1alpha1.NifiDataflow, pgFlowEntity *nigoapi.ProcessGroupEntity) bool {
-	return float64(flow.Spec.GetFlowPositionX()) != pgFlowEntity.Component.Position.X ||
-		float64(flow.Spec.GetFlowPositionY()) != pgFlowEntity.Component.Position.Y
+	return flow.Spec.FlowPosition != nil &&
+		((flow.Spec.FlowPosition.X != nil && float64(*flow.Spec.FlowPosition.X) != pgFlowEntity.Component.Position.X) ||
+			(flow.Spec.FlowPosition.Y != nil && float64(*flow.Spec.FlowPosition.Y) != pgFlowEntity.Component.Position.Y))
 }
 
 // SyncDataflow implements the logic to sync a NifiDataflow with the deployed flow.
@@ -274,9 +275,23 @@ func SyncDataflow(
 	if isNameChanged(flow, pGEntity) || isPostionChanged(flow, pGEntity) {
 		pGEntity.Component.ParentGroupId = flow.Spec.GetParentProcessGroupID(config.RootProcessGroupId)
 		pGEntity.Component.Name = flow.Name
+
+		var xPos, yPos float64
+		if flow.Spec.FlowPosition == nil || flow.Spec.FlowPosition.X == nil {
+			xPos = pGEntity.Component.Position.X
+		} else {
+			xPos = float64(*flow.Spec.FlowPosition.X)
+		}
+
+		if flow.Spec.FlowPosition == nil || flow.Spec.FlowPosition.Y == nil {
+			yPos = pGEntity.Component.Position.Y
+		} else {
+			yPos = float64(*flow.Spec.FlowPosition.Y)
+		}
+
 		pGEntity.Component.Position = &nigoapi.PositionDto{
-			X: float64(flow.Spec.GetFlowPositionX()),
-			Y: float64(flow.Spec.GetFlowPositionY()),
+			X: xPos,
+			Y: yPos,
 		}
 		_, err := nClient.UpdateProcessGroup(*pGEntity)
 		if err := clientwrappers.ErrorUpdateOperation(log, err, "Stop flow"); err != nil {
@@ -714,9 +729,28 @@ func updateProcessGroupEntity(
 
 	entity.Component.Name = flow.Name
 	entity.Component.ParentGroupId = flow.Spec.GetParentProcessGroupID(config.RootProcessGroupId)
+
+	var xPos, yPos float64
+	if entity.Component.Position != nil {
+		xPos = entity.Component.Position.X
+		yPos = entity.Component.Position.Y
+	} else {
+		if flow.Spec.FlowPosition == nil || flow.Spec.FlowPosition.X == nil {
+			xPos = float64(1)
+		} else {
+			xPos = float64(*flow.Spec.FlowPosition.X)
+		}
+
+		if flow.Spec.FlowPosition == nil || flow.Spec.FlowPosition.Y == nil {
+			yPos = float64(1)
+		} else {
+			yPos = float64(*flow.Spec.FlowPosition.Y)
+		}
+	}
+
 	entity.Component.Position = &nigoapi.PositionDto{
-		X: float64(flow.Spec.GetFlowPositionX()),
-		Y: float64(flow.Spec.GetFlowPositionY()),
+		X: xPos,
+		Y: yPos,
 	}
 	entity.Component.VersionControlInformation = &nigoapi.VersionControlInformationDto{
 		GroupId:          stringFactory(),
