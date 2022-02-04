@@ -212,7 +212,7 @@ func isVersioningChanged(
 		registry.Status.Id != pgFlowEntity.Component.VersionControlInformation.RegistryId
 }
 
-//
+// isPostionChanged check if the position of the process group is out of sync.
 func isPostionChanged(flow *v1alpha1.NifiDataflow, pgFlowEntity *nigoapi.ProcessGroupEntity) bool {
 	return float64(flow.Spec.GetFlowPositionX()) != pgFlowEntity.Component.Position.X ||
 		float64(flow.Spec.GetFlowPositionY()) != pgFlowEntity.Component.Position.Y
