@@ -55,9 +55,9 @@ type NifiDataflowSpec struct {
 
 type FlowPosition struct {
 	// The x coordinate.
-	X int64 `json:"x,omitempty"`
+	X int64 `json:"posX,omitempty"`
 	// The y coordinate.
-	Y int64 `json:"y,omitempty"`
+	Y int64 `json:"posY,omitempty"`
 }
 
 type UpdateRequest struct {
