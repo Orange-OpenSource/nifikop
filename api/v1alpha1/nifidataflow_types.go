@@ -55,9 +55,9 @@ type NifiDataflowSpec struct {
 
 type FlowPosition struct {
 	// The x coordinate.
-	X int64 `json:"posX,omitempty"`
+	X *int64 `json:"posX,omitempty"`
 	// The y coordinate.
-	Y int64 `json:"posY,omitempty"`
+	Y *int64 `json:"posY,omitempty"`
 }
 
 type UpdateRequest struct {
@@ -186,25 +186,4 @@ func (d *NifiDataflowSpec) GetParentProcessGroupID(rootProcessGroupId string) st
 		return rootProcessGroupId
 	}
 	return d.ParentProcessGroupID
-}
-
-func (d *NifiDataflowSpec) GetFlowPosition() FlowPosition {
-	return FlowPosition{
-		X: d.GetFlowPositionX(),
-		Y: d.GetFlowPositionY(),
-	}
-}
-
-func (d *NifiDataflowSpec) GetFlowPositionX() int64 {
-	if d.FlowPosition == nil || d.FlowPosition.X == 0 {
-		return 1
-	}
-	return d.FlowPosition.X
-}
-
-func (d *NifiDataflowSpec) GetFlowPositionY() int64 {
-	if d.FlowPosition == nil || d.FlowPosition.Y == 0 {
-		return 1
-	}
-	return d.FlowPosition.Y
 }
