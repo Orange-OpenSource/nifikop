@@ -126,10 +126,11 @@ func (r *NifiDataflowReconciler) Reconcile(ctx context.Context, req ctrl.Request
 				return Reconciled()
 			}
 
-			// the cluster does not exist - should have been caught pre-flight
 			r.Recorder.Event(instance, corev1.EventTypeWarning, "ReferenceRegistryClientError",
 				fmt.Sprintf("Failed to lookup reference registry client : %s in %s",
 					current.Spec.RegistryClientRef.Name, registryClientNamespace))
+
+			// the cluster does not exist - should have been caught pre-flight
 			return RequeueWithError(r.Log, "failed to lookup referenced registry client", err)
 		}
 	}
