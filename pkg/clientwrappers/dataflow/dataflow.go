@@ -157,7 +157,7 @@ func IsOutOfSyncDataflow(
 
 	return isParameterContextChanged(parameterContext, processGroups) ||
 		isVersioningChanged(flow, registry, pGEntity) || !isVersionSync(flow, pGEntity) || localChanged(pGEntity) ||
-		isParentProcessGroupChanged(flow, config, pGEntity) || isNameChanged(flow, pGEntity), nil
+		isParentProcessGroupChanged(flow, config, pGEntity) || isNameChanged(flow, pGEntity) || isPostionChanged(flow, pGEntity), nil
 }
 
 func isParameterContextChanged(
@@ -210,6 +210,12 @@ func isVersioningChanged(
 		flow.Spec.FlowId != pgFlowEntity.Component.VersionControlInformation.FlowId ||
 		flow.Spec.BucketId != pgFlowEntity.Component.VersionControlInformation.BucketId ||
 		registry.Status.Id != pgFlowEntity.Component.VersionControlInformation.RegistryId
+}
+
+//
+func isPostionChanged(flow *v1alpha1.NifiDataflow, pgFlowEntity *nigoapi.ProcessGroupEntity) bool {
+	return float64(flow.Spec.GetFlowPositionX()) != pgFlowEntity.Component.Position.X ||
+		float64(flow.Spec.GetFlowPositionY()) != pgFlowEntity.Component.Position.Y
 }
 
 // SyncDataflow implements the logic to sync a NifiDataflow with the deployed flow.
@@ -265,9 +271,13 @@ func SyncDataflow(
 		return RemoveDataflow(flow, config)
 	}
 
-	if isNameChanged(flow, pGEntity) {
+	if isNameChanged(flow, pGEntity) || isPostionChanged(flow, pGEntity) {
 		pGEntity.Component.ParentGroupId = flow.Spec.GetParentProcessGroupID(config.RootProcessGroupId)
 		pGEntity.Component.Name = flow.Name
+		pGEntity.Component.Position = &nigoapi.PositionDto{
+			X: float64(flow.Spec.GetFlowPositionX()),
+			Y: float64(flow.Spec.GetFlowPositionY()),
+		}
 		_, err := nClient.UpdateProcessGroup(*pGEntity)
 		if err := clientwrappers.ErrorUpdateOperation(log, err, "Stop flow"); err != nil {
 			return nil, err
@@ -698,14 +708,9 @@ func updateProcessGroupEntity(
 		}
 	}
 
-	// if entity.Component == nil {
-	// 	entity.Component = &nigoapi.ProcessGroupDto{
-	// 		Position: &nigoapi.PositionDto{
-	// 			X: 1,
-	// 			Y: 1,
-	// 		},
-	// 	}
-	// }
+	if entity.Component == nil {
+		entity.Component = &nigoapi.ProcessGroupDto{}
+	}
 
 	entity.Component.Name = flow.Name
 	entity.Component.ParentGroupId = flow.Spec.GetParentProcessGroupID(config.RootProcessGroupId)
