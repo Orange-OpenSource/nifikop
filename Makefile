@@ -37,11 +37,11 @@ endif
 # Operator version is managed in go file
 # BaseVersion is for dev docker image tag
 BASEVERSION := $(shell awk -F\" '/Version =/ { print $$2}' version/version.go)
-
+COMMIT_SHORT_SHA := $(shell git rev-parse --short HEAD)
 ifdef CIRCLE_TAG
 	VERSION := ${BRANCH}
 else
-	VERSION := $(BASEVERSION)-${BRANCH}
+	VERSION := $(BASEVERSION)-$(COMMIT_SHORT_SHA)
 endif
 
 HELM_VERSION    := $(shell cat helm/nifikop/Chart.yaml| grep version | awk -F"version: " '{print $$2}')
