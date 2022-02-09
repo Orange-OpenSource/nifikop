@@ -16,12 +16,11 @@ require (
 	github.com/onsi/gomega v1.15.0
 	github.com/pavel-v-chernykh/keystore-go v2.1.0+incompatible
 	github.com/stretchr/testify v1.7.0
+	go.uber.org/zap v1.19.0
 	k8s.io/api v0.22.2
 	k8s.io/apimachinery v0.22.2
 	k8s.io/client-go v0.22.2
 	sigs.k8s.io/controller-runtime v0.10.1
-	go.uber.org/zap v1.15.0 // indirect
-	golang.org/x/tools v0.0.0-20201014231627-1610a49f37af // indirect
 )
 
 //replace github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible // Required by OLM
