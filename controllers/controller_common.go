@@ -46,10 +46,7 @@ func Requeue() (reconcile.Result, error) {
 }
 
 func RequeueAfter(time time.Duration) (reconcile.Result, error) {
-  // [cannon @ 2/7/22] Trying out the nuclear option because this operator is insanely slow moving
-  // requeue immediately (no delay)
-  return reconcile.Result{Requeue: true}, nil
-  // return reconcile.Result{Requeue: true, RequeueAfter: time}, nil
+	return reconcile.Result{Requeue: true, RequeueAfter: time}, nil
 }
 
 // reconciled returns an empty result with nil error to signal a successful reconcile
