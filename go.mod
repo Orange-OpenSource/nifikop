@@ -20,6 +20,8 @@ require (
 	k8s.io/apimachinery v0.22.2
 	k8s.io/client-go v0.22.2
 	sigs.k8s.io/controller-runtime v0.10.1
+	go.uber.org/zap v1.15.0 // indirect
+	golang.org/x/tools v0.0.0-20201014231627-1610a49f37af // indirect
 )
 
 //replace github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible // Required by OLM
