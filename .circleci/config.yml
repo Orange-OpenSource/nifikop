@@ -55,11 +55,6 @@ orbs:
               name: Vendor dependencies
               command: if [ ! -d vendor ]; then go mod vendor; fi
           - run:
-              name: Generate
-              command: |
-                make generate
-                [ "$(git ls-files -m | grep -c zz_generated)" -eq 0 ]
-          - run:
               name: List
               command: |
                 ls -la /home/circleci/<< parameters.operatorDir >>
