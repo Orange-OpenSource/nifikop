@@ -31,7 +31,7 @@ orbs:
     executors:
       operator-build:
         docker:
-          - image: orangeopensource/nifikop-build:1.15
+          - image: cimg/go:1.16
     # Define jobs list
     jobs:
       # Build job, which build operator docker image (with operator-sdk build)
@@ -54,6 +54,11 @@ orbs:
           - run:
               name: Vendor dependencies
               command: if [ ! -d vendor ]; then go mod vendor; fi
+          # - run:
+          #     name: Generate
+          #     command: |
+          #       make generate
+          #       [ "$(git ls-files -m | grep -c zz_generated)" -eq 0 ]
           - run:
               name: List
               command: |
@@ -97,7 +102,7 @@ orbs:
                 if [[ $(echo "$CIRCLE_BRANCH" | grep -c "pull") -gt 0 ]]; then
                   echo "This is a PR, we don't push to Hub."
                 else
-                  docker login --username $DOCKERHUB_USER --password $DOCKERHUB_PASSWORD
+                  docker login -u=$QUAY_USER -p=$QUAY_PASS quay.io
                   make docker-push
                 fi
           - save_cache:
@@ -209,7 +214,7 @@ orbs:
                 if [[ $(echo "$CIRCLE_BRANCH" | grep -c "pull") -gt 0 ]]; then
                   echo "This is a PR, we don't publish to helm repo."
                 else
-                  CHART_VERSION=$(cat helm/nifikop/Chart.yaml| grep version | awk -F"version: " '{print $2}') GCP_SA_CREDS=${GCP_POC_RTC_SA_KEY} /home/circleci/nifikop/tools/publish_helm_gcs.sh
+                  CHART_VERSION=$(cat helm/nifikop/Chart.yaml| grep version | awk -F"version: " '{print $2}') GCP_SA_CREDS=${GCP_SQUIDFLOW_SBX_SA_KEY} /home/circleci/nifikop/tools/publish_helm_gcs.sh
                 fi
 jobs:
   deploy-website:
@@ -290,14 +295,14 @@ workflows:
       #            - unit-test-nifikop
       #          <<: *canonical_repo_filter
 
-      - operator/release-helm:
-          name: release-helm-orange-incubator-nifikop
-          requires:
-            - build-nifikop
-          <<: *only_on_release_tag
+      # - operator/release-helm:
+      #     name: release-helm-orange-incubator-nifikop
+      #     requires:
+      #       - build-nifikop
+      #     <<: *only_on_release_tag
 
-      - deploy-website:
-          name: deploy-website
-          requires:
-            - build-nifikop
-          <<: *website_publish
+      # - deploy-website:
+      #     name: deploy-website
+      #     requires:
+      #       - build-nifikop
+      #     <<: *website_publish
