@@ -66,8 +66,8 @@ spec:
                     type: integer
                 type: object
               flowVersion:
-                description: the version of the flow to run, if not present or equals
-                  to -1, then the latest version of flow will be used.
+                description: the version of the flow to run, then the latest version
+                  of flow will be used.
                 format: int32
                 type: integer
               parameterContextRef:

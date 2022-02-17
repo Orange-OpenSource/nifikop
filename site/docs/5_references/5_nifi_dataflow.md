@@ -83,7 +83,7 @@ spec:
 |DataflowStateCreated|Created|describes the status of a NifiDataflow as created.|
 |DataflowStateStarting|Starting|describes the status of a NifiDataflow as starting.|
 |DataflowStateRan|Ran|describes the status of a NifiDataflow as running.|
-|DataflowStateOutOfSync|OutOfSync|ddescribes the status of a NifiDataflow as out of sync.|
+|DataflowStateOutOfSync|OutOfSync|describes the status of a NifiDataflow as out of sync.|
 |DataflowStateInSync|InSync|describes the status of a NifiDataflow as in sync.|
 
 ## UpdateRequest

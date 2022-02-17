@@ -31,7 +31,7 @@ type NifiDataflowSpec struct {
 	BucketId string `json:"bucketId"`
 	// the UUID of the flow to run.
 	FlowId string `json:"flowId"`
-	// the version of the flow to run, if not present or equals to -1, then the latest version of flow will be used.
+	// the version of the flow to run, then the latest version of flow will be used.
 	FlowVersion *int32 `json:"flowVersion,omitempty"`
 	// the position of your dataflow in the canvas.
 	FlowPosition *FlowPosition `json:"flowPosition,omitempty"`
