@@ -50,7 +50,7 @@ spec:
 |parentProcessGroupID|string|the UUID of the parent process group where you want to deploy your dataflow, if not set deploy at root level. |No| - |
 |bucketId|string|the UUID of the Bucket containing the flow. |Yes| - |
 |flowId|string|the UUID of the flow to run. |Yes| - |
-|flowVersion|*int32|the version of the flow to run, if not present or equals to -1, then the latest version of flow will be used. |Yes| - |
+|flowVersion|*int32|the version of the flow to run. |Yes| - |
 |flowPosition|[FlowPosition](#flowposition)|the position of your dataflow in the canvas. |No| - |
 |syncMode|Enum={"never","always","once"}|if the flow will be synchronized once, continuously or never. |No| always |
 |skipInvalidControllerService|bool|whether the flow is considered as ran if some controller services are still invalid or not. |Yes| false |
