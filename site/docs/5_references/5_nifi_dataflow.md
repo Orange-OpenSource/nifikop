@@ -58,7 +58,7 @@ spec:
 |updateStrategy|[DataflowUpdateStrategy](#dataflowupdatestrategy)|describes the way the operator will deal with data when a dataflow will be updated : Drop or Drain |Yes| drain |
 |clusterRef|[ClusterReference](./2_nifi_user.md#clusterreference)| contains the reference to the NifiCluster with the one the user is linked. |Yes| - |
 |parameterContextRef|[ParameterContextReference](./4_nifi_parameter_context.md#parametercontextreference)| contains the reference to the ParameterContext with the one the dataflow is linked. |No| - |
-|clusterRef|[RegistryClientReference](./3_nifi_registry_client.md#registryclientreference)| contains the reference to the NifiRegistry with the one the dataflow is linked. |Yes| - |
+|registryClientRef|[RegistryClientReference](./3_nifi_registry_client.md#registryclientreference)| contains the reference to the NifiRegistry with the one the dataflow is linked. |Yes| - |
 
 ## NifiDataflowStatus
 
