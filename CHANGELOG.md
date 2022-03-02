@@ -10,8 +10,6 @@
 
 ### Fixed Bugs
 
-- [PR #195](https://github.com/Orange-OpenSource/nifikop/pull/195) - **[Operator/NiFiParameterContext]** Fix non-update of parameter context.
-
 ## v0.7.6
 
 ### Added
@@ -28,6 +26,7 @@
 - [PR #167](https://github.com/Orange-OpenSource/nifikop/pull/167) - **[Operator/NiFiDataflow]** Fix nil pointer exception case whe sync Dataflow.
 - [PR #189](https://github.com/Orange-OpenSource/nifikop/pull/189) - **[Operator/NiFiParameterContext]** Fix nil pointer exception case on empty description.
 - [PR #193](https://github.com/Orange-OpenSource/nifikop/pull/193) - **[Documentation]** Fix some missinformation.
+- [PR #195](https://github.com/Orange-OpenSource/nifikop/pull/195) - **[Operator/NiFiParameterContext]** Fix non-update of parameter context.
 
 ## v0.7.5
 
