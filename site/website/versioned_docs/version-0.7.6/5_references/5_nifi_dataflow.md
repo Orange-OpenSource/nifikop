@@ -16,9 +16,6 @@ spec:
   bucketId: '01ced6cc-0378-4893-9403-f6c70d080d4f'
   flowId: '9b2fb465-fb45-49e7-94fe-45b16b642ac9'
   flowVersion: 2
-  flowPosition:
-    posX: 0
-    posY: 0
   syncMode: always
   skipInvalidControllerService: true
   skipInvalidComponent: true
@@ -49,24 +46,23 @@ spec:
 | parentProcessGroupID         | string                                                                               | the UUID of the parent process group where you want to deploy your dataflow, if not set deploy at root level. | No       | -       |
 | bucketId                     | string                                                                               | the UUID of the Bucket containing the flow.                                                                   | Yes      | -       |
 | flowId                       | string                                                                               | the UUID of the flow to run.                                                                                  | Yes      | -       |
-| flowVersion                  | \*int32                                                                              | the version of the flow to run, if not present or equals to -1, then the latest version of flow will be used. | Yes      | -       |
-| flowPosition                 | [FlowPosition](#flowposition)                                                        | the position of your dataflow in the canvas.                                                                  | No       | -       |
+| flowVersion                  | \*int32                                                                              | the version of the flow to run                                                                                | Yes      | -       |
 | syncMode                     | Enum={"never","always","once"}                                                       | if the flow will be synchronized once, continuously or never.                                                 | No       | always  |
 | skipInvalidControllerService | bool                                                                                 | whether the flow is considered as ran if some controller services are still invalid or not.                   | Yes      | false   |
 | skipInvalidComponent         | bool                                                                                 | whether the flow is considered as ran if some components are still invalid or not.                            | Yes      | false   |
 | updateStrategy               | [DataflowUpdateStrategy](#dataflowupdatestrategy)                                    | describes the way the operator will deal with data when a dataflow will be updated : Drop or Drain            | Yes      | drain   |
 | clusterRef                   | [ClusterReference](./2_nifi_user.md#clusterreference)                                | contains the reference to the NifiCluster with the one the user is linked.                                    | Yes      | -       |
 | parameterContextRef          | [ParameterContextReference](./4_nifi_parameter_context.md#parametercontextreference) | contains the reference to the ParameterContext with the one the dataflow is linked.                           | No       | -       |
-| clusterRef                   | [RegistryClientReference](./3_nifi_registry_client.md#registryclientreference)       | contains the reference to the NifiRegistry with the one the dataflow is linked.                               | Yes      | -       |
+| registryClientRef            | [RegistryClientReference](./3_nifi_registry_client.md#registryclientreference)       | contains the reference to the NifiRegistry with the one the dataflow is linked.                               | Yes      | -       |
 
 ## NifiDataflowStatus
 
-| Field               | Type                            | Description                         | Required | Default |
-| ------------------- | ------------------------------- | ----------------------------------- | -------- | ------- |
-| processGroupID      | string                          | process Group ID.                   | Yes      | -       |
-| state               | [DataflowState](#dataflowstate) | the dataflow current state.         | Yes      | -       |
-| latestUpdateRequest | [UpdateRequest](#updaterequest) | the latest update request sent.     | Yes      | -       |
-| latestDropRequest   | [DropRequest](#droprequest)     | the latest queue drop request sent. | Yes      | -       |
+| Field               | Type                             | Description                         | Required | Default |
+| ------------------- | -------------------------------- | ----------------------------------- | -------- | ------- |
+| processGroupID      | string                           | process Group ID.                   | Yes      | -       |
+| state               | [DataflowState](#dataflowstate)) | the dataflow current state.         | Yes      | -       |
+| latestUpdateRequest | [UpdateRequest](#updaterequest)  | the latest update request sent.     | Yes      | -       |
+| latestDropRequest   | [DropRequest](#droprequest)      | the latest queue drop request sent. | Yes      | -       |
 
 ## DataflowUpdateStrategy
 
@@ -77,13 +73,13 @@ spec:
 
 ## DataflowState
 
-| Name                   | Value     | Description                                            |
-| ---------------------- | --------- | ------------------------------------------------------ |
-| DataflowStateCreated   | Created   | describes the status of a NifiDataflow as created.     |
-| DataflowStateStarting  | Starting  | describes the status of a NifiDataflow as starting.    |
-| DataflowStateRan       | Ran       | describes the status of a NifiDataflow as running.     |
-| DataflowStateOutOfSync | OutOfSync | describes the status of a NifiDataflow as out of sync. |
-| DataflowStateInSync    | InSync    | describes the status of a NifiDataflow as in sync.     |
+| Name                   | Value     | Description                                             |
+| ---------------------- | --------- | ------------------------------------------------------- |
+| DataflowStateCreated   | Created   | describes the status of a NifiDataflow as created.      |
+| DataflowStateStarting  | Starting  | describes the status of a NifiDataflow as starting.     |
+| DataflowStateRan       | Ran       | describes the status of a NifiDataflow as running.      |
+| DataflowStateOutOfSync | OutOfSync | ddescribes the status of a NifiDataflow as out of sync. |
+| DataflowStateInSync    | InSync    | describes the status of a NifiDataflow as in sync.      |
 
 ## UpdateRequest
 
@@ -126,10 +122,3 @@ spec:
 | ----------------- | ------ | ---------------------------------- |
 | RevertRequestType | Revert | defines a revert changes request.  |
 | UpdateRequestType | Update | defines an update version request. |
-
-## FlowPosition
-
-| Field | Type  | Description       | Required | Default |
-| ----- | ----- | ----------------- | -------- | ------- |
-| posX  | int64 | the x coordinate. | No       | -       |
-| posY  | int64 | the y coordinate. | No       | -       |
