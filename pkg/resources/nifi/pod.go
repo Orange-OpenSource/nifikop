@@ -407,7 +407,7 @@ func (r *Reconciler) createNifiNodeContainer(nodeConfig *v1alpha1.NodeConfig, id
 			nifiutil.GenerateRequestNiFiAllNodeAddressFromCluster(r.NifiCluster))
 	}
 
-	removeFlowFileAction := ''
+	removeFlowFileAction := ""
 	if r.NifiCluster.Spec.GetRemoveFlowFileOnStartup() {
 		removeFlowFileAction = `if [ -f "$NIFI_BASE_DIR/data/flow.xml.gz" ]; then rm -f  $NIFI_BASE_DIR/data/flow.xml.gz; fi`
 	}
