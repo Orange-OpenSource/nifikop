@@ -674,7 +674,7 @@ func (nSpec *NifiClusterSpec) GetMetricPort() *int {
 	return nil
 }
 
-func (nSpec *NifiClusterSpec) GetRemoveFlowFileOnStartup() *bool {
+func (nSpec *NifiClusterSpec) GetRemoveFlowFileOnStartup() bool {
 	if nSpec.RemoveFlowFileOnStartup != nil {
 		return *nSpec.RemoveFlowFileOnStartup
 	}
