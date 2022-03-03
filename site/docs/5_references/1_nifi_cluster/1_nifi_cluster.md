@@ -110,6 +110,7 @@ spec:
 |listenersConfig|[ListenersConfig](./6_listeners_config.md)| specifies nifi's listener specifig configs.|No| - |
 |sidecarConfigs|\[ \][Container](https://godoc.org/k8s.io/api/core/v1#Container)|Defines additional sidecar configurations. [Check documentation for more informations]|
 |externalServices|\[ \][ExternalServiceConfigs](./7_external_service_config.md)| specifies settings required to access nifi externally.|No| - |
+|removeFlowFileOnStartup|boolean| specifies if the flow.xml.gz file should be deleted on startup.|No| true |
 
 ## NifiClusterStatus
 
