@@ -407,6 +407,11 @@ func (r *Reconciler) createNifiNodeContainer(nodeConfig *v1alpha1.NodeConfig, id
 			nifiutil.GenerateRequestNiFiAllNodeAddressFromCluster(r.NifiCluster))
 	}
 
+	removeFlowFileAction := ''
+	if r.NifiCluster.Spec.GetRemoveFlowFileOnStartup() {
+		removeFlowFileAction = `if [ -f "$NIFI_BASE_DIR/data/flow.xml.gz" ]; then rm -f  $NIFI_BASE_DIR/data/flow.xml.gz; fi`
+	}
+
 	removesFileAction := fmt.Sprintf(`if %s; then
 	echo "Successfully query NiFi cluster"
 	%s
@@ -415,12 +420,14 @@ func (r *Reconciler) createNifiNodeContainer(nodeConfig *v1alpha1.NodeConfig, id
 		echo "Removing previous exec setup"
 		if [ -f "$NIFI_BASE_DIR/data/users.xml" ]; then rm -f $NIFI_BASE_DIR/data/users.xml; fi
 		if [ -f "$NIFI_BASE_DIR/data/authorizations.xml" ]; then rm -f  $NIFI_BASE_DIR/data/authorizations.xml; fi
+		%s
 	fi
 %s
 fi
 rm -f $NIFI_BASE_DIR/cluster.state `,
 		requestClusterStatus,
 		"STATUS=$(jq -r \".cluster.nodes[] | select(.address==\\\"$(hostname -f)\\\") | .status\" $NIFI_BASE_DIR/cluster.state)",
+		removeFlowFileAction,
 		failCondition)
 
 	nodeAddress := nifiutil.ComputeHostListenerNodeAddress(
