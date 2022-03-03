@@ -1461,12 +1461,6 @@ spec:
                       description: Set this to true if the instance is a node in a
                         cluster. https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#basic-cluster-setup
                       type: boolean
-                    nifiAnnotations:
-                      additionalProperties:
-                        type: string
-                      description: Additionnal annotation to attach to the pod associated
-                        https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set
-                      type: object
                     nodeAffinity:
                       description: nodeAffinity can be specified, operator populates
                         this value if new pvc added later to node
@@ -1671,6 +1665,18 @@ spec:
                           required:
                           - nodeSelectorTerms
                           type: object
+                      type: object
+                    nodeAnnotations:
+                      additionalProperties:
+                        type: string
+                      description: Additionnal annotation to attach to the pod associated
+                        https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set
+                      type: object
+                    nodeLabels:
+                      additionalProperties:
+                        type: string
+                      description: Additionnal labels to attach to the pod associated
+                        https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
                       type: object
                     nodeSelector:
                       additionalProperties:
@@ -1969,12 +1975,6 @@ spec:
                           description: Set this to true if the instance is a node
                             in a cluster. https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#basic-cluster-setup
                           type: boolean
-                        nifiAnnotations:
-                          additionalProperties:
-                            type: string
-                          description: Additionnal annotation to attach to the pod
-                            associated https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set
-                          type: object
                         nodeAffinity:
                           description: nodeAffinity can be specified, operator populates
                             this value if new pvc added later to node
@@ -2188,6 +2188,18 @@ spec:
                               required:
                               - nodeSelectorTerms
                               type: object
+                          type: object
+                        nodeAnnotations:
+                          additionalProperties:
+                            type: string
+                          description: Additionnal annotation to attach to the pod
+                            associated https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set
+                          type: object
+                        nodeLabels:
+                          additionalProperties:
+                            type: string
+                          description: Additionnal labels to attach to the pod associated
+                            https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
                           type: object
                         nodeSelector:
                           additionalProperties:
@@ -2858,6 +2870,12 @@ spec:
                     additionalProperties:
                       type: string
                     description: Annotations specifies the annotations to attach to
+                      pods the operator creates
+                    type: object
+                  labels:
+                    additionalProperties:
+                      type: string
+                    description: Labels specifies additional labels to attach to the
                       pods the operator creates
                     type: object
                 type: object
