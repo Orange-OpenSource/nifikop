@@ -30,7 +30,7 @@ else
 	ifdef CIRCLE_TAG
 		BRANCH := $(CIRCLE_TAG)
 	else
-		BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
+		BRANCH=$(shell git rev-parse --abbrev-ref HEAD | sed -e 's/\//_/')
 	endif
 endif
 
@@ -90,7 +90,7 @@ generate: controller-gen
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases output:crd:artifacts:config=helm/nifikop/crds
 
 # Build the docker image
 docker-build:

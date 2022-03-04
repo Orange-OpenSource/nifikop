@@ -10,7 +10,25 @@
 
 ### Fixed Bugs
 
+## v0.7.6
+
+### Added
+
+- [PR #191](https://github.com/Orange-OpenSource/nifikop/pull/191) - **[Operator/NiFiDataflow]** Add event on registry client reference error.
+- [PR #190](https://github.com/Orange-OpenSource/nifikop/pull/190) - **[Operator/NiFiDataflow]** New parameter: `flowPosition`.
+
+### Changed
+
+- [PR #188](https://github.com/Orange-OpenSource/nifikop/pull/188) - **[Operator/NiFiCluster]** Support all pod status as terminating if the pod phase is `failed`.
+
+### Fixed Bugs
+
 - [PR #167](https://github.com/Orange-OpenSource/nifikop/pull/167) - **[Operator/NiFiDataflow]** Fix nil pointer exception case whe sync Dataflow.
+- [PR #189](https://github.com/Orange-OpenSource/nifikop/pull/189) - **[Operator/NiFiParameterContext]** Fix nil pointer exception case on empty description.
+- [PR #193](https://github.com/Orange-OpenSource/nifikop/pull/193) - **[Documentation]** Fix some missinformation.
+- [PR #196](https://github.com/Orange-OpenSource/nifikop/pull/196) - **[Operator/NiFiParameterContext]** Fix non-update of parameter context.
+- [PR #197](https://github.com/Orange-OpenSource/nifikop/pull/197) - **[Operator/NiFiDataflow]** Keep Helm chart CRDs inline with baseline.
+- [PR #198](https://github.com/Orange-OpenSource/nifikop/pull/198) - **[Documentation]** Fix versionned doc.
 
 ## v0.7.5
 
