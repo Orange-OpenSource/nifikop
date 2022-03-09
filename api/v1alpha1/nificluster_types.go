@@ -103,6 +103,8 @@ type NifiClusterSpec struct {
 	SidecarConfigs []corev1.Container `json:"sidecarConfigs,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,2,rep,name=containers"`
 	// ExternalService specifies settings required to access nifi externally
 	ExternalServices []ExternalServiceConfig `json:"externalServices,omitempty"`
+	// RemoveFlowFileOnStartup specifies if flow.xml.gz should be removed on startup
+	RemoveFlowFileOnStartup *bool `json:"removeFlowFileOnStartup,omitempty"`
 }
 
 // DisruptionBudget defines the configuration for PodDisruptionBudget
@@ -670,6 +672,13 @@ func (nSpec *NifiClusterSpec) GetMetricPort() *int {
 	}
 
 	return nil
+}
+
+func (nSpec *NifiClusterSpec) GetRemoveFlowFileOnStartup() bool {
+	if nSpec.RemoveFlowFileOnStartup != nil {
+		return *nSpec.RemoveFlowFileOnStartup
+	}
+	return true
 }
 
 func (cluster *NifiCluster) RootProcessGroupId() string {
