@@ -2,6 +2,8 @@
 
 ### Added
 
+- [PR #207](https://github.com/Orange-OpenSource/nifikop/pull/207) - **[Operator/NiFiCluster]** New parameter: `removeFlowFileOnStartup` to optionally remove flow.xml.gz file on startup.
+
 ### Changed
 
 ### Deprecated
