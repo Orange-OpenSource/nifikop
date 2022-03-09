@@ -2,6 +2,8 @@
 
 ### Added
 
+- [PR #184](https://github.com/Orange-OpenSource/nifikop/pull/184) - **[Operator/NiFiCluster]** Add ability to set MaxEventDrivenThreadCount.
+
 ### Changed
 
 ### Deprecated

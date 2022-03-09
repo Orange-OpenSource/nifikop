@@ -2713,6 +2713,12 @@ spec:
                               - name
                               type: object
                           type: object
+                        maximumEventDrivenThreadCount:
+                          description: MaximumEventDrivenThreadCount define the maximum
+                            number of threads for event driven processors available
+                            to the system.
+                          format: int32
+                          type: integer
                         maximumTimerDrivenThreadCount:
                           description: MaximumTimerDrivenThreadCount define the maximum
                             number of threads for timer driven processors available
@@ -3124,6 +3130,12 @@ spec:
                         - name
                         type: object
                     type: object
+                  maximumEventDrivenThreadCount:
+                    description: MaximumEventDrivenThreadCount define the maximum
+                      number of threads for event driven processors available to the
+                      system.
+                    format: int32
+                    type: integer
                   maximumTimerDrivenThreadCount:
                     description: MaximumTimerDrivenThreadCount define the maximum
                       number of threads for timer driven processors available to the
