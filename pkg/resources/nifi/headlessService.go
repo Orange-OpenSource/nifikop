@@ -30,7 +30,7 @@ func (r *Reconciler) headlessService() runtimeClient.Object {
 
 	return &corev1.Service{
 		ObjectMeta: templates.ObjectMetaWithAnnotations(
-			fmt.Sprintf(nifiutils.HeadlessServiceTemplate, r.NifiCluster.Name),
+			fmt.Sprintf(r.NifiCluster.Spec.Service.GetHeadlessServiceTemplate(), r.NifiCluster.Name),
 			util.MergeLabels(nifiutils.LabelsForNifi(r.NifiCluster.Name), r.NifiCluster.Labels),
 			r.NifiCluster.Spec.Service.Annotations,
 			r.NifiCluster,

@@ -36,6 +36,10 @@ spec:
           spec:
             description: NifiClusterSpec defines the desired state of NifiCluster
             properties:
+              adminUserIdentity:
+                description: AdminUserIdentity specifies what to call the static admin
+                  user's identity
+                type: string
               clientType:
                 description: clientType defines if the operator will use basic or
                   tls authentication to query the NiFi cluster.
@@ -1919,9 +1923,17 @@ spec:
                 description: nodeConfigGroups specifies multiple node configs with
                   unique name
                 type: object
+              nodeControllerTemplate:
+                description: NodeControllerTemplate specifies the template to be used
+                  when naming the node controller (e.g. %s-mysuffix)
+                type: string
               nodeURITemplate:
                 description: nodeURITemplate used to dynamically compute node uri
                   (used if external type)
+                type: string
+              nodeUserIdentityTemplate:
+                description: NodeUserIdentityTemplate specifies the template to be
+                  used when naming the node user identity (e.g. node-%d-mysuffix)
                 type: string
               nodes:
                 description: all node requires an image, unique id, and storageConfigs
@@ -3275,6 +3287,10 @@ spec:
                       headlessService for Nifi or individual services using service
                       per nodes may come an handy case of service mesh.
                     type: boolean
+                  headlessServiceTemplate:
+                    description: HeadlessServiceTemplate specifies the template to
+                      be used when naming the headless service (e.g. %s-mysuffix)
+                    type: string
                 required:
                 - headlessEnabled
                 type: object

@@ -108,6 +108,10 @@ spec:
 |listenersConfig|[ListenersConfig](./6_listeners_config.md)| specifies nifi's listener specifig configs.|No| - |
 |sidecarConfigs|\[ \][Container](https://godoc.org/k8s.io/api/core/v1#Container)|Defines additional sidecar configurations. [Check documentation for more informations]|
 |externalServices|\[ \][ExternalServiceConfigs](./7_external_service_config.md)| specifies settings required to access nifi externally.|No| - |
+|removeFlowFileOnStartup|boolean| specifies if the flow.xml.gz file should be deleted on startup.|No| true |
+|adminUserIdentity|string| specifies what to call the admin user's identity.|No| [clustername]-controller.[namespace].[clusterdomain] |
+|nodeUserIdentityTemplate|string| specifies the template to be used when naming the node user identity (e.g. node-%d-mysuffix). %d is replaced with the node index.|No| [clustername]-%d-node.[nodecontrollername].[namespace].[clusterdomain] |
+|nodeControllerTemplate|string| specifies the template to be used when naming the node controller (e.g. %s-mysuffix). %s is replaced with the node name.|No| %s-controller |
 
 ## NifiClusterStatus
 
@@ -123,6 +127,7 @@ spec:
 | --------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
 | headlessEnabled | boolean             | specifies if the cluster should use headlessService for Nifi or individual services using service per nodes may come an handy case of service mesh. | Yes      | false   |
 | annotations     | map\[string\]string | Annotations specifies the annotations to attach to services the NiFiKop operator creates                                                            | No       | -       |
+| headlessServiceTemplate | string | specifies the template to be used when naming the headless service (e.g. %s-mysuffix). %s is replaced with the name of the headless service.| No | %s-headless |
 
 ## PodPolicy
 

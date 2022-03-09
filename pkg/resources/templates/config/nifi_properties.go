@@ -264,6 +264,7 @@ func GenerateListenerSpecificConfig(
 	namespace,
 	crName string,
 	headlessServiceEnabled bool,
+	headlessServiceTemplate string,
 	clusterDomain string,
 	useExternalDNS bool,
 	log logr.Logger) string {
@@ -271,7 +272,7 @@ func GenerateListenerSpecificConfig(
 	var nifiConfig string
 
 	hostListener := nifi.ComputeHostListenerNodeHostname(nodeId, crName, namespace,
-		headlessServiceEnabled, clusterDomain, useExternalDNS)
+		headlessServiceEnabled, headlessServiceTemplate, clusterDomain, useExternalDNS)
 
 	clusterPortConfig := "nifi.cluster.node.protocol.port=\n"
 	httpPortConfig := "nifi.web.http.port=\n"
