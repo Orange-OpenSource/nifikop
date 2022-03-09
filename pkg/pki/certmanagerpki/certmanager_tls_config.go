@@ -24,7 +24,6 @@ import (
 
 	"github.com/Orange-OpenSource/nifikop/api/v1alpha1"
 	"github.com/Orange-OpenSource/nifikop/pkg/errorfactory"
-	pkicommon "github.com/Orange-OpenSource/nifikop/pkg/util/pki"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -35,7 +34,7 @@ import (
 func (c *certManager) GetControllerTLSConfig() (config *tls.Config, err error) {
 	config, err = GetControllerTLSConfigFromSecret(c.client, v1alpha1.SecretReference{
 		Namespace: c.cluster.Namespace,
-		Name:      fmt.Sprintf(pkicommon.NodeControllerTemplate, c.cluster.Name),
+		Name:      fmt.Sprintf(c.cluster.Spec.GetNodeControllerTemplate(), c.cluster.Name),
 	})
 	return
 }
