@@ -3246,10 +3246,8 @@ spec:
                     type: object
                 type: object
               removeFlowFileOnStartup:
-                description: removeFlowFileOnStartup specifies if flow.xml.gz should
-                be deleted on startup. If set to true, each time the NiFi node's pod
-                is started, the flow.xml.gz file will be deleted. If set to false,
-                it will not be deleted. Defaults to 'true'.
+                description: RemoveFlowFileOnStartup specifies if flow.xml.gz should
+                  be removed on startup
                 type: boolean
               rootProcessGroupId:
                 description: rootProcessGroupId contains the uuid of the root process
