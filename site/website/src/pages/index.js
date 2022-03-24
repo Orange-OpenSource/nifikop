@@ -93,7 +93,7 @@ function Home() {
     return (
         <Layout permalink="/" description={customFields.description}>
             <div className={classnames(styles.announcement, styles.announcementDark)}>
-                <span className={styles.heroProjectKeywords}>NiFiKop</span> is now hosted <a href="https://konpyutaika.github.io/nifikop/"></a>.
+                <span className={styles.heroProjectKeywords}>NiFiKop</span> is now hosted <a href="https://konpyutaika.github.io/nifikop/">here</a>.
             </div>
             <div className={styles.hero}>
                 <div className={styles.heroInner}>
