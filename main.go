@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"github.com/Orange-OpenSource/nifikop/pkg/common"
 	"github.com/Orange-OpenSource/nifikop/version"
-	certv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	certv1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"strings"
