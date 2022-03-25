@@ -2,6 +2,8 @@
 
 ### Added
 
+- [PR #170](https://github.com/Orange-OpenSource/nifikop/pull/170) - **[Operator/NiFiClustser]** Add ability to override default authorizers.xml template.
+
 ### Changed
 
 ### Deprecated
