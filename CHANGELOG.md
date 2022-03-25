@@ -2,6 +2,8 @@
 
 ### Added
 
+- [PR #168](https://github.com/Orange-OpenSource/nifikop/pull/168) - **[Operator]** Propagate user provided issuerRef Group for custom CertManager Issuer.
+
 ### Changed
 
 ### Deprecated

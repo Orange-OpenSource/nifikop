@@ -155,7 +155,7 @@ func (c *certManager) getUserSecret(ctx context.Context, user *v1alpha1.NifiUser
 
 // clusterCertificateForUser generates a Certificate object for a NifiUser
 func (c *certManager) clusterCertificateForUser(user *v1alpha1.NifiUser, scheme *runtime.Scheme) *certv1.Certificate {
-	caName, caKind := c.getCA()
+	caName, caKind, caGroup := c.getCA()
 	cert := &certv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      user.GetName(),
@@ -168,8 +168,9 @@ func (c *certManager) clusterCertificateForUser(user *v1alpha1.NifiUser, scheme 
 			URISANs:     []string{fmt.Sprintf(pkicommon.SpiffeIdTemplate, c.cluster.Name, user.GetNamespace(), user.GetName())},
 			Usages:      []certv1.KeyUsage{certv1.UsageClientAuth, certv1.UsageServerAuth},
 			IssuerRef: certmeta.ObjectReference{
-				Name: caName,
-				Kind: caKind,
+				Name:  caName,
+				Kind:  caKind,
+				Group: caGroup,
 			},
 		},
 	}
@@ -193,13 +194,14 @@ func (c *certManager) clusterCertificateForUser(user *v1alpha1.NifiUser, scheme 
 	return cert
 }
 
-// getCA returns the CA name/kind for the NifiCluster
-func (c *certManager) getCA() (caName, caKind string) {
+// getCA returns the CA name/kind/group for the NifiCluster
+func (c *certManager) getCA() (caName, caKind, caGroup string) {
 	caKind = certv1.IssuerKind
 	issuerRef := c.cluster.Spec.ListenersConfig.SSLSecrets.IssuerRef
 	if issuerRef != nil {
 		caName = issuerRef.Name
 		caKind = issuerRef.Kind
+		caGroup = issuerRef.Group
 	} else {
 		if c.cluster.Spec.ListenersConfig.SSLSecrets.ClusterScoped {
 			caKind = certv1.ClusterIssuerKind
