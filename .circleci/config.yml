@@ -216,6 +216,68 @@ orbs:
                 else
                   CHART_VERSION=$(cat helm/nifikop/Chart.yaml| grep version | awk -F"version: " '{print $2}') GCP_SA_CREDS=${GCP_SQUIDFLOW_SBX_SA_KEY} /home/circleci/nifikop/tools/publish_helm_gcs.sh
                 fi
+  k3d:
+    # Setting up VM executor to run k3d.
+    executors:
+      vm:
+        machine:
+          image: ubuntu-2004:202010-01
+        resource_class: large
+    jobs:
+      e2e-orb:
+        parameters:
+          test_name:
+            description: name of the kuttl test to run
+            type: string
+            default: Simple-nificluster-scale-up-and-down
+          operatorDir:
+            type: string
+            description: relative path where the build must be run
+            default: nifikop
+        executor: vm
+        working_directory: /home/circleci/<< parameters.operatorDir >>
+        environment:
+          K3S_IMAGE: rancher/k3s:v1.21.1-k3s1
+          K8S_VERSION: v1.20.6
+          GOPATH: /go
+          GO111MODULE: on
+          DOCKER_LATEST: 1
+          GIN_MODE: release
+        steps:
+          - run:
+              name: Set up K3d
+              command: |
+                wget -q -O - https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
+                k3d cluster create --image ${K3S_IMAGE} --wait
+                mkdir -p ${HOME}/.kube
+          - checkout:
+              path: /home/circleci/nifikop
+          - run:
+              name: Setup kubectl
+              command: |
+                set -x
+                sudo chmod o+w /usr/local/bin/
+                wget -P /usr/local/bin/ https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
+                chmod +x /usr/local/bin/kubectl
+          - run:
+              name: Setup helm
+              command: curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+          - run:
+              name: Setup kuttl
+              command: |
+                set -x
+                sudo chmod o+w /usr/local/bin/
+                curl -L https://github.com/kudobuilder/kuttl/releases/download/v0.10.0/kubectl-kuttl_0.10.0_linux_x86_64 -o /usr/local/bin/kubectl-kuttl
+                chmod +x /usr/local/bin/kubectl-kuttl
+          - attach_workspace: # Attach artifact from workdir
+              at: /home/circleci/nifikop
+          # Acceptance test
+          - run:
+              name: Operator acceptance test
+              no_output_timeout: 1200
+              command: |
+                make run-kuttl-test << parameters.test_name >>
+
 jobs:
   deploy-website:
     working_directory: /home/circleci/nifikop/site
@@ -282,6 +344,27 @@ workflows:
           requires:
             - generate-nifikop
           <<: *everytime_filter
+
+      - k3d/e2e-orb:
+          name: Simple NiFicluster Scale Up & Down
+          test_name: Simple-nificluster-scale-up-and-down
+          requires:
+            - unit-test-nifikop
+          <<: *everytime_filter
+          
+      - k3d/e2e-orb:
+          name: SSL SelfManager Scale Up & Down
+          test_name: Selfmanager-ssl-nificluster-scale-up-and-down
+          requires:
+            - unit-test-nifikop
+          <<: *everytime_filter
+
+#      - k3d/e2e-orb:
+#          name: SSL CertManager Scale Up & Down
+#          test_name: Certmanager-ssl-nificluster-scale-up-and-down
+#          requires:
+#            - unit-test-nifikop
+#          <<: *everytime_filter
 
       - operator/build-operator:
           name: build-nifikop
