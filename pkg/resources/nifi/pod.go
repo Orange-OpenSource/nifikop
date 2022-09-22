@@ -121,6 +121,13 @@ func (r *Reconciler) pod(id int32, nodeConfig *v1alpha1.NodeConfig, pvcs []corev
 		r.NifiCluster.Spec.Pod.Annotations,
 	}
 
+	labelsToMerge := []map[string]string{
+		nifiutil.LabelsForNifi(r.NifiCluster.Name),
+		nodeConfig.GetNodeLabels(),
+		r.NifiCluster.Spec.Pod.Labels,
+		{"nodeId": fmt.Sprintf("%d", id)},
+	}
+
 	if r.NifiCluster.Spec.GetMetricPort() != nil {
 		anntotationsToMerge = append(anntotationsToMerge, util.MonitoringAnnotations(*r.NifiCluster.Spec.GetMetricPort()))
 	}
@@ -132,10 +139,7 @@ func (r *Reconciler) pod(id int32, nodeConfig *v1alpha1.NodeConfig, pvcs []corev
 		//ObjectMeta: templates.ObjectMetaWithAnnotations(
 		ObjectMeta: templates.ObjectMetaWithGeneratedNameAndAnnotations(
 			nifiutil.ComputeNodeName(id, r.NifiCluster.Name),
-			util.MergeLabels(
-				nifiutil.LabelsForNifi(r.NifiCluster.Name),
-				map[string]string{"nodeId": fmt.Sprintf("%d", id)},
-			),
+			util.MergeLabels(labelsToMerge...),
 			util.MergeAnnotations(anntotationsToMerge...), r.NifiCluster,
 		),
 		Spec: corev1.PodSpec{

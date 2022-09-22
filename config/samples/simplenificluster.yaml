@@ -5,6 +5,9 @@ metadata:
 spec:
   service:
     headlessEnabled: true
+  pod:
+    labels:
+      pod-label: "pod-label-value"
   zkAddress: "zookeeper.dlice:2181"
   zkPath: "/simplenifi"
   clusterImage: "apache/nifi:1.12.1"
@@ -12,6 +15,10 @@ spec:
   nodeConfigGroups:
     default_group:
       isNode: true
+      nodeAnnotations:
+        node-annotation: "node-annotation-value"
+      nodeLabels:
+        node-label: "node-label-value"
       storageConfigs:
         - mountPath: "/opt/nifi/nifi-current/logs"
           name: logs

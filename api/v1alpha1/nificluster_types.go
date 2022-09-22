@@ -126,6 +126,8 @@ type ServicePolicy struct {
 type PodPolicy struct {
 	// Annotations specifies the annotations to attach to pods the operator creates
 	Annotations map[string]string `json:"annotations,omitempty"`
+	// Labels specifies additional labels to attach to the pods the operator creates
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // rollingUpgradeConfig specifies the rolling upgrade config for the cluster
@@ -281,7 +283,10 @@ type NodeConfig struct {
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 	// Additionnal annotation to attach to the pod associated
 	// https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set
-	NodeAnnotations map[string]string `json:"nifiAnnotations,omitempty"`
+	NodeAnnotations map[string]string `json:"nodeAnnotations,omitempty"`
+	// Additionnal labels to attach to the pod associated
+	// https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
 }
 
 // StorageConfig defines the node storage configuration
@@ -590,6 +595,11 @@ func (nConfig *NodeConfig) GetImagePullPolicy() corev1.PullPolicy {
 //
 func (nConfig *NodeConfig) GetNodeAnnotations() map[string]string {
 	return nConfig.NodeAnnotations
+}
+
+// GetNodeLabels returns additional labels configured to be applied to each nifi node
+func (nConfig *NodeConfig) GetNodeLabels() map[string]string {
+	return nConfig.NodeLabels
 }
 
 // GetResources returns the nifi node specific Kubernetes resource
