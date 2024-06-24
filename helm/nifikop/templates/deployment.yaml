@@ -42,7 +42,7 @@ spec:
       {{- end }}
       {{- if .Values.rbacEnable }}
       {{- if and .Values.serviceAccount .Values.serviceAccount.name }}
-      serviceAccountName: {{ .Values.serviceAccount.name }}      
+      serviceAccountName: {{ .Values.serviceAccount.name }}
       {{- else }}
       serviceAccountName: {{ template "nifikop.name" . }}
       {{- end }}
@@ -103,10 +103,8 @@ spec:
             - name: VAULT_CACERT
               value: /etc/vault/certs/ca.crt
             {{- end }}
-            {{- if .Values.debug.enabled }}
             - name: LOG_LEVEL
-              value: Debug
-            {{- end }}
+              value: {{ default "Info" .Values.logLevel }}
           livenessProbe:
             httpGet:
               path: /healthz
